@@ -255,7 +255,7 @@ struct SearchView: View {
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
-                if (model.resultMode == .character || model.resultMode == .note) && !model.resultQuery.isEmpty {
+                if !model.resultQuery.isEmpty && (model.resultMode == .character || (model.resultMode == .note && !model.results.isEmpty)) {
                     CharacterResultsView()
                 } else {
                     HomophoneResultsView()
@@ -308,4 +308,5 @@ struct FavoritesView: View {
         }
     }
 }
+
 
