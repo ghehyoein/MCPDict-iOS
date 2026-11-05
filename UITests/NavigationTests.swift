@@ -37,4 +37,3 @@ final class NavigationTests: XCTestCase {
         for title in ["语言", "自选", "分区", "行政区"] { XCTAssertTrue(app.buttons[title].exists) }
     }
 }
-

@@ -11,6 +11,8 @@ struct DialectMapView: View {
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
     @AppStorage("fontSize") private var fontSize = 17.0
+    @AppStorage("baseMapStyle") private var baseMapStyle = "standard"
+    @State private var center = TableLocation(longitude: 108, latitude: 34)
     @State private var kind: MapSearchKind = .region
     @State private var names: Set<String>? = nil
     @State private var selectionTitle = "全部語言"
@@ -18,6 +20,8 @@ struct DialectMapView: View {
     @State private var character = ""
     @State private var activeCharacter = ""
     @State private var readings = [String: String]()
+    @State private var variants = [String]()
+    @State private var readingsByVariant = [String: [String: String]]()
     @State private var querying = false
     @State private var selected: TablePackage?
     @State private var fit = 0
@@ -50,23 +54,39 @@ struct DialectMapView: View {
                 HStack {
                     TextField(ui("請輸入單字"), text: $character).textFieldStyle(.roundedBorder)
                     Button(ui("查字")) { Task { await query() } }.disabled(querying || model.updating)
-                    Button(ui("清除")) { activeCharacter = ""; readings = [:]; character = "" }
+                    Button(ui("清除")) { activeCharacter = ""; readings = [:]; character = ""; variants = []; readingsByVariant = [:] }
                 }.padding(.horizontal)
+                if variants.count > 1 {
+                    ScrollView(.horizontal) {
+                        HStack {
+                            ForEach(variants, id: \.self) { variant in
+                                Button(variant) { activeCharacter = variant; readings = readingsByVariant[variant] ?? [:] }
+                                    .buttonStyle(.bordered).tint(variant == activeCharacter ? .teal : .gray)
+                            }
+                        }.padding(.horizontal)
+                    }
+                }
                 Text(ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
                     .font(.caption).foregroundStyle(.secondary)
-                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, choose: choose)
+                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, mapStyle: baseMapStyle, centerChanged: { center = $0 }, choose: choose)
                 if querying { ProgressView() }
             }
             .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Menu {
+                        Picker(ui("底圖"), selection: $baseMapStyle) {
+                            ForEach(BaseMapStyle.allCases) { Text(ui($0.title)).tag($0.rawValue) }
+                        }
+                        ExternalMapMenu(location: center, name: ui("地圖中心"))
+                    } label: { Image(systemName: "map") }
                     Button(ui("全覽"), systemImage: "arrow.up.left.and.arrow.down.right") { fit += 1 }
                     Button(ui("更新"), systemImage: "arrow.clockwise") { Task { await model.loadCatalog() } }.disabled(model.updating)
                 }
             }
             .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
             .onChange(of: kind) { _, _ in names = nil; selectionTitle = "全部語言" }
-            .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:] }
+            .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:]; variants = []; readingsByVariant = [:] }
             .sheet(item: $selected) { TableInfoView(table: $0) }
             .sheet(isPresented: $showSelection) {
                 MapLanguageSelector(tables: tables, grouping: grouping, custom: kind == .custom, initial: names ?? []) { chosen, title in
@@ -81,7 +101,13 @@ struct DialectMapView: View {
         guard text.count == 1 else { model.error = "請輸入一個漢字（支援擴展區漢字）"; return }
         querying = true
         defer { querying = false }
-        do { readings = try await model.repository.mapReadings(text); activeCharacter = text; fit += 1 }
+        do {
+            let expanded = CharacterVariants.expand(text)
+            var found = [String: [String: String]]()
+            for variant in expanded { found[variant] = try await model.repository.mapReadings(variant) }
+            variants = expanded; readingsByVariant = found
+            activeCharacter = text; readings = found[text] ?? [:]; fit += 1
+        }
         catch { model.error = error.localizedDescription }
     }
 }

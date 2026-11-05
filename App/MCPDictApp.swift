@@ -24,6 +24,7 @@ final class AppModel: ObservableObject {
     @Published var results = [Reading]()
     @Published var resultMode: SearchMode = .character
     @Published var resultQuery = ""
+    @Published var resultCharacters = [String]()
     @Published var downloading = false
     @Published var favorites = [SavedReading]()
     @Published var query = "中"
@@ -80,12 +81,14 @@ final class AppModel: ObservableObject {
         let request = more ? (lastSearch ?? (query, mode, language, selectedLanguages)) : (query, mode, language, selectedLanguages)
         do {
             let found: [Reading]
-            if request.1 == .character { found = try await repository.searchAllCharacters(request.0, language: request.2, languages: request.3) }
+            let variants = request.1 == .character ? CharacterVariants.expand(request.0) : []
+            if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
             else { found = try await repository.search(request.0, mode: request.1, language: request.2, offset: more ? results.count : 0, languages: request.3) }
             guard token == generation else { return }
             if more { results += found } else { results = found }
             lastSearch = request
             resultMode = request.1; resultQuery = request.0
+            resultCharacters = variants
             hasMore = request.1 != .character && found.count == 100
         } catch { self.error = error.localizedDescription }
     }
