@@ -30,6 +30,8 @@ final class DisplaySearchTests: XCTestCase {
         let next = try await repo.search("tsɿ", mode: .pronunciation, language: "", offset: 100, languages: ["甲", "乙"])
         XCTAssertEqual(next.last?.pronunciation, "atsɿ1")
         XCTAssertEqual(next.count, 12)
+        let all = try await repo.searchAll("tsɿ", mode: .pronunciation, language: "", languages: ["甲", "乙"])
+        XCTAssertEqual(all, page + next)
         let literal = try await repo.search("%", mode: .pronunciation, language: "")
         XCTAssertEqual(literal.map(\.pronunciation), ["a%1"])
         let empty = try await repo.search("tsɿ", mode: .pronunciation, language: "", languages: [])
@@ -75,3 +77,4 @@ final class DisplaySearchTests: XCTestCase {
         XCTAssertEqual(BaseMapStyle.hybrid.type, .hybrid)
     }
 }
+

@@ -12,10 +12,8 @@ struct SettingsView: View {
             Form {
 
                 Section(ui("顯示語言")) {
-                    Picker("", selection: $uiLanguage) {
-                        Text(verbatim: "简体中文").tag("hans")
-                        Text(verbatim: "繁體中文").tag("hant")
-                    }.pickerStyle(.inline)
+                    option("简体中文", value: "hans", selection: $uiLanguage)
+                    option("繁體中文", value: "hant", selection: $uiLanguage)
                 }
                 Section(ui("字體大小")) {
                     Slider(value: $fontSize, in: 14...26, step: 1) { Text(ui("字體大小")) }.accessibilityIdentifier("fontSizeSlider")
@@ -38,15 +36,23 @@ struct SettingsView: View {
                     }
                 }
                 Section(ui("界面外觀")) {
-                    Picker("", selection: $appearance) {
-                        Text(ui("跟隨系統")).tag("system")
-                        Text(ui("淺色")).tag("light")
-                        Text(ui("深色")).tag("dark")
-                    }.pickerStyle(.inline)
+                    option(ui("跟隨系統"), value: "system", selection: $appearance)
+                    option(ui("淺色"), value: "light", selection: $appearance)
+                    option(ui("深色"), value: "dark", selection: $appearance)
                 }
                 MapSettingsSection()
             }.navigationTitle(ui("設定"))
         }
     }
+    private func option(_ title: String, value: String, selection: Binding<String>) -> some View {
+        Button { selection.wrappedValue = value } label: {
+            HStack {
+                Text(verbatim: title).foregroundStyle(.primary)
+                Spacer()
+                if selection.wrappedValue == value { Image(systemName: "checkmark") }
+            }.contentShape(Rectangle())
+        }.accessibilityIdentifier(title)
+    }
 }
+
 

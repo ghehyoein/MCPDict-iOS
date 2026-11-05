@@ -6,7 +6,7 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture"]; app.launch()
         XCTAssertEqual(app.textFields.firstMatch.value as? String, "漢字、U+4E2D 或原始讀音")
         app.tabBars.buttons["字表"].tap()
-        app.buttons["check-漢語"].tap()
+        app.buttons["selectAllTables"].tap()
         XCTAssertTrue(app.buttons["downloadTables"].isEnabled)
         for key in ["漢語", "官話", "北京"] {
             let expand = app.buttons["expand-" + key]

@@ -46,10 +46,18 @@ struct NativeDialectMap: UIViewRepresentable {
         }
         func update(_ map: MKMapView, points: [DialectPoint], fit: Int, fontSize: Double = 17) {
             if self.points != points || self.fontSize != fontSize {
+                let fontChanged = self.fontSize != fontSize
                 self.fontSize = fontSize
                 self.points = points
-                map.removeAnnotations(map.annotations)
-                map.addAnnotations(points.map(PointAnnotation.init))
+                let wanted = Dictionary(uniqueKeysWithValues: points.map { ($0.id, $0) })
+                var retained = Set<String>()
+                var removed = [PointAnnotation]()
+                for annotation in map.annotations.compactMap({ $0 as? PointAnnotation }) {
+                    if !fontChanged, wanted[annotation.point.id] == annotation.point { retained.insert(annotation.point.id) }
+                    else { removed.append(annotation) }
+                }
+                map.removeAnnotations(removed)
+                map.addAnnotations(points.filter { !retained.contains($0.id) }.map(PointAnnotation.init))
             }
             if self.fit != fit {
                 self.fit = fit
@@ -153,3 +161,4 @@ final class LabelAnnotationView: MKAnnotationView {
         collisionMode = .rectangle
     }
 }
+
