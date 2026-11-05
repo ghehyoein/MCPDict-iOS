@@ -103,4 +103,28 @@ final class NavigationTests: XCTestCase {
 
     }
 
+    @MainActor func testIndependentRootLevelsAndExclusiveRegions() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--tree-fixture"]; app.launch()
+        app.buttons["dictionaryLanguageSelection"].tap()
+        app.segmentedControls.buttons["分區"].tap()
+        let scroll = app.scrollViews["languageTreeScroll"]
+        var previous: String?
+        let rootX = app.buttons["check-吳語"].frame.minX
+        for root in ["吳語", "歷史音", "民族語", "粵語"].sorted() {
+            let checkbox = app.buttons["check-" + root]
+            for _ in 0..<5 { if checkbox.isHittable { break }; scroll.swipeUp() }
+            XCTAssertTrue(checkbox.isHittable)
+            XCTAssertEqual(checkbox.frame.minX, rootX, accuracy: 2, "Every root must remain at depth zero")
+            checkbox.tap()
+            XCTAssertEqual(checkbox.value as? String, "checked")
+            if let previous { XCTAssertEqual(app.buttons["check-" + previous].value as? String, "unchecked") }
+            app.buttons["expand-" + root].tap()
+            let child = app.buttons["check-" + root + "子區"]
+            XCTAssertTrue(child.exists)
+            XCTAssertGreaterThan(child.frame.minX, rootX)
+            previous = root
+        }
+    }
+
 }

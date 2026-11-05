@@ -12,11 +12,10 @@ final class LanguageSelectionTests: XCTestCase {
         XCTAssertEqual(Set(LanguageSelectionScope.terminalGroups.eligible(tables, grouping: .atlas).map(\.name)), ["旁列點", "深層甲", "深層乙", "淺層"])
         XCTAssertEqual(RegionSelection.restore(tables: tables, grouping: .atlas, names: ["深層甲", "深層乙"], saved: "漢語\u{0}吳語\u{0}太湖\u{0}蘇嘉湖"), "漢語\u{0}吳語\u{0}太湖\u{0}蘇嘉湖")
         XCTAssertNil(RegionSelection.restore(tables: tables, grouping: .atlas, names: ["深層甲", "淺層"], saved: nil))
-        for root in ["歷史音", "民族語"] {
-            let special = try table(root, [root])
-            XCTAssertEqual(TableGrouping.dictionary.path(special).first, root)
-            let nested = try table(root, ["吳語", root, "子類"])
-            XCTAssertEqual(TableGrouping.atlas.path(nested), [root, "子類"])
+        for root in ["歷史音", "民族語", "吳語", "粵語", "域外方音", "戲劇"] {
+            let example = try table(root, [root, "子類"])
+            XCTAssertEqual(TableGrouping.atlas.path(example), [root, "子類"])
+            XCTAssertEqual(TableGrouping.dictionary.path(example), ["漢語"], "Each classification must preserve its own complete root path")
         }
         XCTAssertEqual(LanguageSelectionScope.points.eligible(tables, grouping: .atlas).count, 5)
         XCTAssertEqual(LanguageSelectionScope.topGroups.eligible(tables, grouping: .atlas).count, 4)
