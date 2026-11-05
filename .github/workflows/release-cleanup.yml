@@ -1,0 +1,43 @@
+name: Publish verified build and clean historical releases
+on:
+  push:
+    paths: ['.github/workflows/release-cleanup.yml']
+permissions:
+  contents: write
+  actions: read
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ghehyoein/MCPDict-iOS
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require passing application checks
+        run: gh run watch 42060888543 --exit-status --interval 20
+      - name: Retrieve verified build
+        run: |
+          gh run download 42060888481 --name iPhone-IPA-requires-local-signing --dir package
+          python3 - <<'PY'
+          import json, hashlib
+          from pathlib import Path
+          p=Path("package/MCPDict-iPhone-unsigned.ipa")
+          report=json.loads(p.with_suffix(".json").read_text())
+          assert report["version"]=="0.6.1" and report["build"]=="18"
+          assert hashlib.sha256(p.read_bytes()).hexdigest()==report["sha256"]
+          PY
+      - name: Publish latest build
+        run: |
+          tag=iphone-dev-18-42c7cbf
+          for attempt in 1 2 3 4 5; do
+            if gh release view "$tag" >/dev/null 2>&1; then break; fi
+            gh release create "$tag" --prerelease --title "iPhone development build 18 — local signing required" --notes-file INSTALL-IPHONE.md --target 3302e880c6132fd6acf9ef8a4f0b4b3b768fc3dc && break
+            sleep 10
+          done
+          gh release upload "$tag" package/* --clobber
+      - name: Remove explicitly requested historical releases
+        run: |
+          for id in 435383220 435361068 435358337 435342651 435259879 435244937 434960007 434966552; do
+            gh api --method DELETE "repos/$GH_REPO/releases/$id"
+          done
