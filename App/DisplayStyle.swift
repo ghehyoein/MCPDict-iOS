@@ -119,6 +119,7 @@ struct PronunciationView: View {
     @AppStorage("toneStyle") private var style = "baSheng"
     @AppStorage("pitchStyle") private var pitch = "curve"
     var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
         HStack(alignment: .center, spacing: 0) {
             ForEach(ToneDisplay.parts(raw, table: table, style: style, pitchStyle: pitch)) { part in
                 Text(part.base)
@@ -129,7 +130,10 @@ struct PronunciationView: View {
                     Text(part.tone)
                 }
             }
-        }.accessibilityElement(children: .ignore)
+        }.lineLimit(1).fixedSize(horizontal: true, vertical: false)
+        }.fixedSize(horizontal: false, vertical: true)
+            .accessibilityElement(children: .ignore)
             .accessibilityLabel(ToneDisplay.text(raw, table: table, style: style, pitch: pitch))
     }
 }
+
