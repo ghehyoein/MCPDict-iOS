@@ -14,25 +14,11 @@ jobs:
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
       - uses: actions/checkout@v4
-      - name: Start final build from current main
-        run: |
-          gh run cancel 42067336396 || true
-          gh run cancel 42067308024 || true
-          # The device workflow is triggered by this same push.
-          for attempt in 1 2 3 4 5 6; do
-            run=$(gh run list --workflow device.yml --commit "$GITHUB_SHA" --json databaseId --jq '.[0].databaseId // empty')
-            if [ -n "$run" ]; then echo "DEVICE_RUN=$run" >> "$GITHUB_ENV"; break; fi
-            sleep 5
-          done
-          test -n "$run"
-      - name: Wait for build and tests
-        run: |
-          gh run watch "$DEVICE_RUN" --exit-status --interval 20 || true
-          check=$(gh run list --workflow ios.yml --commit "$GITHUB_SHA" --json databaseId --jq '.[0].databaseId')
-          gh run watch "$check" --exit-status --interval 20
+      - name: Require passing application checks
+        run: gh run watch 42068241501 --exit-status --interval 20
       - name: Retrieve and verify package
         run: |
-          gh run download "$DEVICE_RUN" --name iPhone-IPA-requires-local-signing --dir dist
+          gh run download 42068234052 --name iPhone-IPA-requires-local-signing --dir dist
           python3 - <<'PY'
           import json, hashlib, os
           from pathlib import Path
@@ -41,14 +27,14 @@ jobs:
           assert report["version"]=="0.6.1" and report["platform"]=="iPhoneOS"
           assert hashlib.sha256(p.read_bytes()).hexdigest()==report["sha256"]
           with open(os.environ["GITHUB_ENV"],"a") as f:
-              f.write(f"RELEASE_TAG=iphone-dev-{report['build']}-{os.environ['GITHUB_SHA'][:7]}\n")
+              f.write("RELEASE_TAG=iphone-dev-22-aa79f53\n")
           PY
       - name: Publish complete latest release
         run: |
           python3 tools/carry_diagnostics.py
           for attempt in 1 2 3 4 5; do
             if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then break; fi
-            gh release create "$RELEASE_TAG" --latest --title "iPhone development build — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA" && break
+            gh release create "$RELEASE_TAG" --latest --title "iPhone development build — local signing required" --notes-file INSTALL-IPHONE.md --target aa79f53dbe55f8ff3c1b2e4e03fd251d8798864f && break
             sleep 10
           done
           gh release upload "$RELEASE_TAG" dist/* --clobber
@@ -61,6 +47,7 @@ jobs:
           while read -r id; do
             if [ "$id" != "$keep" ]; then gh api --method DELETE "repos/$GH_REPO/releases/$id"; fi
           done < release-ids.txt
+
 
 
 
