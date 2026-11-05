@@ -19,11 +19,7 @@ struct DataView: View {
     @State private var selection = Set<String>()
     @State private var filter = ""
     @State private var information: TablePackage?
-    private var available: [TablePackage] {
-        var map = Dictionary(uniqueKeysWithValues: (model.installed?.tables ?? []).map { ($0.id, $0) })
-        for table in model.catalog?.tables ?? [] { map[table.id] = table }
-        return Array(map.values)
-    }
+    private var available: [TablePackage] { model.availableTables }
     var body: some View {
         NavigationStack {
             List {
@@ -31,7 +27,7 @@ struct DataView: View {
                     ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
                 }
                 Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
-                SelectionTree(tables: available.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, selection: $selection, inspect: { information = $0 })
+                SelectionTree(tables: available, grouping: grouping, filterQuery: filter, selection: $selection, inspect: { information = $0 })
                     .id(grouping.rawValue).disabled(model.updating)
                 if model.updating {
                     HStack { ProgressView(); Text(ui(model.status)).font(.caption) }

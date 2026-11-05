@@ -31,6 +31,18 @@ struct DialectPoint: Codable, Identifiable, Equatable {
 }
 
 extension DictionaryRepository {
+    func mapReadingsForVariants(_ variants: [String]) throws -> [String: [String: String]] {
+        let characters = Set(variants.filter { $0.count == 1 })
+        guard !characters.isEmpty else { return [:] }
+        let rows = try searchAllCharacters(characters.sorted().joined(), language: "")
+        var collected = [String: [String: Set<String>]]()
+        for row in rows {
+            for character in row.characters.split(whereSeparator: { $0.isWhitespace }).map(String.init) where characters.contains(character) {
+                collected[character, default: [:]][row.language, default: []].insert(row.pronunciation)
+            }
+        }
+        return collected.mapValues { $0.mapValues { $0.sorted().joined(separator: " / ") } }
+    }
     // One complete query, without repeated OFFSET scans or a 100-result cutoff.
     func mapReadings(_ character: String) throws -> [String: String] {
         guard character.count == 1 else { throw DictionaryFailure(message: "讀音地圖請輸入一個漢字") }
@@ -40,4 +52,3 @@ extension DictionaryRepository {
         return result.mapValues { $0.sorted().joined(separator: " / ") }
     }
 }
-

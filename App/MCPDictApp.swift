@@ -21,13 +21,13 @@ final class AppModel: ObservableObject {
     @Published var installed: TableInstallation? { didSet { rebuildTableLookup() } }
     @Published var catalog: TableCatalog? { didSet { rebuildTableLookup() } }
     @Published var languages = [String]()
-    @Published var results = [Reading]()
+    @Published var results = [Reading]() { didSet { characterGroupCache = [:]; homophoneCache = nil } }
     @Published var resultMode: SearchMode = .character
     @Published var resultQuery = ""
     @Published var resultCharacters = [String]()
     @Published var downloading = false
     @Published var downloadedCount = 0
-    @Published var favorites = [SavedReading]()
+    @Published var favorites = [SavedReading]() { didSet { savedKeys = Set(favorites.map { ReadingContentKey($0.reading) }) } }
     @Published var query = ""
     @Published var mode: SearchMode = .character
     @Published var language = ""
@@ -94,7 +94,7 @@ final class AppModel: ObservableObject {
         let request = more ? (lastSearch ?? (query, mode, language, selectedLanguages)) : (query, mode, language, selectedLanguages)
         do {
             let found: [Reading]
-            let variants = request.1 == .character ? CharacterVariants.expand(request.0) : []
+            let variants = request.1 == .character ? await Task.detached(priority: .userInitiated) { CharacterVariants.expand(request.0) }.value : []
             if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
             else { found = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3) }
             guard token == generation else { return }
@@ -165,12 +165,16 @@ final class AppModel: ObservableObject {
         if let saved = selectionCache.load("dictionary") { selectLanguages(saved.intersection(Set(languages))) }
     }
     func cancelDownload() { updateTask?.cancel(); status = "正在取消並保存已完成的字表…" }
+    private(set) var availableTables = [TablePackage]()
     private var tableLookup = [String: TablePackage]()
     private func rebuildTableLookup() {
         var lookup = [String: TablePackage]()
         for table in installed?.tables ?? [] { lookup[table.name] = table }
         for table in catalog?.tables ?? [] { lookup[table.name] = table }
         tableLookup = lookup
+        var byID = Dictionary(uniqueKeysWithValues: (installed?.tables ?? []).map { ($0.id, $0) })
+        for table in catalog?.tables ?? [] { byID[table.id] = table }
+        availableTables = byID.values.sorted { $0.name < $1.name }
     }
     func table(named name: String) -> TablePackage? { tableLookup[name] }
     func updateInstalledTables() async {
@@ -193,8 +197,30 @@ final class AppModel: ObservableObject {
         }
         downloadTables(ids)
     }
+    private var characterGroupCache = [String: [CharacterReadingGroup]]()
+    private var homophoneCache: [[Reading]]?
+    private var savedKeys = Set<ReadingContentKey>()
+    func isSaved(_ reading: Reading) -> Bool { savedKeys.contains(ReadingContentKey(reading)) }
+    func characterGroups(_ character: String) -> [CharacterReadingGroup] {
+        if let cached = characterGroupCache[character] { return cached }
+        let groups = CharacterResults.groups(results, character: character)
+        characterGroupCache[character] = groups
+        return groups
+    }
+    func homophoneGroups() -> [[Reading]] {
+        if let homophoneCache { return homophoneCache }
+        var order = [String](), groups = [String: [Reading]]()
+        for row in results {
+            let key = row.language + "\u{0}" + row.pronunciation
+            if groups[key] == nil { order.append(key) }
+            groups[key, default: []].append(row)
+        }
+        let values = order.compactMap { groups[$0] }
+        homophoneCache = values
+        return values
+    }
     func save(_ reading: Reading) {
-        guard !favorites.contains(where: { $0.reading.characters == reading.characters && $0.reading.language == reading.language && $0.reading.pronunciation == reading.pronunciation && $0.reading.note == reading.note }) else { return }
+        guard !isSaved(reading) else { return }
         let old = favorites
         favorites.append(SavedReading(reading: reading))
         if !persistFavorites() { favorites = old }

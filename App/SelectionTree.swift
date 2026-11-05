@@ -4,66 +4,67 @@ struct SelectionTree: View {
     let tables: [TablePackage]
     let grouping: TableGrouping
     var scope: LanguageSelectionScope = .points
-    var depth = 0
-    var nodePath = [String]()
     var selectedRegion: Binding<String?> = .constant(nil)
-    var regionTables: [TablePackage] = []
+    var filterQuery = ""
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
     @State private var expanded = Set<String>()
+    @State private var index = SelectionIndex()
+    @State private var matching: Set<String>?
+    @State private var rows = [SelectionIndex.Row]()
     var body: some View {
-        let groups = Dictionary(grouping: tables.filter { grouping.path($0).count > depth }) { grouping.path($0)[depth] }
-        VStack(alignment: .leading, spacing: 8) {
-        ForEach(groups.keys.sorted(), id: \.self) { key in
-            let members = groups[key] ?? []
-            let fullRegion = nodePath + [key]
-            let selectable = scope == .terminalGroups ? regionTables.filter { grouping.path($0).starts(with: fullRegion) } : members
-            VStack(alignment: .leading, spacing: 8) {
+        // Read a transforming Binding once, not once per node/check state.
+        let selected = selection
+        LazyVStack(alignment: .leading, spacing: 8) {
+            ForEach(rows) { row in
+                let checked = scope == .terminalGroups ? selectedRegion.wrappedValue == row.node.region : selected.isSuperset(of: row.ids)
+                let mixed = scope != .terminalGroups && !selected.isDisjoint(with: row.ids)
                 HStack {
-                    check(Set(selectable.map(\.id)), label: key, region: (nodePath + [key]).joined(separator: "\u{0}"))
-                    if scope == .topGroups || (scope == .terminalGroups && !members.contains(where: { grouping.path($0).count > depth + 1 })) {
-                        Button { toggle(Set(selectable.map(\.id)), region: (nodePath + [key]).joined(separator: "\u{0}")) } label: { HStack { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) } }.buttonStyle(.plain)
+                    Button { toggle(row) } label: {
+                        Image(systemName: checked ? "checkmark.square.fill" : (mixed ? "minus.square.fill" : "square")).font(.title3)
+                            .frame(width: 44, height: 44).contentShape(Rectangle())
+                    }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + row.node.title).accessibilityIdentifier("check-" + row.node.title)
+                        .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
+                    if let table = row.node.table {
+                        Button { if let inspect { inspect(table) } else { toggle(row) } } label: {
+                            LanguageBadge(name: table.name, table: table, grouping: grouping).frame(minHeight: 44).contentShape(Rectangle())
+                        }.buttonStyle(.plain)
+                        Spacer()
+                    } else if row.expandable {
+                        Button {
+                            if !expanded.insert(row.id).inserted { expanded.remove(row.id) }
+                            refreshRows()
+                        } label: {
+                            HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary) }.contentShape(Rectangle())
+                        }.buttonStyle(.plain).accessibilityIdentifier("expand-" + row.node.title)
+                            .accessibilityValue(expanded.contains(row.id) ? "expanded" : "collapsed")
                     } else {
-                    Button { if !expanded.insert(key).inserted { expanded.remove(key) } } label: {
-                        HStack { Image(systemName: expanded.contains(key) ? "chevron.down" : "chevron.right"); Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }
-                            .contentShape(Rectangle())
-                    }.buttonStyle(.plain).accessibilityIdentifier("expand-" + key)
-                        .accessibilityValue(expanded.contains(key) ? "expanded" : "collapsed")
+                        Button { toggle(row) } label: {
+                            HStack { Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary) }
+                        }.buttonStyle(.plain)
                     }
-                }
-                if scope != .topGroups && expanded.contains(key) {
-                    SelectionTree(tables: members, grouping: grouping, scope: scope, depth: depth+1, nodePath: nodePath + [key], selectedRegion: selectedRegion, regionTables: regionTables, selection: $selection, inspect: inspect).padding(.leading, 18)
-                }
-            }.padding(.vertical, 4).id((nodePath + [key]).joined(separator: "\u{0}"))
-        }
-        ForEach(tables.filter { scope == .points && grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
-            HStack {
-                check([table.id], label: table.name)
-                Button { if let inspect { inspect(table) } else { toggle([table.id]) } } label: {
-                    LanguageBadge(name: table.name, table: table, grouping: grouping)
-                        .frame(minHeight: 44).contentShape(Rectangle())
-                }.buttonStyle(.plain)
-                Spacer()
-            }.padding(.vertical, 4)
-        }
-        }
+                }.padding(.leading, CGFloat(row.node.depth) * 18).padding(.vertical, 4)
+            }
+        }.onAppear { rebuild() }
+            .onChange(of: tables) { _, _ in rebuild() }
+            .onChange(of: grouping) { _, _ in expanded = []; rebuild() }
+            .onChange(of: filterQuery) { _, _ in matching = index.matches(filterQuery); refreshRows() }
     }
-    private func toggle(_ ids: Set<String>, region: String? = nil) {
+    private func rebuild() {
+        index = SelectionIndex(tables: tables, grouping: grouping)
+        matching = index.matches(filterQuery)
+        refreshRows()
+    }
+    private func refreshRows() { rows = index.rows(expanded: expanded, matching: matching, scope: scope) }
+    private func toggle(_ row: SelectionIndex.Row) {
         if scope == .terminalGroups {
-            if selectedRegion.wrappedValue == region { selection = []; selectedRegion.wrappedValue = nil }
-            else { selection = ids; selectedRegion.wrappedValue = region }
-            return
+            if selectedRegion.wrappedValue == row.node.region { selection = []; selectedRegion.wrappedValue = nil }
+            else { selection = row.ids; selectedRegion.wrappedValue = row.node.region }
+        } else {
+            var chosen = selection
+            if chosen.isSuperset(of: row.ids) { chosen.subtract(row.ids) } else { chosen.formUnion(row.ids) }
+            selection = chosen
         }
-        if selection.isSuperset(of: ids) { selection.subtract(ids) } else { selection.formUnion(ids) }
-    }
-    private func check(_ ids: Set<String>, label: String, region: String? = nil) -> some View {
-        let checked = scope == .terminalGroups ? selectedRegion.wrappedValue == region : selection.isSuperset(of: ids)
-        let mixed = scope != .terminalGroups && !selection.isDisjoint(with: ids)
-        return Button { toggle(ids, region: region) } label: {
-            Image(systemName: checked ? "checkmark.square.fill" : (mixed ? "minus.square.fill" : "square")).font(.title3)
-                .frame(width: 44, height: 44).contentShape(Rectangle())
-        }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + label).accessibilityIdentifier("check-" + label)
-            .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
     }
 }
 
@@ -93,7 +94,7 @@ struct LanguageDropdown: View {
             }
             ScrollView {
                 VStack(alignment: .leading) {
-                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selectedRegion: $selectedRegion, regionTables: eligible, selection: selection, inspect: inspect)
+                    SelectionTree(tables: eligible, grouping: grouping, scope: scope, selectedRegion: $selectedRegion, filterQuery: filter, selection: selection, inspect: inspect)
                 }.frame(maxWidth: .infinity).id(grouping.rawValue)
             }.frame(height: 240).accessibilityIdentifier("languageTreeScroll")
             HStack {
@@ -121,7 +122,7 @@ struct LanguageDropdown: View {
 struct FavoriteButton: View {
     @EnvironmentObject var model: AppModel
     let reading: Reading
-    private var saved: Bool { model.favorites.contains { $0.reading.characters == reading.characters && $0.reading.language == reading.language && $0.reading.pronunciation == reading.pronunciation && $0.reading.note == reading.note } }
+    private var saved: Bool { model.isSaved(reading) }
     var body: some View {
         Button { model.save(reading) } label: { Image(systemName: saved ? "star.fill" : "star") }
             .buttonStyle(.borderless).tint(.orange).accessibilityLabel(ui(saved ? "已收藏" : "加入生字本"))
@@ -130,15 +131,7 @@ struct FavoriteButton: View {
 
 struct HomophoneResultsView: View {
     @EnvironmentObject var model: AppModel
-    private var groups: [[Reading]] {
-        var order = [String](), map = [String: [Reading]]()
-        for reading in model.results {
-            let key = reading.language + "\u{0}" + reading.pronunciation
-            if map[key] == nil { order.append(key) }
-            map[key, default: []].append(reading)
-        }
-        return order.compactMap { map[$0] }
-    }
+    private var groups: [[Reading]] { model.homophoneGroups() }
     @State private var info: TablePackage?
     var body: some View {
         ForEach(groups, id: \.first!.id) { rows in

@@ -63,9 +63,19 @@ enum ToneDisplay {
         let tone: String
         let stacked: Bool
     }
+    private final class ToneMap {
+        let values: [String: [String]]
+        init(_ values: [String: [String]]) { self.values = values }
+    }
+    private static let mappings: NSCache<NSString, ToneMap> = {
+        let cache = NSCache<NSString, ToneMap>(); cache.countLimit = 512; return cache
+    }()
+    private static let tokenRegex = try! NSRegularExpression(pattern: "[0-9]+[a-z]?")
     static func mapping(_ table: TablePackage?) -> [String: [String]] {
-        guard let raw = table?.metadata?["聲調"], let data = raw.data(using: .utf8),
-              let map = try? JSONDecoder().decode([String: [String]].self, from: data) else { return [:] }
+        guard let raw = table?.metadata?["聲調"] else { return [:] }
+        if let found = mappings.object(forKey: raw as NSString) { return found.values }
+        let map = raw.data(using: .utf8).flatMap { try? JSONDecoder().decode([String: [String]].self, from: $0) } ?? [:]
+        mappings.setObject(ToneMap(map), forKey: raw as NSString)
         return map
     }
     static func circled(_ text: String) -> String {
@@ -81,13 +91,13 @@ enum ToneDisplay {
     // Only recognized tone tokens are changed. Unknown readings remain verbatim.
     static func parts(_ raw: String, table: TablePackage?, style: String, pitchStyle: String) -> [Part] {
         let map = mapping(table)
-        guard !map.isEmpty, let regex = try? NSRegularExpression(pattern: "[0-9]+[a-z]?") else {
+        guard !map.isEmpty else {
             return [Part(id: 0, base: raw, pitch: "", tone: "", stacked: false)]
         }
         let ns = raw as NSString
         var cursor = 0
         var result = [Part]()
-        for match in regex.matches(in: raw, range: NSRange(location: 0, length: ns.length)) {
+        for match in tokenRegex.matches(in: raw, range: NSRange(location: 0, length: ns.length)) {
             let key = ns.substring(with: match.range)
             guard let values = map[key], values.count >= 5 else { continue }
             let base = ns.substring(with: NSRange(location: cursor, length: match.range.location-cursor))
@@ -136,4 +146,3 @@ struct PronunciationView: View {
             .accessibilityLabel(ToneDisplay.text(raw, table: table, style: style, pitch: pitch))
     }
 }
-

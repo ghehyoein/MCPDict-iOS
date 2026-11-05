@@ -1,0 +1,75 @@
+import Foundation
+
+// One immutable snapshot per catalog/classification, reused for every checkbox update.
+struct SelectionIndex {
+    struct Node {
+        let id: String
+        let title: String
+        let depth: Int
+        let region: String?
+        let table: TablePackage?
+        var ids = Set<String>()
+        var children = [String]()
+    }
+    struct Row: Identifiable {
+        let node: Node
+        let ids: Set<String>
+        let expandable: Bool
+        var id: String { node.id }
+    }
+    private(set) var nodes = [String: Node]()
+    private(set) var roots = [String]()
+    private var searchText = [String: String]()
+    private(set) var membershipInsertions = 0
+    init(tables: [TablePackage] = [], grouping: TableGrouping = .atlas) {
+        for table in tables.sorted(by: { $0.name < $1.name }) {
+            let path = grouping.path(table)
+            searchText[table.id] = ([table.name] + table.atlas + table.dictionary + table.administrative).joined(separator: "\n")
+            var parent: String?
+            for depth in path.indices {
+                let region = path.prefix(depth + 1).joined(separator: "\u{0}")
+                let key = "g:" + region
+                if nodes[key] == nil {
+                    nodes[key] = Node(id: key, title: path[depth], depth: depth, region: region, table: nil)
+                    if let parent { nodes[parent]!.children.append(key) } else { roots.append(key) }
+                }
+                nodes[key]!.ids.insert(table.id)
+                membershipInsertions += 1
+                parent = key
+            }
+            let leaf = "t:" + table.id
+            nodes[leaf] = Node(id: leaf, title: table.name, depth: path.count, region: nil, table: table, ids: [table.id])
+            if let parent { nodes[parent]!.children.append(leaf) } else { roots.append(leaf) }
+        }
+        func ordered(_ ids: [String]) -> [String] {
+            ids.sorted {
+                let a = nodes[$0]!, b = nodes[$1]!
+                if (a.table == nil) != (b.table == nil) { return a.table == nil }
+                return a.title < b.title
+            }
+        }
+        roots = ordered(roots)
+        for key in Array(nodes.keys) { nodes[key]!.children = ordered(nodes[key]!.children) }
+    }
+    func matches(_ query: String) -> Set<String>? {
+        guard !query.isEmpty else { return nil }
+        let needle = InterfaceLanguage.text(query, script: "hans")
+        return Set(searchText.compactMap { id, text in
+            InterfaceLanguage.text(text, script: "hans").localizedStandardContains(needle) ? id : nil
+        })
+    }
+    func rows(expanded: Set<String>, matching: Set<String>?, scope: LanguageSelectionScope) -> [Row] {
+        var result = [Row]()
+        func visit(_ key: String) {
+            guard let node = nodes[key] else { return }
+            if node.table != nil && scope != .points { return }
+            if let matching, node.ids.isDisjoint(with: matching) { return }
+            let ids = scope == .terminalGroups ? node.ids : matching.map { node.ids.intersection($0) } ?? node.ids
+            let expandable = scope != .topGroups && node.children.contains { scope == .points || nodes[$0]?.table == nil }
+            result.append(Row(node: node, ids: ids, expandable: expandable))
+            if expandable && expanded.contains(key) { for child in node.children { visit(child) } }
+        }
+        for root in roots { visit(root) }
+        return result
+    }
+}
