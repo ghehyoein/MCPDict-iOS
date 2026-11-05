@@ -2,9 +2,9 @@ import XCTest
 @testable import MCPDictIOS
 
 final class DisplaySearchTests: XCTestCase {
-    func testBundledVariantsAreBidirectionalAndPreserveAmbiguity() {
+    func testBundledVariantsMatchUpstreamReverseLookup() {
         XCTAssertEqual(CharacterVariants.expand("输").prefix(2), ["输", "輸"])
-        XCTAssertTrue(CharacterVariants.expand("輸").contains("输"))
+        XCTAssertEqual(CharacterVariants.expand("輸"), ["輸"])
         XCTAssertTrue(CharacterVariants.expand("发").contains("發"))
         XCTAssertTrue(CharacterVariants.expand("发").contains("髮"))
         XCTAssertTrue(CharacterVariants.expand("𰹰").contains("輸"))

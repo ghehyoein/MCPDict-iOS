@@ -23,8 +23,8 @@ class VariantTests(unittest.TestCase):
             for path in (root / 'variants').glob('variants-[0-9]*.json'):
                 graph.update(json.loads(path.read_text(encoding='utf-8')))
             self.assertEqual(set(graph['发']), {'發', '髮'})
-            self.assertEqual(graph['發'], ['发'])
-            self.assertNotIn('髮', graph['發'])
+            self.assertNotIn('發', graph)
+            self.assertNotIn('髮', graph)
 
     def test_bundled_upstream_mapping_hashes_and_symmetry(self):
         folder = Path(__file__).resolve().parents[1] / 'App/VariantData'
@@ -37,8 +37,7 @@ class VariantTests(unittest.TestCase):
         self.assertEqual(len(graph), info['characters'])
         for char, values in graph.items():
             self.assertEqual(len(values), len(set(values)))
-            for variant in values:
-                self.assertIn(char, graph[variant])
+            self.assertTrue(all(len(v) == 1 for v in values))
         self.assertIn('輸', graph['输'])
 
 

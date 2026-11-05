@@ -51,14 +51,7 @@ struct LanguageBadge: View {
 struct GroupColorSwatch: View {
     let tables: [TablePackage]
     let grouping: TableGrouping
-    @AppStorage("colorScheme") private var colorScheme = "atlas"
-    var body: some View {
-        let scheme: TableGrouping = grouping == .dictionary || (grouping != .atlas && colorScheme == "dictionary") ? .dictionary : .atlas
-        let colors = Array(Set(tables.flatMap { TableColors.hexes(TableColors.raw($0, scheme)) })).sorted()
-        if !colors.isEmpty {
-            RoundedRectangle(cornerRadius: 3).fill(TableColors.gradient(colors)).frame(width: 20, height: 14).accessibilityHidden(true)
-        }
-    }
+    var body: some View { EmptyView() }
 }
 
 enum ToneDisplay {

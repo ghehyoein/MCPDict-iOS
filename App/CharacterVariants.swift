@@ -19,8 +19,7 @@ enum CharacterVariants {
     static func expand(_ input: String) -> [String] {
         let originals = CharacterResults.characters(input)
         var seen = Set<String>()
-        // Keep typed characters first. Do not transitively equate unrelated senses
-        // through an ambiguous simplified character such as 发.
+        // Match Android DB.java and backend queryVariants: reverse field lookup only.
         return (originals + originals.flatMap(related)).filter { seen.insert($0).inserted }
     }
 }

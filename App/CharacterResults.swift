@@ -54,7 +54,7 @@ struct CharacterResultsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(group.readings) { reading in
                             VStack(alignment: .leading, spacing: 2) {
-                                PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3)
+                                HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3) }
                                 if !reading.note.isEmpty { Text(reading.note).font(.subheadline).foregroundStyle(.secondary) }
                             }
                                 .textSelection(.enabled)

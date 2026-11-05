@@ -25,6 +25,8 @@ struct DialectMapView: View {
     @State private var querying = false
     @State private var selected: TablePackage?
     @State private var fit = 0
+    @State private var copied = false
+    @State private var copyTask: Task<Void, Never>?
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
     private var grouping: TableGrouping { kind == .administrative ? .administrative : (kind == .language ? .name : colorGrouping) }
     private var colorGrouping: TableGrouping { colorScheme == "dictionary" ? .dictionary : .atlas }
@@ -43,7 +45,7 @@ struct DialectMapView: View {
                     ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
                 }.pickerStyle(.segmented).padding(.horizontal)
                 HStack {
-                    Button { showSelection = true } label: {
+                    Button { showSelection.toggle() } label: {
                         HStack { Text(ui(selectionTitle)); Spacer(); Image(systemName: "chevron.down") }
                     }.buttonStyle(.bordered).accessibilityIdentifier("mapLanguageSelection")
                     Picker(ui("分區顏色"), selection: $colorScheme) {
@@ -51,6 +53,11 @@ struct DialectMapView: View {
                         Text(ui("音典分區")).tag("dictionary")
                     }.pickerStyle(.menu)
                 }.padding(.horizontal)
+                if showSelection {
+                    LanguageDropdown(tables: tables, initial: names ?? Set(tables.map(\.name)), initialGrouping: grouping) { chosen in
+                        names = chosen; selectionTitle = "已選 \(chosen.count) 個語言點"; showSelection = false; fit += 1
+                    }.padding(.horizontal)
+                }
                 HStack {
                     TextField(ui("請輸入單字"), text: $character).textFieldStyle(.roundedBorder)
                     Button(ui("查字")) { Task { await query() } }.disabled(querying || model.updating)
@@ -66,9 +73,12 @@ struct DialectMapView: View {
                         }.padding(.horizontal)
                     }
                 }
-                Text(ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
-                    .font(.caption).foregroundStyle(.secondary)
-                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, mapStyle: baseMapStyle, centerChanged: { center = $0 }, choose: choose)
+                Text(copied ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
+                    .font(.caption).foregroundStyle(copied ? Color.orange : Color.secondary)
+                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, mapStyle: baseMapStyle, centerChanged: { center = $0 }, copied: {
+                    copied = true; copyTask?.cancel()
+                    copyTask = Task { try? await Task.sleep(for: .seconds(3)); if !Task.isCancelled { copied = false } }
+                }, choose: choose)
                 if querying { ProgressView() }
             }
             .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
@@ -88,11 +98,7 @@ struct DialectMapView: View {
             .onChange(of: kind) { _, _ in names = nil; selectionTitle = "全部語言" }
             .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:]; variants = []; readingsByVariant = [:] }
             .sheet(item: $selected) { TableInfoView(table: $0) }
-            .sheet(isPresented: $showSelection) {
-                MapLanguageSelector(tables: tables, grouping: grouping, custom: kind == .custom, initial: names ?? []) { chosen, title in
-                    names = chosen; selectionTitle = title; fit += 1
-                }
-            }
+
         }
     }
     private func choose(_ id: String) { selected = tables.first { $0.id == id } }

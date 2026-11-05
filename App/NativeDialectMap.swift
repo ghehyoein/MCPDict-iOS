@@ -7,6 +7,7 @@ struct NativeDialectMap: UIViewRepresentable {
     var fontSize: Double = 17
     var mapStyle: String = "standard"
     var centerChanged: (TableLocation) -> Void = { _ in }
+    var copied: () -> Void = {}
     let choose: (String) -> Void
     func makeCoordinator() -> Coordinator { Coordinator(choose: choose) }
     func makeUIView(context: Context) -> MKMapView {
@@ -18,6 +19,7 @@ struct NativeDialectMap: UIViewRepresentable {
     }
     func updateUIView(_ map: MKMapView, context: Context) {
         context.coordinator.choose = choose
+        context.coordinator.copied = copied
         context.coordinator.centerChanged = centerChanged
         let type = (BaseMapStyle(rawValue: mapStyle) ?? .standard).type
         if map.mapType != type { map.mapType = type }
@@ -35,6 +37,7 @@ struct NativeDialectMap: UIViewRepresentable {
         var fit = 0
         var fontSize = 17.0
         var centerChanged: (TableLocation) -> Void = { _ in }
+        var copied: () -> Void = {}
         var choose: (String) -> Void
         init(choose: @escaping (String) -> Void) { self.choose = choose }
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
@@ -61,6 +64,7 @@ struct NativeDialectMap: UIViewRepresentable {
             view.displayPriority = .required
             view.centerOffset = .zero
             view.canShowCallout = false
+            view.copied = copied
             view.configure(point.point, fontSize: fontSize) { [weak self] in self?.choose(point.point.id) }
             return view
         }
@@ -72,6 +76,8 @@ struct NativeDialectMap: UIViewRepresentable {
 final class LabelAnnotationView: MKAnnotationView {
     let nameButton = UIButton(type: .system)
     let readingButton = UIButton(type: .system)
+    var copied: () -> Void = {}
+    private let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
     private let gradient = CAGradientLayer()
     private var choose: (() -> Void)?
     private var rawReading = ""
@@ -81,17 +87,24 @@ final class LabelAnnotationView: MKAnnotationView {
         nameButton.layer.cornerRadius = 5; nameButton.clipsToBounds = true
         nameButton.setTitleColor(.white, for: .normal)
         readingButton.setTitleColor(.label, for: .normal)
-        readingButton.backgroundColor = UIColor.systemBackground.withAlphaComponent(0.92)
+        readingButton.backgroundColor = .clear
+        blur.isUserInteractionEnabled = false
+        blur.layer.cornerRadius = 4; blur.clipsToBounds = true
+        insertSubview(blur, at: 0)
         readingButton.layer.cornerRadius = 3
         readingButton.titleLabel?.numberOfLines = 0
         addSubview(nameButton); addSubview(readingButton)
         nameButton.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
-        readingButton.addTarget(self, action: #selector(copyReading), for: .touchUpInside)
+        readingButton.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(longPress(_:))))
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     @objc private func openDetails() { choose?() }
-    @objc private func copyReading() {
+    @objc private func longPress(_ gesture: UILongPressGestureRecognizer) {
+        if gesture.state == .began { copyReading() }
+    }
+    func copyReading() {
         UIPasteboard.general.string = rawReading
+        copied()
         UIAccessibility.post(notification: .announcement, argument: ui("已複製讀音"))
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
@@ -100,7 +113,9 @@ final class LabelAnnotationView: MKAnnotationView {
         nameButton.setTitle(point.name, for: .normal)
         nameButton.accessibilityLabel = point.name
         nameButton.titleLabel?.font = .systemFont(ofSize: fontSize * 0.82)
-        gradient.colors = TableColors.hexes(point.color).map { TableColors.uiColor($0).cgColor }
+        let colors = TableColors.hexes(point.color)
+        nameButton.backgroundColor = TableColors.uiColor(colors.first ?? "#008080")
+        gradient.colors = (colors.count == 1 ? colors + colors : colors).map { TableColors.uiColor($0).cgColor }
         gradient.startPoint = CGPoint(x: 0, y: 0.5); gradient.endPoint = CGPoint(x: 1, y: 0.5)
         let text = NSMutableAttributedString(string: "")
         let font = UIFont.systemFont(ofSize: fontSize)
@@ -122,7 +137,7 @@ final class LabelAnnotationView: MKAnnotationView {
         }
         readingButton.setAttributedTitle(text, for: .normal)
         readingButton.accessibilityLabel = point.reading
-        readingButton.accessibilityHint = ui("點擊複製讀音")
+        readingButton.accessibilityHint = ui("長按複製讀音")
         readingButton.isHidden = point.reading.isEmpty
         let nameSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
         let readingRect = text.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
@@ -131,8 +146,9 @@ final class LabelAnnotationView: MKAnnotationView {
         let readingHeight: CGFloat = point.reading.isEmpty ? 0 : ceil(readingRect.height) + 8
         let width = max(nameWidth, readingWidth)
         bounds = CGRect(x: 0, y: 0, width: width, height: nameHeight + readingHeight)
-        nameButton.frame = CGRect(x: (width-nameWidth)/2, y: 0, width: nameWidth, height: nameHeight)
-        readingButton.frame = CGRect(x: (width-readingWidth)/2, y: nameHeight, width: readingWidth, height: readingHeight)
+        nameButton.frame = CGRect(x: (width-nameWidth)/2, y: readingHeight, width: nameWidth, height: nameHeight)
+        readingButton.frame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
+        blur.frame = readingButton.frame; blur.isHidden = readingButton.isHidden
         gradient.frame = nameButton.bounds
         collisionMode = .rectangle
     }

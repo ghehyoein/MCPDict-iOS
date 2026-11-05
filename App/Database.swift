@@ -163,4 +163,14 @@ actor DictionaryRepository {
         return ["字數": String(chars.count + boxes.count), "□數": String(boxes.count), "音節數": String(syllables.count), "不帶調音節數": String(toneless.count)]
     }
 
+    func searchAll(_ input: String, mode: SearchMode, language: String, languages: [String]?) throws -> [Reading] {
+        var result = [Reading]()
+        while true {
+            try Task.checkCancellation()
+            let page = try search(input, mode: mode, language: language, offset: result.count, languages: languages)
+            result += page
+            if page.count < 100 { return result }
+        }
+    }
+
 }
