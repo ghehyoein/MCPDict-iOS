@@ -59,7 +59,11 @@ final class AppModel: ObservableObject {
             installed = TableInstallation(catalogVersion: "ui-test", tables: UITestFixtures.catalog.tables, databaseFile: nil)
             languages = UITestFixtures.catalog.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
-                for key in ["dictionary"] + MapSearchKind.allCases.map({ "map." + $0.rawValue }) { selectionCache.defaults.removeObject(forKey: "languageSelection." + key) }
+                for namespace in ["dictionary", "map", "downloads"] {
+                    selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace)
+                    selectionCache.defaults.removeObject(forKey: "selectionMode." + namespace)
+                    for mode in MapSearchKind.allCases { selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace + "." + mode.rawValue) }
+                }
             }
             try? await repository.open(UITestFixtures.database())
             restoreLanguageSelection()
@@ -250,7 +254,6 @@ struct ReadingView: View {
 
 struct SearchView: View {
     @EnvironmentObject var model: AppModel
-    @State private var showLanguages = false
     var body: some View {
         NavigationStack {
             List {
@@ -264,14 +267,7 @@ struct SearchView: View {
                             .onSubmit { Task { await model.search() } }
                         Button(ui("查詢")) { Task { await model.search() } }.disabled(model.searching)
                     }
-                    Button { showLanguages.toggle() } label: {
-                        LabeledContent(ui("語言"), value: model.language.isEmpty ? ui("全部語言") : model.language)
-                    }.buttonStyle(.borderless).accessibilityIdentifier("dictionaryLanguageSelection")
-                    if showLanguages {
-                        LanguageDropdown(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) })) {
-                            showLanguages = false
-                        }
-                    }
+                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection")
                 }
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.installed?.tables.isEmpty != false {

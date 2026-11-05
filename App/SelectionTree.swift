@@ -60,6 +60,7 @@ struct LanguageDropdown: View {
     @Binding var names: Set<String>
     var initialGrouping: TableGrouping = .atlas
     var scope: LanguageSelectionScope = .points
+    var inspect: ((TablePackage) -> Void)? = nil
     let done: () -> Void
     @State private var grouping: TableGrouping = .atlas
     @State private var filter = ""
@@ -78,7 +79,7 @@ struct LanguageDropdown: View {
             }
             ScrollView {
                 VStack(alignment: .leading) {
-                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selection: selection)
+                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selection: selection, inspect: inspect)
                 }.frame(maxWidth: .infinity)
             }.frame(height: 240)
             HStack {

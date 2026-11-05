@@ -15,34 +15,29 @@ enum TableGrouping: String, CaseIterable, Identifiable {
 
 struct DataView: View {
     @EnvironmentObject var model: AppModel
-    @State private var grouping: TableGrouping = .atlas
-    @State private var selection = Set<String>()
+    @State private var names = Set<String>()
     @State private var filter = ""
     @State private var information: TablePackage?
     private var available: [TablePackage] {
         var map = Dictionary(uniqueKeysWithValues: (model.installed?.tables ?? []).map { ($0.id, $0) })
         for table in model.catalog?.tables ?? [] { map[table.id] = table }
-        return Array(map.values)
+        return map.values.sorted { $0.name < $1.name }
     }
     var body: some View {
+        let tables = available
+        let selection = Set(tables.filter { names.contains($0.name) }.map(\.id))
         NavigationStack {
             List {
-                Picker(ui("分類方式"), selection: $grouping) {
-                    ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
-                }
                 Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
-                SelectionTree(tables: available.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, selection: $selection, inspect: { information = $0 })
-                    .disabled(model.updating)
-                if model.updating {
-                    HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
+                LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "downloads", entryID: "downloadLanguageSelection", inspect: { information = $0 }).disabled(model.updating)
+                ForEach(tables.filter { names.contains($0.name) && (filter.isEmpty || InterfaceLanguage.matches($0.name, filter)) }) { table in
+                    Button { information = table } label: { LanguageBadge(name: table.name, table: table) }.buttonStyle(.plain)
                 }
+                if model.updating { HStack { ProgressView(); Text(ui(model.status)).font(.caption) } }
             }
             .navigationTitle(ui("字表")).navigationBarTitleDisplayMode(.large)
-            .searchable(text: $filter, placement: .navigationBarDrawer(displayMode: .automatic), prompt: ui("搜尋語言點或地區"))
-            .toolbar {
-                Button(ui("全選")) { selection = Set(available.map(\.id)) }.disabled(model.updating).accessibilityIdentifier("selectAllTables")
-                Button(ui("清空")) { selection = [] }.disabled(model.updating)
-                Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
+            .searchable(text: $filter, placement: .navigationBarDrawer(displayMode: .automatic), prompt: ui("搜尋已選語言點"))
+            .toolbar { Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
             .safeAreaInset(edge: .bottom, spacing: 0) { TableActions(selection: selection) }
             .sheet(item: $information) { TableInfoView(table: $0) }
         }.task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
