@@ -238,7 +238,7 @@ struct DataView: View {
                     Text(model.status)
                     if model.updating { ProgressView() }
                 }
-                Section("GitHub 資料更新") {
+                Section {
                     TextField("manifest.json 的 HTTPS 網址", text: $manifestURL, axis: .vertical)
                         .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
                         .disabled(model.updating)
@@ -250,6 +250,7 @@ struct DataView: View {
                         Button("更新資料（下載）") { model.download() }.disabled(model.updating)
                     }
                     if model.updating { Button("取消下載", role: .cancel) { model.cancelDownload() } }
+                } header: { Text("GitHub 資料更新")
                 } footer: { Text("更新源由配套 GitHub Actions 直接從 osfans/MCPDict 字表構建，完全不使用 APK。請填寫你部署後的 manifest 網址。初版需要保持前台下載，無固定時刻的背景更新。") }
                 Section("關於試作版") {
                     Link("上游字表與來源說明", destination: URL(string: "https://github.com/osfans/MCPDict")!)
