@@ -33,6 +33,8 @@ class DataContractTests(unittest.TestCase):
     def test_character_group_and_exact_language(self):
         rows = search(self.path, "中", language="普通話")
         self.assertEqual([x["讀音"] for x in rows], ["zhong1", "zhong4"])
+        self.assertEqual([x["字組"] for x in rows], ["中", "中"])
+        self.assertEqual(search(self.path, "zhong1", mode="pronunciation")[0]["字組"], "中 忠")
         self.assertEqual(search(self.path, "中", language="普通話' OR 1=1 --"), [])
 
     def test_unicode_and_multi_character(self):
