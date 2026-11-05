@@ -26,6 +26,7 @@ final class AppModel: ObservableObject {
     @Published var resultQuery = ""
     @Published var resultCharacters = [String]()
     @Published var downloading = false
+    @Published var downloadedCount = 0
     @Published var favorites = [SavedReading]()
     @Published var query = ""
     @Published var mode: SearchMode = .character
@@ -41,7 +42,9 @@ final class AppModel: ObservableObject {
     private var started = false
     private var updateTask: Task<Void, Never>?
     private let favoritesURL: URL
-    init() {
+    private let selectionCache: LanguageSelectionCache
+    init(defaults: UserDefaults = .standard) {
+        selectionCache = LanguageSelectionCache(defaults: defaults)
         let repository = DictionaryRepository()
         self.repository = repository
         tableStore = TableStore(repository: repository)
@@ -55,6 +58,11 @@ final class AppModel: ObservableObject {
             catalog = UITestFixtures.catalog
             installed = TableInstallation(catalogVersion: "ui-test", tables: UITestFixtures.catalog.tables, databaseFile: nil)
             languages = UITestFixtures.catalog.tables.map(\.name)
+            if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
+                for key in ["dictionary"] + MapSearchKind.allCases.map({ "map." + $0.rawValue }) { selectionCache.defaults.removeObject(forKey: "languageSelection." + key) }
+            }
+            try? await repository.open(UITestFixtures.database())
+            restoreLanguageSelection()
             status = ""
             return
         }
@@ -70,6 +78,7 @@ final class AppModel: ObservableObject {
             installed = try await tableStore.restore()
             catalog = await tableStore.cachedCatalog()
             languages = try await repository.languages()
+            restoreLanguageSelection()
             status = "已下載 \(installed?.tables.count ?? 0) 份字表"
         } catch { self.error = error.localizedDescription }
     }
@@ -104,12 +113,14 @@ final class AppModel: ObservableObject {
     }
     func downloadTables(_ selection: Set<String>) {
         guard !updating, !selection.isEmpty, let catalog else { return }
-        updating = true; downloading = true
+        updating = true; downloading = true; downloadedCount = 0
         status = "正在下載字表…"
         updateTask = Task {
             defer { updating = false; downloading = false; updateTask = nil }
             do {
-                let result = try await tableStore.download(catalog, selected: selection) { message in
+                let result = try await tableStore.download(catalog, selected: selection, completedCount: { count in
+                    await MainActor.run { self.downloadedCount = count }
+                }) { message in
                     await MainActor.run { self.status = message }
                 }
                 installed = result.installation
@@ -138,9 +149,16 @@ final class AppModel: ObservableObject {
         languages = try await repository.languages()
         let availableLanguages = Set(languages)
         if let selection = selectedLanguages {
-            selectedLanguages = selection.filter { availableLanguages.contains($0) }
-            if selectedLanguages?.isEmpty == true { selectedLanguages = nil; language = "" }
+            selectLanguages(Set(selection.filter { availableLanguages.contains($0) }))
         } else if !languages.contains(language) { language = "" }
+    }
+    func selectLanguages(_ names: Set<String>) {
+        selectedLanguages = names.sorted()
+        language = ui("已選 \(names.count) 個語言點")
+        selectionCache.save(names, for: "dictionary")
+    }
+    func restoreLanguageSelection() {
+        if let saved = selectionCache.load("dictionary") { selectLanguages(saved.intersection(Set(languages))) }
     }
     func cancelDownload() { updateTask?.cancel(); status = "正在取消並保存已完成的字表…" }
     private var tableLookup = [String: TablePackage]()
@@ -248,10 +266,10 @@ struct SearchView: View {
                     }
                     Button { showLanguages.toggle() } label: {
                         LabeledContent(ui("語言"), value: model.language.isEmpty ? ui("全部語言") : model.language)
-                    }
+                    }.buttonStyle(.borderless).accessibilityIdentifier("dictionaryLanguageSelection")
                     if showLanguages {
-                        LanguageDropdown(tables: model.installed?.tables ?? [], initial: Set(model.selectedLanguages ?? model.languages)) { names in
-                            model.selectedLanguages = names.sorted(); model.language = ui("已選 \(names.count) 個語言點"); showLanguages = false
+                        LanguageDropdown(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) })) {
+                            showLanguages = false
                         }
                     }
                 }
@@ -314,5 +332,4 @@ struct FavoritesView: View {
         }
     }
 }
-
 

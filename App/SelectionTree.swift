@@ -3,6 +3,7 @@ import SwiftUI
 struct SelectionTree: View {
     let tables: [TablePackage]
     let grouping: TableGrouping
+    var scope: LanguageSelectionScope = .points
     var depth = 0
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
@@ -13,19 +14,25 @@ struct SelectionTree: View {
             let members = groups[key] ?? []
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    check(Set(members.map(\.id)), label: key)
+                    if scope != .terminalGroups || !members.contains(where: { grouping.path($0).count > depth + 1 }) {
+                        check(Set(members.map(\.id)), label: key)
+                    }
+                    if scope == .topGroups || (scope == .terminalGroups && !members.contains(where: { grouping.path($0).count > depth + 1 })) {
+                        Button { toggle(Set(members.map(\.id))) } label: { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }.buttonStyle(.plain)
+                    } else {
                     Button { if !expanded.insert(key).inserted { expanded.remove(key) } } label: {
                         HStack { Image(systemName: expanded.contains(key) ? "chevron.down" : "chevron.right"); Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }
                             .contentShape(Rectangle())
                     }.buttonStyle(.plain).accessibilityIdentifier("expand-" + key)
                         .accessibilityValue(expanded.contains(key) ? "expanded" : "collapsed")
+                    }
                 }
-                if expanded.contains(key) {
-                    SelectionTree(tables: members, grouping: grouping, depth: depth+1, selection: $selection, inspect: inspect).padding(.leading, 18)
+                if scope != .topGroups && expanded.contains(key) {
+                    SelectionTree(tables: members, grouping: grouping, scope: scope, depth: depth+1, selection: $selection, inspect: inspect).padding(.leading, 18)
                 }
             }.padding(.vertical, 4)
         }
-        ForEach(tables.filter { grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
+        ForEach(tables.filter { scope == .points && grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
             HStack {
                 check([table.id], label: table.name)
                 Button { if let inspect { inspect(table) } else { toggle([table.id]) } } label: {
@@ -50,31 +57,38 @@ struct SelectionTree: View {
 
 struct LanguageDropdown: View {
     let tables: [TablePackage]
-    let initial: Set<String>
+    @Binding var names: Set<String>
     var initialGrouping: TableGrouping = .atlas
-    let done: (Set<String>) -> Void
-    @State private var selection = Set<String>()
+    var scope: LanguageSelectionScope = .points
+    let done: () -> Void
     @State private var grouping: TableGrouping = .atlas
     @State private var filter = ""
+    private var eligible: [TablePackage] { scope.eligible(tables, grouping: grouping) }
+    private var selection: Binding<Set<String>> {
+        Binding(get: { Set(tables.filter { names.contains($0.name) }.map(\.id)) },
+                set: { ids in names = Set(tables.filter { ids.contains($0.id) }.map(\.name)) })
+    }
     var body: some View {
         VStack(alignment: .leading) {
             TextField(ui("搜尋語言或分區"), text: $filter).textFieldStyle(.roundedBorder)
-            Picker(ui("分類方式"), selection: $grouping) {
-                ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
-            }.pickerStyle(.menu)
+            if scope == .points {
+                Picker(ui("分類方式"), selection: $grouping) {
+                    ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
+                }.pickerStyle(.menu)
+            }
             ScrollView {
                 VStack(alignment: .leading) {
-                    SelectionTree(tables: tables.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, selection: $selection)
+                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selection: selection)
                 }.frame(maxWidth: .infinity)
-            }.frame(maxHeight: 280)
+            }.frame(height: 240)
             HStack {
-                Button(ui("全選")) { selection = Set(tables.map(\.id)) }
-                Button(ui("清空")) { selection = [] }
+                Button(ui("全選")) { names = Set(eligible.map(\.name)) }.accessibilityIdentifier("selectAllLanguages")
+                Button(ui("清空")) { names = [] }.accessibilityIdentifier("clearLanguages")
                 Spacer()
-                Button(ui("完成")) { done(Set(tables.filter { selection.contains($0.id) }.map(\.name))) }.accessibilityIdentifier("finishLanguages")
-            }
+                Button(ui("完成"), action: done).accessibilityIdentifier("finishLanguages")
+            }.buttonStyle(.borderless)
         }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
-            .onAppear { grouping = initialGrouping; selection = Set(tables.filter { initial.contains($0.name) }.map(\.id)) }
+            .onAppear { grouping = initialGrouping }
     }
 }
 
@@ -117,4 +131,3 @@ struct HomophoneResultsView: View {
         }.sheet(item: $info) { TableInfoView(table: $0) }
     }
 }
-
