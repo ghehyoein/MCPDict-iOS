@@ -8,32 +8,32 @@ permissions:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 40
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
       - uses: actions/checkout@v4
       - name: Require passing application checks
-        run: gh run watch 42062579394 --exit-status --interval 20
+        run: gh run watch 42065401362 --exit-status --interval 20
       - name: Retrieve verified build
         run: |
-          gh run download 42062579396 --name iPhone-IPA-requires-local-signing --dir dist
+          gh run download 42065401409 --name iPhone-IPA-requires-local-signing --dir dist
           python3 - <<'PY'
           import json, hashlib
           from pathlib import Path
           p=Path("dist/MCPDict-iPhone-unsigned.ipa")
           report=json.loads(p.with_suffix(".json").read_text())
-          assert report["version"]=="0.6.1" and report["build"]=="19"
+          assert report["version"]=="0.6.1" and report["build"]=="20"
           assert hashlib.sha256(p.read_bytes()).hexdigest()==report["sha256"]
           PY
       - name: Publish latest build
         run: |
-          tag=iphone-dev-19-5776387
+          tag=iphone-dev-20-54bbfcd
           RELEASE_TAG="$tag" python3 tools/carry_diagnostics.py
           for attempt in 1 2 3 4 5; do
             if gh release view "$tag" >/dev/null 2>&1; then break; fi
-            gh release create "$tag" --latest --title "iPhone development build 19 — local signing required" --notes-file INSTALL-IPHONE.md --target 577638734be3cb1736bc9df5cd17ecbeb9ab6e46 && break
+            gh release create "$tag" --latest --title "iPhone development build 20 — local signing required" --notes-file INSTALL-IPHONE.md --target 54bbfcd642d6f923a1ba2f3f4c9e5313cd2ff80f && break
             sleep 10
           done
           gh release upload "$tag" dist/* --clobber
