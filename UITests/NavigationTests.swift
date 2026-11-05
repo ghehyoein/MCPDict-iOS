@@ -88,8 +88,10 @@ final class NavigationTests: XCTestCase {
         let status = app.staticTexts["mapPointStatus"]
         expectation(for: NSPredicate(format: "label == %@", "已複製到剪貼版"), evaluatedWith: status)
         waitForExpectations(timeout: 2)
-        expectation(for: NSPredicate(format: "label CONTAINS %@", "1 個語言點"), evaluatedWith: status)
-        waitForExpectations(timeout: 5)
+        // Resolve a fresh accessibility element after the label changes. The simulator
+        // can retain the toast snapshot while querying a cached XCUIElement.
+        let restored = app.staticTexts.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
+        XCTAssertTrue(restored.waitForExistence(timeout: 10), app.staticTexts["mapPointStatus"].debugDescription)
 
     }
 

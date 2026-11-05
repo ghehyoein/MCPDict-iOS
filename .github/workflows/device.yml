@@ -63,8 +63,6 @@ jobs:
         run: |
           tag="iphone-dev-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:7}"
           RELEASE_TAG="$tag" python tools/carry_diagnostics.py
-          previous=$(gh release view --json tagName --jq .tagName)
           gh release create "$tag" dist/* --latest --title "iPhone development build ${GITHUB_RUN_NUMBER} — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA"
-          if [ -n "$previous" ] && [ "$previous" != "$tag" ]; then gh release delete "$previous" --yes; fi
 
 
