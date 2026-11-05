@@ -11,13 +11,12 @@ actor UpstreamDiagnostics {
         else {
             struct Manifest: Decodable {
                 let sourceCommit: String
-                let database: Database
-                struct Database: Decodable { let url: URL }
+                let diagnosticsURL: URL
             }
-            let data = try await UpstreamTables.get(URL(string: "https://github.com/ghehyoein/MCPDict-iOS/releases/download/data-latest/manifest.json")!)
+            let data = try await UpstreamTables.get(URL(string: "https://github.com/ghehyoein/MCPDict-iOS/releases/latest/download/diagnostics.json")!)
             let manifest = try JSONDecoder().decode(Manifest.self, from: data)
             guard manifest.sourceCommit == table.sourceCommit else { return "" }
-            let url = manifest.database.url.deletingLastPathComponent().appendingPathComponent("upstream-warnings.txt")
+            let url = manifest.diagnosticsURL
             guard url.host == "github.com", url.path.hasPrefix("/ghehyoein/MCPDict-iOS/releases/download/") else { return "" }
             let raw = try await UpstreamTables.get(url)
             text = String(data: raw, encoding: .utf16) ?? String(data: raw, encoding: .utf8) ?? ""
@@ -34,3 +33,4 @@ actor UpstreamDiagnostics {
         return lines.joined(separator: "\n")
     }
 }
+
