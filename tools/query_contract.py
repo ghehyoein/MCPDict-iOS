@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
-"""Python reference query/CLI; same FTS expression contract as the iOS reader."""
-import argparse
+"""Reference query helpers for automated data contract tests. No application entry point."""
 from contextlib import closing
-import json
 from pathlib import Path
 from data_pipeline import readonly
 
@@ -50,11 +48,3 @@ def search(database: Path, text: str, mode="character", language="", offset=0):
         return rows
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("database", type=Path)
-    parser.add_argument("text")
-    parser.add_argument("--mode", choices=FIELDS, default="character")
-    parser.add_argument("--language", default="")
-    args = parser.parse_args()
-    print(json.dumps(search(args.database, args.text, args.mode, args.language), ensure_ascii=False, indent=2))
