@@ -115,10 +115,10 @@ final class LabelAnnotationView: MKAnnotationView {
         readingButton.accessibilityHint = ui("點擊複製讀音")
         readingButton.isHidden = point.reading.isEmpty
         let nameSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
-        let readingRect = text.boundingRect(with: CGSize(width: 260, height: .greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
-        let nameWidth = nameSize.width + 12, nameHeight = max(nameSize.height, fontSize * 1.4)
-        let readingWidth = min(268, ceil(readingRect.width) + 8)
-        let readingHeight = point.reading.isEmpty ? 0 : ceil(readingRect.height) + 8
+        let readingRect = text.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+        let nameWidth: CGFloat = nameSize.width + 12, nameHeight: CGFloat = max(nameSize.height, CGFloat(fontSize) * 1.4)
+        let readingWidth: CGFloat = min(268, ceil(readingRect.width) + 8)
+        let readingHeight: CGFloat = point.reading.isEmpty ? 0 : ceil(readingRect.height) + 8
         let width = max(nameWidth, readingWidth)
         bounds = CGRect(x: 0, y: 0, width: width, height: nameHeight + readingHeight)
         nameButton.frame = CGRect(x: (width-nameWidth)/2, y: 0, width: nameWidth, height: nameHeight)
@@ -127,3 +127,4 @@ final class LabelAnnotationView: MKAnnotationView {
         collisionMode = .rectangle
     }
 }
+
