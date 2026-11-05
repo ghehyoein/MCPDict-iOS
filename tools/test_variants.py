@@ -10,7 +10,7 @@ from export_variants import export
 
 
 class VariantTests(unittest.TestCase):
-    def test_export_is_bidirectional_without_transitive_merging(self):
+    def test_export_reverse_lookup_without_added_edges(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)
             database = root / 'input.db'
@@ -26,7 +26,7 @@ class VariantTests(unittest.TestCase):
             self.assertNotIn('發', graph)
             self.assertNotIn('髮', graph)
 
-    def test_bundled_upstream_mapping_hashes_and_symmetry(self):
+    def test_bundled_upstream_mapping_hashes_and_values(self):
         folder = Path(__file__).resolve().parents[1] / 'App/VariantData'
         info = json.loads((folder / 'variants-source.json').read_text(encoding='utf-8'))
         graph = {}
@@ -43,3 +43,4 @@ class VariantTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
