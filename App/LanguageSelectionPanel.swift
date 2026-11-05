@@ -43,7 +43,7 @@ struct LanguageSelectionPanel: View {
             }
         }
         .onAppear { restoreInitial() }
-        .onChange(of: tables.map(\.id)) { _, _ in restoreInitial() }
+        .onChange(of: tables) { _, _ in restoreInitial() }
         .onChange(of: kind) { old, new in
             guard restored, old != new else { return }
             cache.defaults.set(new.rawValue, forKey: "selectionMode." + cacheKey)
