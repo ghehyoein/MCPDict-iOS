@@ -28,9 +28,9 @@ jobs:
         run: |
           sha=$(git ls-remote https://github.com/osfans/MCPDict.git refs/heads/master | cut -f1)
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
-          if gh release download data-latest --pattern manifest.json --dir prior; then
-            previous=$(python -c 'import json; print(json.load(open("prior/manifest.json"))["sourceCommit"])')
-            profile=$(python -c 'import json; print(json.load(open("prior/manifest.json")).get("diagnosticsProfile", ""))')
+          if gh release download --pattern diagnostics.json --dir prior; then
+            previous=$(python -c 'import json; print(json.load(open("prior/diagnostics.json"))["sourceCommit"])')
+            profile=$(python -c 'import json; print(json.load(open("prior/diagnostics.json")).get("diagnosticsProfile", ""))')
             if [ "$sha" = "$previous" ] && [ "$profile" = "upstream-c-v1" ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; fi
           fi
       - uses: actions/checkout@v4
@@ -50,16 +50,18 @@ jobs:
           python tools/data_pipeline.py --checkout data-build/upstream --repository "$RELEASE_REPOSITORY"
           cp data-build/upstream/LICENSE dist/UPSTREAM-LICENSE.txt
           cp data-build/upstream/tools/warnings.txt dist/upstream-warnings.txt
-      - name: Publish validated immutable data, then update discovery manifest
+      - name: Update diagnostics in the current app release
         if: steps.source.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          tag=$(python -c 'import json; print(json.load(open("dist/manifest.json"))["version"])')
-          if ! gh release view "$tag"; then
-            gh release create "$tag" dist/mcpdict.db dist/manifest.json dist/validation.json dist/UPSTREAM-LICENSE.txt dist/upstream-warnings.txt --title "$tag" --notes "Built directly from osfans/MCPDict source tables. See manifest.json for source SHA and checksum; upstream-warnings.txt contains source-data diagnostics."
-          fi
-          if ! gh release view data-latest; then
-            gh release create data-latest --title 'Dictionary update manifest' --notes 'Discovery manifest. Database URLs point to immutable releases.'
-          fi
-          gh release upload data-latest dist/manifest.json --clobber
+          export RELEASE_TAG=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest" --jq .tag_name)
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          source=json.loads(Path("dist/manifest.json").read_text())["sourceCommit"]
+          url=f"https://github.com/{os.environ['GITHUB_REPOSITORY']}/releases/download/{os.environ['RELEASE_TAG']}/upstream-warnings.txt"
+          Path("dist/diagnostics.json").write_text(json.dumps({"sourceCommit":source,"diagnosticsProfile":"upstream-c-v1","diagnosticsURL":url}))
+          PY
+          gh release upload "$RELEASE_TAG" dist/upstream-warnings.txt dist/diagnostics.json --clobber
+
