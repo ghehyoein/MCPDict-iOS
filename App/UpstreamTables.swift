@@ -1,6 +1,10 @@
 import Foundation
 import CryptoKit
 
+struct UpstreamRateLimit: LocalizedError {
+    var errorDescription: String? { "GitHub 暫時限制請求，請稍後重試；離線資料不受影響" }
+}
+
 // Read the Android repository's normalized output, pinned to one commit per refresh.
 enum UpstreamTables {
     static let repository = "https://github.com/osfans/MCPDict"
@@ -20,8 +24,10 @@ enum UpstreamTables {
         request.setValue("MCPDict-iOS", forHTTPHeaderField: "User-Agent")
         let (data, response) = try await URLSession.shared.data(for: request)
         let code = (response as? HTTPURLResponse)?.statusCode
+        let remaining = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "X-RateLimit-Remaining")
+        if code == 429 || (code == 403 && remaining == "0") { throw UpstreamRateLimit() }
         guard code == 200, data.count <= limit else {
-            throw DictionaryFailure(message: code == 403 || code == 429 ? "GitHub 暫時限制請求，請稍後重試；離線資料不受影響" : "無法取得上游字表（HTTP \(code ?? 0)），請稍後重試")
+            throw DictionaryFailure(message: "無法取得上游字表（HTTP \(code ?? 0)），請稍後重試")
         }
         return data
     }
