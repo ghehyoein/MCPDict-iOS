@@ -5,6 +5,8 @@ struct SelectionTree: View {
     let grouping: TableGrouping
     var scope: LanguageSelectionScope = .points
     var depth = 0
+    var nodePath = [String]()
+    var selectedRegion: Binding<String?> = .constant(nil)
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
     @State private var expanded = Set<String>()
@@ -14,11 +16,9 @@ struct SelectionTree: View {
             let members = groups[key] ?? []
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    if scope != .terminalGroups || !members.contains(where: { grouping.path($0).count > depth + 1 }) {
-                        check(Set(members.map(\.id)), label: key)
-                    }
+                    check(Set(members.map(\.id)), label: key, region: (nodePath + [key]).joined(separator: "\u{0}"))
                     if scope == .topGroups || (scope == .terminalGroups && !members.contains(where: { grouping.path($0).count > depth + 1 })) {
-                        Button { toggle(Set(members.map(\.id))) } label: { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }.buttonStyle(.plain)
+                        Button { toggle(Set(members.map(\.id)), region: (nodePath + [key]).joined(separator: "\u{0}")) } label: { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }.buttonStyle(.plain)
                     } else {
                     Button { if !expanded.insert(key).inserted { expanded.remove(key) } } label: {
                         HStack { Image(systemName: expanded.contains(key) ? "chevron.down" : "chevron.right"); Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }
@@ -28,9 +28,9 @@ struct SelectionTree: View {
                     }
                 }
                 if scope != .topGroups && expanded.contains(key) {
-                    SelectionTree(tables: members, grouping: grouping, scope: scope, depth: depth+1, selection: $selection, inspect: inspect).padding(.leading, 18)
+                    SelectionTree(tables: members, grouping: grouping, scope: scope, depth: depth+1, nodePath: nodePath + [key], selectedRegion: selectedRegion, selection: $selection, inspect: inspect).padding(.leading, 18)
                 }
-            }.padding(.vertical, 4)
+            }.padding(.vertical, 4).id((nodePath + [key]).joined(separator: "\u{0}"))
         }
         ForEach(tables.filter { scope == .points && grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
             HStack {
@@ -43,15 +43,22 @@ struct SelectionTree: View {
             }.padding(.vertical, 4)
         }
     }
-    private func toggle(_ ids: Set<String>) {
+    private func toggle(_ ids: Set<String>, region: String? = nil) {
+        if scope == .terminalGroups {
+            if selectedRegion.wrappedValue == region { selection = []; selectedRegion.wrappedValue = nil }
+            else { selection = ids; selectedRegion.wrappedValue = region }
+            return
+        }
         if selection.isSuperset(of: ids) { selection.subtract(ids) } else { selection.formUnion(ids) }
     }
-    private func check(_ ids: Set<String>, label: String) -> some View {
-        Button { toggle(ids) } label: {
-            Image(systemName: selection.isSuperset(of: ids) ? "checkmark.square.fill" : (selection.isDisjoint(with: ids) ? "square" : "minus.square.fill")).font(.title3)
+    private func check(_ ids: Set<String>, label: String, region: String? = nil) -> some View {
+        let checked = scope == .terminalGroups ? selectedRegion.wrappedValue == region : selection.isSuperset(of: ids)
+        let mixed = scope != .terminalGroups && !selection.isDisjoint(with: ids)
+        return Button { toggle(ids, region: region) } label: {
+            Image(systemName: checked ? "checkmark.square.fill" : (mixed ? "minus.square.fill" : "square")).font(.title3)
                 .frame(width: 44, height: 44).contentShape(Rectangle())
         }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + label).accessibilityIdentifier("check-" + label)
-            .accessibilityValue(selection.isSuperset(of: ids) ? "checked" : (selection.isDisjoint(with: ids) ? "unchecked" : "mixed"))
+            .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
     }
 }
 
@@ -60,10 +67,12 @@ struct LanguageDropdown: View {
     @Binding var names: Set<String>
     var initialGrouping: TableGrouping = .atlas
     var scope: LanguageSelectionScope = .points
+    var regionCacheKey = ""
     var inspect: ((TablePackage) -> Void)? = nil
     let done: () -> Void
     @State private var grouping: TableGrouping = .atlas
     @State private var filter = ""
+    @State private var selectedRegion: String?
     private var eligible: [TablePackage] { scope.eligible(tables, grouping: grouping) }
     private var selection: Binding<Set<String>> {
         Binding(get: { Set(tables.filter { names.contains($0.name) }.map(\.id)) },
@@ -79,17 +88,35 @@ struct LanguageDropdown: View {
             }
             ScrollView {
                 VStack(alignment: .leading) {
-                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selection: selection, inspect: inspect)
+                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selectedRegion: $selectedRegion, selection: selection, inspect: inspect)
                 }.frame(maxWidth: .infinity)
             }.frame(height: 240)
             HStack {
-                Button(ui("全選")) { names = Set(eligible.map(\.name)) }.accessibilityIdentifier("selectAllLanguages")
-                Button(ui("清空")) { names = [] }.accessibilityIdentifier("clearLanguages")
-                Spacer()
+                if scope != .terminalGroups {
+                    Button(ui("全選")) { names = Set(eligible.map(\.name)) }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
+                }
+                Spacer(minLength: 32)
+                Button(ui("清空")) { names = []; selectedRegion = nil }.accessibilityIdentifier("clearLanguages").frame(minWidth: 60, minHeight: 44)
+                Spacer(minLength: 32)
                 Button(ui("完成"), action: done).accessibilityIdentifier("finishLanguages")
             }.buttonStyle(.borderless)
         }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
-            .onAppear { grouping = initialGrouping }
+            .onAppear {
+                grouping = initialGrouping
+                if scope == .terminalGroups {
+                    let saved = UserDefaults.standard.string(forKey: "regionNode." + regionCacheKey)
+                    let paths = Set(eligible.flatMap { table in
+                        let path = grouping.path(table)
+                        return (1...path.count).map { Array(path.prefix($0)) }
+                    }).sorted { $0.count < $1.count }
+                    let matching = paths.filter { path in
+                        Set(eligible.filter { grouping.path($0).starts(with: path) }.map(\.name)) == names
+                    }.map { $0.joined(separator: "\u{0}") }
+                    selectedRegion = matching.contains(saved ?? "") ? saved : matching.first
+                    if selectedRegion == nil { names = [] }
+                }
+            }
+            .onChange(of: selectedRegion) { _, value in UserDefaults.standard.set(value, forKey: "regionNode." + regionCacheKey) }
     }
 }
 

@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Shared by dictionary, downloads and map so selection rules cannot drift apart.
+// Dictionary and map share this self-contained menu; downloads use their own tree.
 struct LanguageSelectionPanel: View {
     let tables: [TablePackage]
     @Binding var names: Set<String>
@@ -23,21 +23,19 @@ struct LanguageSelectionPanel: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Picker(ui("檢索選項"), selection: $kind) {
-                ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
-            }.pickerStyle(.segmented)
-            HStack {
-                Button { expanded = true } label: {
-                    HStack { Text(ui("已選 \(names.count) 個語言點")); Spacer(); Image(systemName: "chevron.down") }
-                }.buttonStyle(.borderless).accessibilityIdentifier(entryID)
-                Picker(ui("分區顏色"), selection: $colorScheme) {
+            Button { expanded.toggle() } label: {
+                HStack { Text(ui("已選 \(names.count) 個語言點")); Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down") }
+            }.buttonStyle(.borderless).accessibilityIdentifier(entryID)
+            if expanded {
+                Picker(ui("檢索選項"), selection: $kind) {
+                    ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
+                }.pickerStyle(.segmented).labelsHidden()
+                Picker(ui("分區方式"), selection: $colorScheme) {
                     Text(ui("地圖集二")).tag("atlas")
                     Text(ui("音典分區")).tag("dictionary")
-                }.pickerStyle(.menu)
-            }
-            if kind == .custom { Text(ui("自選功能後續待更新，目前與語言模式相同")).font(.caption).foregroundStyle(.secondary) }
-            if expanded {
-                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, inspect: inspect) {
+                }.pickerStyle(.segmented).labelsHidden()
+                if kind == .custom { Text(ui("自選功能後續待更新，目前與語言模式相同")).font(.caption).foregroundStyle(.secondary) }
+                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key + grouping.rawValue, inspect: inspect) {
                     expanded = false; finished()
                 }.id(key + grouping.rawValue)
             }
