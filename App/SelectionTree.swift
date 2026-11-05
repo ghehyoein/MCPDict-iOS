@@ -30,6 +30,7 @@ struct SelectionTree: View {
                 check([table.id], label: table.name)
                 Button { if let inspect { inspect(table) } else { toggle([table.id]) } } label: {
                     LanguageBadge(name: table.name, table: table, grouping: grouping)
+                        .frame(minHeight: 44).contentShape(Rectangle())
                 }.buttonStyle(.plain)
                 Spacer()
             }.padding(.vertical, 4)
@@ -41,7 +42,9 @@ struct SelectionTree: View {
     private func check(_ ids: Set<String>, label: String) -> some View {
         Button { toggle(ids) } label: {
             Image(systemName: selection.isSuperset(of: ids) ? "checkmark.square.fill" : (selection.isDisjoint(with: ids) ? "square" : "minus.square.fill")).font(.title3)
+                .frame(width: 44, height: 44).contentShape(Rectangle())
         }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + label).accessibilityIdentifier("check-" + label)
+            .accessibilityValue(selection.isSuperset(of: ids) ? "checked" : (selection.isDisjoint(with: ids) ? "unchecked" : "mixed"))
     }
 }
 
