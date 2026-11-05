@@ -28,11 +28,3 @@ jobs:
         with:
           name: simulator-test-results
           path: TestResults.xcresult
-      - name: Archive simulator app
-        run: ditto -c -k --sequesterRsrc --keepParent DerivedData/Build/Products/Debug-iphonesimulator/MCPDictIOS.app SimulatorApp.zip
-      - uses: actions/upload-artifact@v4
-        with:
-          name: iOS-simulator-app-not-for-iPhone-installation
-          path: SimulatorApp.zip
-
-
