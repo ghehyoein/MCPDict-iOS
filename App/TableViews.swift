@@ -98,7 +98,7 @@ struct TableGroupList: View {
                 let members = groups[key] ?? []
                 NavigationLink {
                     TableGroupList(tables: members, grouping: grouping, depth: depth + 1, selection: $selection).navigationTitle(ui(key))
-                } label: { LabeledContent(ui(key), value: ui("\(members.filter { selection.contains($0.id) }.count)/\(members.count) 份")) }
+                } label: { HStack { GroupColorSwatch(tables: members, grouping: grouping); LabeledContent(ui(key), value: ui("\(members.filter { selection.contains($0.id) }.count)/\(members.count) 份")) } }
             }
             ForEach(leaves.sorted { $0.name < $1.name }) { table in
                 HStack(alignment: .top, spacing: 12) {
@@ -109,7 +109,7 @@ struct TableGroupList: View {
                     }.buttonStyle(.borderless).disabled(model.updating)
                         .accessibilityLabel(ui("選擇") + table.name)
                     VStack(alignment: .leading, spacing: 4) {
-                        Button(table.name) { information = table }.font(.headline).buttonStyle(.borderless)
+                        Button { information = table } label: { LanguageBadge(name: table.name, table: table, grouping: grouping) }.buttonStyle(.borderless)
                         Text(table.fullName).font(.caption)
                         Text(table.administrative.joined(separator: " / ")).font(.caption2)
                         if let installed = model.installed?.tables.first(where: { $0.id == table.id }) {
@@ -127,19 +127,25 @@ struct LanguageGroupList: View {
     let tables: [TablePackage]
     let grouping: TableGrouping
     let depth: Int
-    let choose: (String) -> Void
+    var title: String = "全部語言"
+    let choose: ([String], String) -> Void
     private var groups: [String: [TablePackage]] {
         Dictionary(grouping: tables.filter { grouping.path($0).count > depth }) { grouping.path($0)[depth] }
     }
     var body: some View {
         List {
+            Button(ui("選擇本區全部語言") + "（\(tables.count)）") { choose(tables.map(\.name), title) }
+                .accessibilityIdentifier("selectWholeRegion")
             ForEach(groups.keys.sorted(), id: \.self) { key in
+                let members = groups[key] ?? []
                 NavigationLink {
-                    LanguageGroupList(tables: groups[key] ?? [], grouping: grouping, depth: depth + 1, choose: choose).navigationTitle(key)
-                } label: { LabeledContent(key, value: "\(groups[key]?.count ?? 0) 份") }
+                    LanguageGroupList(tables: members, grouping: grouping, depth: depth + 1, title: key, choose: choose).navigationTitle(ui(key))
+                } label: {
+                    HStack { GroupColorSwatch(tables: members, grouping: grouping); LabeledContent(ui(key), value: "\(members.count)") }
+                }
             }
             ForEach(tables.filter { grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
-                Button(table.name) { choose(table.name) }
+                Button { choose([table.name], table.name) } label: { LanguageBadge(name: table.name, table: table, grouping: grouping) }
             }
         }
     }

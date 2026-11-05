@@ -57,7 +57,13 @@ enum UpstreamTables {
             let id = SHA256.hash(data: Data(name.utf8)).map { String(format: "%02x", $0) }.joined().prefix(24)
             // Stable cache identity changes only when this source blob changes.
             let identity = SHA256.hash(data: Data(("tsv-v1:" + entry.sha).utf8)).map { String(format: "%02x", $0) }.joined()
-            tables.append(TablePackage(id: String(id), name: name, fullName: value("語言"), atlas: path("地圖集二分區"), dictionary: path("音典分區"), administrative: admin.isEmpty ? ["未標註行政區"] : admin, source: value("字表來源"), sourceCommit: head.sha, recordCount: 0, size: size, sha256: identity, url: base.appendingPathComponent(filename), metadata: metadataStrings(info), location: TableLocation.parse(value("經緯度")), atlasColor: value("地圖集二顏色"), dictionaryColor: value("音典顏色"), format: "upstream-tsv-v1", gitBlob: entry.sha))
+            var fields = metadataStrings(info)
+            let sourceName = value("文件名")
+            let sourcePath = "tools/tables/data/" + sourceName
+            if !sourceName.isEmpty, tree.tree.contains(where: { $0.path == sourcePath && $0.type == "blob" }) {
+                fields["文件網址"] = URL(string: "https://github.com/osfans/MCPDict/blob/\(head.sha)/")!.appendingPathComponent(sourcePath).absoluteString
+            }
+            tables.append(TablePackage(id: String(id), name: name, fullName: value("語言"), atlas: path("地圖集二分區"), dictionary: path("音典分區"), administrative: admin.isEmpty ? ["未標註行政區"] : admin, source: value("字表來源"), sourceCommit: head.sha, recordCount: 0, size: size, sha256: identity, url: base.appendingPathComponent(filename), metadata: fields, location: TableLocation.parse(value("經緯度")), atlasColor: value("地圖集二顏色"), dictionaryColor: value("音典顏色"), format: "upstream-tsv-v1", gitBlob: entry.sha))
         }
         guard !tables.isEmpty else { throw DictionaryFailure(message: "上游目錄沒有可用字表") }
         let catalog = TableCatalog(schemaVersion: 1, version: head.sha, sourceRepository: repository, sourceCommit: head.sha, scope: "直接連接安卓上游 · \(tables.count) 份字表 · \(head.sha.prefix(7))", tables: tables.sorted { $0.name < $1.name })

@@ -4,32 +4,56 @@ struct TableInfoView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.dismiss) var dismiss
     let table: TablePackage
+    @State private var statistics = [String: String]()
     private var current: TablePackage { model.table(named: table.name) ?? table }
-    private var fields: [String: String] {
-        current.metadata ?? ["語言": current.fullName, "簡稱": current.name, "字表來源": current.source,
-                             "地圖集二分區": current.atlas.joined(separator: " / "), "音典分區": current.dictionary.joined(separator: " / ")]
+    private func value(_ key: String) -> String {
+        if key == "名稱" { return current.fullName }
+        if let value = current.metadata?[key], !value.isEmpty, value != "null" { return MetadataText.plain(value) }
+        if let value = statistics[key] { return value }
+        if key == "地點" { return current.administrative.joined(separator: "/") }
+        if key == "地圖集二分區" { return current.atlas.joined(separator: "－") }
+        if key == "音典分區" { return current.dictionary.joined(separator: "－") }
+        if key == "解析日志" { return ui("上游目錄未提供解析日誌") }
+        if ["字數", "□數", "音節數", "不帶調音節數"].contains(key) { return ui("下載字表後統計") }
+        return ui("未填寫")
     }
+    private let first = ["名稱", "地點", "經緯度", "地圖集二分區", "音典分區", "字數", "□數", "音節數", "不帶調音節數"]
+    private let second = ["錄入人", "維護人", "版本", "文件名", "字表來源", "參考文獻", "字表修改情況", "字表品質", "字表品質説明"]
     var body: some View {
         NavigationStack {
-            List {
-                if current.metadata == nil {
-                    Text(ui("完整字表資訊尚未取得，請連網更新目錄。")).font(.caption)
-                    Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating)
-                }
-                ForEach(fields.keys.sorted(), id: \.self) { key in
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(ui(key)).font(.caption).foregroundStyle(.secondary)
-                        let raw = fields[key] ?? ""
-                        Text(raw.isEmpty ? ui("未填寫") : MetadataText.plain(raw)).textSelection(.enabled)
-                        ForEach(MetadataText.links(raw), id: \.absoluteString) { url in
-                            Link(url.absoluteString, destination: url).font(.caption)
-                        }
-                    }.padding(.vertical, 3)
-                }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 5) {
+                    Text(current.fullName).font(.title2).padding(.bottom, 12)
+                    ForEach(first, id: \.self) { field($0) }
+                    Color.clear.frame(height: 22)
+                    ForEach(second, id: \.self) { field($0) }
+                    Color.clear.frame(height: 22)
+                    Text(ui("解析日誌")).font(.title2.bold())
+                    Text(value("解析日志")).textSelection(.enabled)
+                }.frame(maxWidth: .infinity, alignment: .leading).padding()
             }
-            .navigationTitle(table.name)
+            .navigationTitle(table.name).navigationBarTitleDisplayMode(.inline)
             .toolbar { Button(ui("完成")) { dismiss() } }
-            .task { if current.metadata == nil && !model.updating { await model.loadCatalog() } }
+            .task {
+                if current.metadata == nil && !model.updating { await model.loadCatalog() }
+                if let result = try? await model.repository.tableStatistics(current.name) { statistics = result }
+            }
+        }
+    }
+    @ViewBuilder private func field(_ key: String) -> some View {
+        if key == "文件名" {
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                Text(ui(key) + "：").bold()
+                if let source = current.metadata?["文件網址"], let url = URL(string: source), url.scheme == "https" {
+                    Link(value(key), destination: url)
+                } else { Text(value(key)) }
+            }
+        } else {
+            (Text(ui(key == "字表品質説明" ? "字表品質說明" : key) + "：").bold() + Text(value(key)))
+                .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+            ForEach(MetadataText.links(current.metadata?[key] ?? ""), id: \.absoluteString) { url in
+                Link(url.absoluteString, destination: url).font(.caption)
+            }
         }
     }
 }

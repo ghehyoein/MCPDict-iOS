@@ -104,7 +104,7 @@ actor DictionaryRepository {
         return try connection.rows("SELECT DISTINCT 簡稱 FROM info WHERE 簡稱 != '' ORDER BY 簡稱").compactMap { $0["簡稱"] }
     }
 
-    func search(_ input: String, mode: SearchMode, language: String, offset: Int = 0) throws -> [Reading] {
+    func search(_ input: String, mode: SearchMode, language: String, offset: Int = 0, languages: [String]? = nil) throws -> [Reading] {
         guard let connection else { throw DictionaryFailure(message: "請先在「字表」頁下載詞典") }
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         if mode == .character && text.uppercased().hasPrefix("U+"),
@@ -117,8 +117,18 @@ actor DictionaryRepository {
         let expression = "\(mode.column) : (" + terms.map(quote).joined(separator: " OR ") + ")"
         var sql = "SELECT rowid AS id, 字組, 語言, 讀音, 註釋 FROM langs WHERE langs MATCH ?"
         var bindings = [expression]
-        if !language.isEmpty { sql += " AND 語言 = ?"; bindings.append(language) }
-        sql += " ORDER BY rowid LIMIT 100 OFFSET ?"
+        if mode == .pronunciation {
+            sql = "SELECT rowid AS id, 字組, 語言, 讀音, 註釋 FROM langs WHERE instr(讀音, ?) > 0"
+            bindings = [text]
+        }
+        if let languages {
+            sql += " AND 語言 IN (SELECT value FROM json_each(?))"
+            bindings.append(String(data: try JSONEncoder().encode(languages), encoding: .utf8)!)
+        } else if !language.isEmpty { sql += " AND 語言 = ?"; bindings.append(language) }
+        if mode == .pronunciation {
+            sql += " ORDER BY CASE WHEN instr(讀音, ?) = 1 THEN 0 ELSE 1 END, rowid LIMIT 100 OFFSET ?"
+            bindings.append(text)
+        } else { sql += " ORDER BY rowid LIMIT 100 OFFSET ?" }
         bindings.append(String(max(0, offset)))
         return try connection.rows(sql, bindings).map {
             let group = $0["字組"] ?? ""
@@ -126,14 +136,31 @@ actor DictionaryRepository {
             return Reading(id: Int64($0["id"] ?? "0") ?? 0, characters: displayed, language: $0["語言"] ?? "", pronunciation: $0["讀音"] ?? "", note: $0["註釋"] ?? "")
         }
     }
-    func searchAllCharacters(_ input: String, language: String) throws -> [Reading] {
+    func searchAllCharacters(_ input: String, language: String, languages: [String]? = nil) throws -> [Reading] {
         var result = [Reading]()
         while true {
             try Task.checkCancellation()
-            let page = try search(input, mode: .character, language: language, offset: result.count)
+            let page = try search(input, mode: .character, language: language, offset: result.count, languages: languages)
             result += page
             if page.count < 100 { return result }
         }
+    }
+
+    func tableStatistics(_ language: String) throws -> [String: String] {
+        guard let connection else { return [:] }
+        let rows = try connection.rows("SELECT 字組, 讀音, 註釋 FROM langs WHERE 語言 = ?", [language])
+        guard !rows.isEmpty else { return [:] }
+        var chars = Set<String>(), syllables = Set<String>(), toneless = Set<String>(), boxes = Set<String>()
+        for row in rows {
+            let pronunciation = row["讀音"] ?? ""
+            for ch in (row["字組"] ?? "").split(whereSeparator: { $0.isWhitespace }) {
+                if ch == "□" { boxes.insert(pronunciation + "\t" + (row["註釋"] ?? "")) }
+                else { chars.insert(String(ch)) }
+            }
+            syllables.insert(pronunciation)
+            toneless.insert(String(pronunciation.prefix { !$0.isNumber }))
+        }
+        return ["字數": String(chars.count + boxes.count), "□數": String(boxes.count), "音節數": String(syllables.count), "不帶調音節數": String(toneless.count)]
     }
 
 }

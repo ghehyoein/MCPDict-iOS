@@ -1,11 +1,20 @@
 import SwiftUI
 
+enum MapSearchKind: String, CaseIterable, Identifiable {
+    case language = "語言", custom = "自選", region = "分區", administrative = "行政區"
+    var id: String { rawValue }
+}
+
 struct DialectMapView: View {
     @EnvironmentObject var model: AppModel
-    @State private var grouping: TableGrouping = .atlas
-    @State private var region = ""
-    @State private var filter = ""
-    @State private var installedOnly = false
+    @AppStorage("colorScheme") private var colorScheme = "atlas"
+    @AppStorage("toneStyle") private var toneStyle = "baSheng"
+    @AppStorage("pitchStyle") private var pitchStyle = "curve"
+    @AppStorage("fontSize") private var fontSize = 17.0
+    @State private var kind: MapSearchKind = .region
+    @State private var names: Set<String>? = nil
+    @State private var selectionTitle = "全部語言"
+    @State private var showSelection = false
     @State private var character = ""
     @State private var activeCharacter = ""
     @State private var readings = [String: String]()
@@ -13,42 +22,40 @@ struct DialectMapView: View {
     @State private var selected: TablePackage?
     @State private var fit = 0
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
-    private var regions: [String] { Array(Set(tables.compactMap { grouping.path($0).first })).sorted() }
+    private var grouping: TableGrouping { kind == .administrative ? .administrative : (kind == .language ? .name : colorGrouping) }
+    private var colorGrouping: TableGrouping { colorScheme == "dictionary" ? .dictionary : .atlas }
     private var points: [DialectPoint] {
-        let installed = Set(model.installed?.tables.map(\.id) ?? [])
-        return tables.filter {
-            (!installedOnly || installed.contains($0.id)) &&
-            (region.isEmpty || grouping.path($0).first == region) &&
-            (filter.isEmpty || ([$0.name, $0.fullName] + $0.atlas + $0.dictionary + $0.administrative).contains { InterfaceLanguage.matches($0, filter) }) &&
-            (activeCharacter.isEmpty || readings[$0.name] != nil)
-        }.compactMap { DialectPoint.make($0, grouping: grouping, reading: readings[$0.name] ?? "") }
+        tables.filter { (names == nil || names!.contains($0.name)) && (activeCharacter.isEmpty || readings[$0.name] != nil) }
+            .compactMap { table in
+                guard var point = DialectPoint.make(table, grouping: colorGrouping, reading: readings[table.name] ?? "") else { return nil }
+                point.toneParts = ToneDisplay.parts(point.reading, table: table, style: toneStyle, pitchStyle: pitchStyle)
+                return point
+            }
     }
     var body: some View {
         NavigationStack {
             VStack(spacing: 8) {
+                Picker(ui("檢索選項"), selection: $kind) {
+                    ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
+                }.pickerStyle(.segmented).padding(.horizontal)
                 HStack {
-                    Picker(ui("分區"), selection: $grouping) {
-                        ForEach(TableGrouping.allCases.filter { $0 != .name }) { Text(ui($0.rawValue)).tag($0) }
-                    }
-                    Picker(ui("地區"), selection: $region) {
-                        Text(ui("全部分區")).tag("")
-                        ForEach(regions, id: \.self) { Text($0).tag($0) }
-                    }
-                }.pickerStyle(.menu)
-                HStack {
-                    TextField(ui("語言點／省市縣／分區"), text: $filter).textFieldStyle(.roundedBorder)
-                    Toggle(ui("已下載"), isOn: $installedOnly).fixedSize()
+                    Button { showSelection = true } label: {
+                        HStack { Text(ui(selectionTitle)); Spacer(); Image(systemName: "chevron.down") }
+                    }.buttonStyle(.bordered).accessibilityIdentifier("mapLanguageSelection")
+                    Picker(ui("分區顏色"), selection: $colorScheme) {
+                        Text(ui("地圖集二")).tag("atlas")
+                        Text(ui("音典分區")).tag("dictionary")
+                    }.pickerStyle(.menu)
                 }.padding(.horizontal)
                 HStack {
-                    TextField(ui("單字讀音分布"), text: $character).textFieldStyle(.roundedBorder)
+                    TextField(ui("請輸入單字"), text: $character).textFieldStyle(.roundedBorder)
                     Button(ui("查字")) { Task { await query() } }.disabled(querying || model.updating)
-                    Button(ui("全部點位")) { activeCharacter = ""; readings = [:]; character = "" }
+                    Button(ui("清除")) { activeCharacter = ""; readings = [:]; character = "" }
                 }.padding(.horizontal)
-                Text(ui("\(points.count) 個點位" + (activeCharacter.isEmpty ? " · 依字表檔案經緯度" : " ·「\(activeCharacter)」僅查已下載字表")))
+                Text(ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
                     .font(.caption).foregroundStyle(.secondary)
-                NativeDialectMap(points: points, fit: fit, choose: choose)
-                if tables.isEmpty { Text(ui("尚無點位目錄，點右上方更新取得；不會下載字表內容。")).font(.caption).padding(.horizontal) }
-                if querying || model.updating { ProgressView().padding(4) }
+                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, choose: choose)
+                if querying { ProgressView() }
             }
             .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -58,9 +65,14 @@ struct DialectMapView: View {
                 }
             }
             .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
-            .onChange(of: grouping) { _, _ in region = "" }
+            .onChange(of: kind) { _, _ in names = nil; selectionTitle = "全部語言" }
             .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:] }
             .sheet(item: $selected) { TableInfoView(table: $0) }
+            .sheet(isPresented: $showSelection) {
+                MapLanguageSelector(tables: tables, grouping: grouping, custom: kind == .custom, initial: names ?? []) { chosen, title in
+                    names = chosen; selectionTitle = title; fit += 1
+                }
+            }
         }
     }
     private func choose(_ id: String) { selected = tables.first { $0.id == id } }
@@ -71,5 +83,66 @@ struct DialectMapView: View {
         defer { querying = false }
         do { readings = try await model.repository.mapReadings(text); activeCharacter = text; fit += 1 }
         catch { model.error = error.localizedDescription }
+    }
+}
+
+struct MapLanguageSelector: View {
+    @Environment(\.dismiss) private var dismiss
+    let tables: [TablePackage]
+    let grouping: TableGrouping
+    let custom: Bool
+    let initial: Set<String>
+    let choose: (Set<String>?, String) -> Void
+    @State private var selection = Set<String>()
+    @State private var filter = ""
+    @State private var customGrouping: TableGrouping = .atlas
+    var body: some View {
+        NavigationStack {
+            VStack {
+                if custom {
+                    Picker(ui("分類方式"), selection: $customGrouping) {
+                        ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
+                    }.pickerStyle(.menu)
+                }
+                let filtered = tables.filter { table in filter.isEmpty || ([table.name, table.fullName] + table.atlas + table.dictionary + table.administrative).contains { InterfaceLanguage.matches($0, filter) } }
+                if custom {
+                    CustomLanguageList(tables: filtered, grouping: customGrouping, depth: 0, selection: $selection)
+                } else {
+                    LanguageGroupList(tables: filtered, grouping: grouping, depth: 0) { names, title in choose(Set(names), title); dismiss() }
+                }
+            }
+            .searchable(text: $filter, prompt: ui("搜尋語言點或分區"))
+            .navigationTitle(ui("選擇語言"))
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) { Button(ui("全部")) { choose(nil, "全部語言"); dismiss() } }
+                ToolbarItem(placement: .topBarTrailing) { Button(ui("完成")) {
+                    if custom { choose(selection, "已選 \(selection.count) 個語言點") }; dismiss()
+                } }
+            }
+        }.onAppear { selection = initial }
+    }
+}
+
+struct CustomLanguageList: View {
+    let tables: [TablePackage]
+    let grouping: TableGrouping
+    let depth: Int
+    @Binding var selection: Set<String>
+    var body: some View {
+        List {
+            Button(ui("選擇本區全部語言")) { selection.formUnion(tables.map(\.name)) }
+            Button(ui("取消本區全部選擇")) { selection.subtract(tables.map(\.name)) }
+            let groups = Dictionary(grouping: tables.filter { grouping.path($0).count > depth }) { grouping.path($0)[depth] }
+            ForEach(groups.keys.sorted(), id: \.self) { key in
+                NavigationLink {
+                    CustomLanguageList(tables: groups[key] ?? [], grouping: grouping, depth: depth+1, selection: $selection).navigationTitle(ui(key))
+                } label: { HStack { GroupColorSwatch(tables: groups[key] ?? [], grouping: grouping); Text(ui(key)) } }
+            }
+            ForEach(tables.filter { grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
+                Button { if !selection.insert(table.name).inserted { selection.remove(table.name) } } label: {
+                    HStack { Image(systemName: selection.contains(table.name) ? "checkmark.circle.fill" : "circle"); LanguageBadge(name: table.name, table: table, grouping: grouping) }
+                }
+            }
+        }
     }
 }
