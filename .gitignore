@@ -1,0 +1,12 @@
+.DS_Store
+.build/
+DerivedData/
+*.xcodeproj/
+*.xcworkspace/
+__pycache__/
+data-build/
+dist/
+sample-data/*.db
+sample-data/*.db-*
+*.zip
+TestResults.xcresult/

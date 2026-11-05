@@ -1,0 +1,41 @@
+name: MCPDictIOS
+options:
+  bundleIdPrefix: org.example
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  MCPDictIOS:
+    type: application
+    platform: iOS
+    sources: [App]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.example.MCPDictIOS
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: 漢字音典·試作
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+    dependencies:
+      - sdk: libsqlite3.tbd
+  MCPDictIOSTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [Tests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: MCPDictIOS
+      - sdk: libsqlite3.tbd
+schemes:
+  MCPDictIOS:
+    build:
+      targets:
+        MCPDictIOS: all
+    test:
+      targets: [MCPDictIOSTests]
