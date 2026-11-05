@@ -81,7 +81,7 @@ struct NativeDialectMap: UIViewRepresentable {
 }
 
 
-final class LabelAnnotationView: MKAnnotationView {
+final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     let nameButton = UIButton(type: .system)
     let readingButton = UIButton(type: .system)
     var copied: () -> Void = {}
@@ -103,14 +103,37 @@ final class LabelAnnotationView: MKAnnotationView {
         readingButton.titleLabel?.numberOfLines = 0
         addSubview(nameButton); addSubview(readingButton)
         nameButton.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
-        readingButton.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(longPress(_:))))
+        isUserInteractionEnabled = true
+        isAccessibilityElement = false
+        accessibilityElements = [readingButton, nameButton]
+        let press = UILongPressGestureRecognizer(target: self, action: #selector(longPress(_:)))
+        press.minimumPressDuration = 0.5
+        press.cancelsTouchesInView = false
+        press.delegate = self
+        addGestureRecognizer(press)
+        readingButton.accessibilityCustomActions = [UIAccessibilityCustomAction(name: ui("複製讀音"), target: self, selector: #selector(accessibilityCopy))]
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    // MapKit handles annotation selection itself. Explicit child hit testing keeps the
+    // pronunciation and name controls interactive, including overlapping label bounds.
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
+        for control in [readingButton, nameButton] where !control.isHidden {
+            if let hit = control.hitTest(convert(point, to: control), with: event) { return hit }
+        }
+        return nil
+    }
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        !readingButton.isHidden && readingButton.frame.contains(touch.location(in: self))
+    }
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool { true }
+    @objc private func accessibilityCopy() -> Bool { copyReading(); return !rawReading.isEmpty }
     @objc private func openDetails() { choose?() }
     @objc private func longPress(_ gesture: UILongPressGestureRecognizer) {
         if gesture.state == .began { copyReading() }
     }
     func copyReading() {
+        guard !rawReading.isEmpty else { return }
         UIPasteboard.general.string = rawReading
         copied()
         UIAccessibility.post(notification: .announcement, argument: ui("已複製讀音"))
@@ -144,6 +167,7 @@ final class LabelAnnotationView: MKAnnotationView {
             } else { text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: UIColor.label])) }
         }
         readingButton.setAttributedTitle(text, for: .normal)
+        readingButton.accessibilityIdentifier = "map-reading-" + point.id
         readingButton.accessibilityLabel = point.reading
         readingButton.accessibilityHint = ui("長按複製讀音")
         readingButton.isHidden = point.reading.isEmpty
@@ -161,4 +185,3 @@ final class LabelAnnotationView: MKAnnotationView {
         collisionMode = .rectangle
     }
 }
-

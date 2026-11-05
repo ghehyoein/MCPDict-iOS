@@ -202,7 +202,7 @@ actor TableStore {
         return state
     }
     // Download is additive. Completed, verified tables are activated even on cancellation.
-    func download(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], progress: @escaping @Sendable (String) async -> Void) async throws -> TableDownloadResult {
+    func download(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], completedCount: @escaping @Sendable (Int) async -> Void = { _ in }, progress: @escaping @Sendable (String) async -> Void) async throws -> TableDownloadResult {
         guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
         busy = true
         defer { busy = false }
@@ -217,6 +217,7 @@ actor TableStore {
         guard available > bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請先釋放儲存空間") }
         var failure: String?
         var completed = 0
+        await completedCount(0)
         do {
             for (offset, table) in requested.enumerated() {
                 try Task.checkCancellation()
@@ -244,6 +245,7 @@ actor TableStore {
                 } else { try verify(file, table: table) }
                 retained[table.id] = table
                 completed += 1
+                await completedCount(completed)
                 await progress("已完成 \(completed)/\(requested.count) · \(table.name)")
             }
         } catch {

@@ -57,7 +57,7 @@ struct TableActions: View {
         let local = selection.intersection(Set(model.installed?.tables.map(\.id) ?? []))
         HStack(spacing: 10) {
             Spacer(minLength: 0)
-            Text(ui("已選 \(selection.count) 份")).foregroundStyle(.white)
+            Text(ui(model.downloading ? "已下載 \(model.downloadedCount) 份" : "已選 \(selection.count) 份")).foregroundStyle(.white).accessibilityIdentifier("downloadCount")
             if model.downloading {
                 Button(ui("取消下載")) { model.cancelDownload() }.accessibilityIdentifier("cancelDownload")
             } else {
@@ -96,4 +96,3 @@ struct LanguageGroupList: View {
         }
     }
 }
-

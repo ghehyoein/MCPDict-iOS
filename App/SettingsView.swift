@@ -13,7 +13,7 @@ struct SettingsView: View {
 
                 Section(ui("顯示語言")) {
                     option("简体中文", value: "hans", selection: $uiLanguage)
-                    option("繁體中文", value: "hant", selection: $uiLanguage)
+                    option("元來是正體ɵɤ̞ɵ(", value: "hant", selection: $uiLanguage)
                 }
                 Section(ui("字體大小")) {
                     Slider(value: $fontSize, in: 14...26, step: 1) { Text(ui("字體大小")) }.accessibilityIdentifier("fontSizeSlider")
@@ -54,5 +54,4 @@ struct SettingsView: View {
         }.accessibilityIdentifier(title)
     }
 }
-
 

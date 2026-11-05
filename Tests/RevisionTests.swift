@@ -52,12 +52,16 @@ final class RevisionTests: XCTestCase {
         let repo = DictionaryRepository()
         let store = TableStore(repository: repo, root: root)
         _ = try await store.download(catalog, selected: [old.id], localFiles: files) { _ in }
+        let counts = CompletedCounts()
         let task = Task {
-            try await store.download(catalog, selected: [first.id, second.id], localFiles: files) { message in
+            try await store.download(catalog, selected: [first.id, second.id], localFiles: files, completedCount: { await counts.append($0) }) { message in
                 if message.hasPrefix("已完成 1/") { withUnsafeCurrentTask { $0?.cancel() } }
             }
         }
         let result = try await task.value
+        let reported = await counts.values
+        XCTAssertEqual(reported, [0, 1])
+        XCTAssertEqual(result.completed, 1)
         XCTAssertTrue(result.cancelled)
         XCTAssertEqual(Set(result.installation.tables.map(\.id)), [old.id, first.id])
         let restoredRepo = DictionaryRepository()
@@ -71,4 +75,9 @@ final class RevisionTests: XCTestCase {
         let next = try await reopened.download(catalog, selected: [second.id], localFiles: files) { _ in }
         XCTAssertEqual(Set(next.installation.tables.map(\.id)), [old.id, second.id])
     }
+}
+
+private actor CompletedCounts {
+    var values = [Int]()
+    func append(_ count: Int) { values.append(count) }
 }

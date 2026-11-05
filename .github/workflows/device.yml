@@ -12,6 +12,7 @@ on:
       - '.github/workflows/device.yml'
 permissions:
   contents: write
+  actions: read
 concurrency:
   group: device-release
   cancel-in-progress: false
@@ -41,13 +42,29 @@ jobs:
         with:
           name: iPhone-IPA-requires-local-signing
           path: dist/*
+      - name: Require simulator regression tests before publishing
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for attempt in $(seq 1 90); do
+            run=$(gh run list --workflow ios.yml --commit "$GITHUB_SHA" --json databaseId,status,conclusion --limit 1)
+            status=$(echo "$run" | jq -r '.[0].status // "waiting"')
+            if [ "$status" = "completed" ]; then
+              test "$(echo "$run" | jq -r '.[0].conclusion')" = "success"
+              exit $?
+            fi
+            sleep 10
+          done
+          echo "Simulator checks did not complete; keeping the previous release."
+          exit 1
       - name: Publish downloadable development IPA
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="iphone-dev-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:7}"
           RELEASE_TAG="$tag" python tools/carry_diagnostics.py
+          previous=$(gh release view --json tagName --jq .tagName)
           gh release create "$tag" dist/* --latest --title "iPhone development build ${GITHUB_RUN_NUMBER} — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA"
-
+          if [ -n "$previous" ] && [ "$previous" != "$tag" ]; then gh release delete "$previous" --yes; fi
 
 
