@@ -136,8 +136,9 @@ final class AppModel: ObservableObject {
         generation += 1
         results = []; hasMore = false; lastSearch = nil
         languages = try await repository.languages()
+        let availableLanguages = Set(languages)
         if let selection = selectedLanguages {
-            selectedLanguages = selection.filter { languages.contains($0) }
+            selectedLanguages = selection.filter { availableLanguages.contains($0) }
             if selectedLanguages?.isEmpty == true { selectedLanguages = nil; language = "" }
         } else if !languages.contains(language) { language = "" }
     }
