@@ -17,7 +17,9 @@ concurrency:
   cancel-in-progress: false
 jobs:
   device:
-    runs-on: macos-latest
+    runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
@@ -46,5 +48,6 @@ jobs:
           tag="iphone-dev-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:7}"
           RELEASE_TAG="$tag" python tools/carry_diagnostics.py
           gh release create "$tag" dist/* --latest --title "iPhone development build ${GITHUB_RUN_NUMBER} — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA"
+
 
 
