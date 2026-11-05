@@ -20,10 +20,18 @@
 
 本地首次构建使用 `make.py`；云端自动发布按上游流程使用 `make.py -c -i`，会启用同音字检查和额外输出，排序及哈希可能不同。二者都从 GitHub 字表生成；不把本地哈希作为后续云端构建必须相同的条件。
 
+## GitHub macOS 实际验证
+
+2026-11-05，在 [运行 41994679817](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/41994679817) 中，对提交 `ac11ed2cb58baeabb5079773d7f544ce18495094` 验证：
+
+- 4 项 Python 自动测试通过。
+- XcodeGen 工程生成通过，Xcode 26.6 模拟器编译 `BUILD SUCCEEDED`。
+- 3 项 XCTest 全部通过，0 failures：查询契约、更新激活失败保留旧连接、拒绝不兼容清单。
+- `TEST SUCCEEDED`，测试报告和模拟器应用包均已作为 Actions artifacts 上传。
+- 第一轮发现数据更新页面的 SwiftUI Section 初始化写法错误，修正后运行以上完整检查通过。
+
 ## 尚未实际验证
 
-- Swift 在 Xcode 中的编译；已准备 GitHub macOS 编译工作流，尚未部署运行。
-- 3 项 XCTest（查询契约、更新激活失败保留旧连接、拒绝不兼容清单）；已编写并接入 CI，尚未运行。
 - iOS 真机速度、内存、布局、长时间下载与断网恢复。
 - GitHub Release 实际发布、App 从已发布地址下载并完成切换。
 - 与 Android 的全功能结果一致性；当前只实现声明的基础查询子集。
