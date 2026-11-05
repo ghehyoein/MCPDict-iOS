@@ -61,7 +61,9 @@ actor TableStore {
     private let repository: DictionaryRepository
     private let root: URL
     private var busy = false
-    init(repository: DictionaryRepository, root: URL? = nil) {
+    private let bundledRoot: URL?
+    init(repository: DictionaryRepository, root: URL? = nil, bundledRoot: URL? = Bundle.main.resourceURL?.appendingPathComponent("BundledTables")) {
+        self.bundledRoot = bundledRoot
         self.repository = repository
         self.root = root ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Tables", isDirectory: true)
     }
@@ -72,6 +74,54 @@ actor TableStore {
         var values = URLResourceValues()
         values.isExcludedFromBackup = true
         try url.setResourceValues(values)
+    }
+    func installBundledTablesIfNeeded() async throws {
+        guard let bundledRoot, FileManager.default.fileExists(atPath: bundledRoot.appendingPathComponent("catalog.json").path) else { return }
+        try prepare()
+        let marker = root.appendingPathComponent("bundled-installed")
+        // User removals and manual updates survive every subsequent launch.
+        guard !FileManager.default.fileExists(atPath: marker.path) else { return }
+        let data = try Data(contentsOf: bundledRoot.appendingPathComponent("catalog.json"))
+        let catalog = try JSONDecoder().decode(TableCatalog.self, from: data)
+        try catalog.validate()
+        let previous = try await restore()
+        var merged = Dictionary(uniqueKeysWithValues: catalog.tables.map { ($0.id, $0) })
+        var overrides = [String]()
+        for table in previous?.tables ?? [] where merged[table.id]?.sha256 != table.sha256 {
+            merged[table.id] = table; overrides.append(table.name)
+        }
+        let filename = UUID().uuidString + ".db"
+        let destination = root.appendingPathComponent(filename)
+        try FileManager.default.copyItem(at: bundledRoot.appendingPathComponent("bundled.db"), to: destination)
+        do {
+            if !overrides.isEmpty, let oldFile = previous?.databaseFile {
+                let db = try SQLiteConnection(url: destination, readOnly: false)
+                _ = try db.rows("ATTACH DATABASE ? AS old", [root.appendingPathComponent(oldFile).path])
+                let names = String(data: try JSONEncoder().encode(overrides), encoding: .utf8)!
+                _ = try db.rows("BEGIN")
+                _ = try db.rows("DELETE FROM langs WHERE 語言 IN (SELECT value FROM json_each(?))", [names])
+                _ = try db.rows("INSERT INTO langs SELECT 字組, 語言, 讀音, 註釋 FROM old.langs WHERE 語言 IN (SELECT value FROM json_each(?))", [names])
+                _ = try db.rows("DELETE FROM info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [names])
+                _ = try db.rows("INSERT INTO info SELECT 簡稱, 語言 FROM old.info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [names])
+                _ = try db.rows("COMMIT")
+                _ = try db.rows("DETACH DATABASE old")
+            }
+            let state = TableInstallation(catalogVersion: catalog.version, tables: Array(merged.values), databaseFile: filename)
+            let encoded = try JSONEncoder().encode(state)
+            let pointer = index
+            try await repository.activate(destination, requireSample: false) { try encoded.write(to: pointer, options: .atomic) }
+        } catch { try? FileManager.default.removeItem(at: destination); throw error }
+        if !FileManager.default.fileExists(atPath: root.appendingPathComponent("catalog.json").path) { try data.write(to: root.appendingPathComponent("catalog.json"), options: .atomic) }
+        try Data(catalog.version.utf8).write(to: marker, options: .atomic)
+    }
+    private func bundledData(for table: TablePackage) throws -> Data? {
+        guard table.isUpstream, let bundledRoot else { return nil }
+        let file = bundledRoot.appendingPathComponent(table.id + ".tsv")
+        guard FileManager.default.fileExists(atPath: file.path) else { return nil }
+        let data = try Data(contentsOf: file)
+        var blob = Data("blob \(data.count)\0".utf8); blob.append(data)
+        let hash = Insecure.SHA1.hash(data: blob).map { String(format: "%02x", $0) }.joined()
+        return hash == table.gitBlob ? data : nil
     }
     func restore() async throws -> TableInstallation? {
         try prepare()
@@ -138,13 +188,27 @@ actor TableStore {
         guard selected.isSubset(of: Set(catalog.tables.map(\.id))) else { throw DictionaryFailure(message: "選取項目不在目前目錄中") }
         try prepare()
         let tables = catalog.tables.filter { selected.contains($0.id) }.sorted { $0.id < $1.id }
-        let bytes = tables.reduce(Int64(0)) { $0 + $1.size }
+        let previous = try await restore()
+        let previousByID = Dictionary(uniqueKeysWithValues: (previous?.tables ?? []).map { ($0.id, $0) })
+        let reusable = previous?.databaseFile != nil
+        let changed = tables.filter { !reusable || previousByID[$0.id]?.sha256 != $0.sha256 }
+        if reusable, changed.isEmpty, selected == Set(previousByID.keys), let previous {
+            let state = TableInstallation(catalogVersion: catalog.version, tables: tables, databaseFile: previous.databaseFile)
+            try JSONEncoder().encode(state).write(to: index, options: .atomic)
+            return state
+        }
+        let bytes = changed.reduce(Int64(0)) { $0 + $1.size }
         let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
-        guard available > bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請預留所選原始字表十二倍大小的空間") }
+        var previousBytes: Int64 = 0
+        if let filename = previous?.databaseFile {
+            let attributes = try FileManager.default.attributesOfItem(atPath: root.appendingPathComponent(filename).path)
+            previousBytes = (attributes[.size] as? NSNumber)?.int64Value ?? 0
+        }
+        guard available > previousBytes + bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請釋放儲存空間後重試") }
         var created = [URL]()
         var committed = false
         defer { if !committed { for file in created { try? FileManager.default.removeItem(at: file) } } }
-        for (offset, table) in tables.enumerated() {
+        for (offset, table) in changed.enumerated() {
             try Task.checkCancellation()
             await progress("\(offset + 1)/\(tables.count) · \(table.name)")
             let file = root.appendingPathComponent(table.localName)
@@ -153,6 +217,7 @@ actor TableStore {
                 if table.isUpstream {
                     let data: Data
                     if let local = localFiles[table.id] { data = try Data(contentsOf: local) }
+                    else if let bundled = try bundledData(for: table) { data = bundled }
                     else { data = try await UpstreamTables.get(table.url, limit: 200_000_000) }
                     try UpstreamTables.importTSV(data, table: table, to: file)
                 } else if let local = localFiles[table.id] {
@@ -171,13 +236,24 @@ actor TableStore {
         let assembled = tables.isEmpty ? nil : root.appendingPathComponent(UUID().uuidString + ".db")
         if let assembled {
             created.append(assembled)
-            let output = try SQLiteConnection(url: assembled, readOnly: false)
-            let first = try SQLiteConnection(url: root.appendingPathComponent(tables[0].localName))
-            for name in ["langs", "info", "mcpdict"] {
-                guard let sql = try first.rows("SELECT sql FROM sqlite_master WHERE name=?", [name]).first?["sql"] else { throw DictionaryFailure(message: "字表結構缺失") }
-                _ = try output.rows(sql)
+            if let oldFile = previous?.databaseFile {
+                try FileManager.default.copyItem(at: root.appendingPathComponent(oldFile), to: assembled)
             }
-            for table in tables {
+            let output = try SQLiteConnection(url: assembled, readOnly: false)
+            if !reusable {
+                let first = try SQLiteConnection(url: root.appendingPathComponent(tables[0].localName))
+                for name in ["langs", "info", "mcpdict"] {
+                    guard let sql = try first.rows("SELECT sql FROM sqlite_master WHERE name=?", [name]).first?["sql"] else { throw DictionaryFailure(message: "字表結構缺失") }
+                    _ = try output.rows(sql)
+                }
+            } else {
+                let changedIDs = Set(changed.map(\.id))
+                let removed = (previous?.tables ?? []).filter { !selected.contains($0.id) || changedIDs.contains($0.id) }.map(\.name)
+                let names = String(data: try JSONEncoder().encode(removed), encoding: .utf8)!
+                _ = try output.rows("DELETE FROM langs WHERE 語言 IN (SELECT value FROM json_each(?))", [names])
+                _ = try output.rows("DELETE FROM info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [names])
+            }
+            for table in changed {
                 try Task.checkCancellation()
                 _ = try output.rows("ATTACH DATABASE ? AS shard", [root.appendingPathComponent(table.localName).path])
                 _ = try output.rows("INSERT INTO main.langs SELECT 字組, 語言, 讀音, 註釋 FROM shard.langs ORDER BY rowid")
@@ -223,6 +299,11 @@ actor TableStore {
                 try Task.checkCancellation()
                 await progress("\(offset + 1)/\(requested.count) · \(table.name)")
                 try Task.checkCancellation()
+                if previous?.databaseFile != nil, retained[table.id]?.sha256 == table.sha256 {
+                    completed += 1
+                    await completedCount(completed)
+                    continue
+                }
                 let file = root.appendingPathComponent(table.localName)
                 if !FileManager.default.fileExists(atPath: file.path) {
                     let staging = root.appendingPathComponent(UUID().uuidString + ".partial")
@@ -230,7 +311,8 @@ actor TableStore {
                     if table.isUpstream {
                         let data: Data
                         if let local = localFiles[table.id] { data = try Data(contentsOf: local) }
-                        else { data = try await UpstreamTables.get(table.url, limit: 200_000_000) }
+                        else if let bundled = try bundledData(for: table) { data = bundled }
+                    else { data = try await UpstreamTables.get(table.url, limit: 200_000_000) }
                         try UpstreamTables.importTSV(data, table: table, to: staging)
                     } else if let local = localFiles[table.id] {
                         try FileManager.default.copyItem(at: local, to: staging)

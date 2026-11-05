@@ -7,11 +7,21 @@ jobs:
     runs-on: macos-15
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Python data contract tests
         run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+      - uses: actions/checkout@v4
+        with:
+          repository: osfans/MCPDict
+          ref: 3cf11dfc91250259a20bf2f271eac4ad8134040a
+          path: bundled-source
+      - name: Build complete bundled dictionary snapshot
+        run: |
+          python3 -m venv bundle-env
+          bundle-env/bin/pip install regex==2026.9.29
+          bundle-env/bin/python tools/bundle_tables.py bundled-source App/BundledTables
       - name: Generate Xcode project
         run: |
           brew install xcodegen
