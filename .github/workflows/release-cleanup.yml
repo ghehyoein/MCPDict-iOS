@@ -16,11 +16,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Start final build from current main
         run: |
-          gh run cancel 42065401409 || true
-          gh run cancel 42065401362 || true
-          gh workflow run device.yml --ref "$GITHUB_REF_NAME"
+          gh run cancel 42067336396 || true
+          gh run cancel 42067308024 || true
+          # The device workflow is triggered by this same push.
           for attempt in 1 2 3 4 5 6; do
-            run=$(gh run list --workflow device.yml --event workflow_dispatch --commit "$GITHUB_SHA" --json databaseId --jq '.[0].databaseId // empty')
+            run=$(gh run list --workflow device.yml --commit "$GITHUB_SHA" --json databaseId --jq '.[0].databaseId // empty')
             if [ -n "$run" ]; then echo "DEVICE_RUN=$run" >> "$GITHUB_ENV"; break; fi
             sleep 5
           done
@@ -61,3 +61,6 @@ jobs:
           while read -r id; do
             if [ "$id" != "$keep" ]; then gh api --method DELETE "repos/$GH_REPO/releases/$id"; fi
           done < release-ids.txt
+
+
+
