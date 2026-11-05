@@ -14,6 +14,17 @@ struct Reading: Identifiable, Codable, Hashable {
     let note: String
 }
 
+struct ReadingContentKey: Hashable {
+    let characters: String
+    let language: String
+    let pronunciation: String
+    let note: String
+    init(_ reading: Reading) {
+        characters = reading.characters; language = reading.language
+        pronunciation = reading.pronunciation; note = reading.note
+    }
+}
+
 enum SearchMode: String, CaseIterable, Identifiable {
     case character = "漢字", pronunciation = "讀音", note = "註釋"
     var id: String { rawValue }
@@ -52,6 +63,7 @@ final class SQLiteConnection {
             }
             guard result == SQLITE_OK else { throw DictionaryFailure(message: "查詢參數綁定失敗") }
         }
+        let columns = (0..<sqlite3_column_count(stmt)).map { String(cString: sqlite3_column_name(stmt, $0)) }
         var result = [[String: String]]()
         while true {
             try Task.checkCancellation()
@@ -59,9 +71,8 @@ final class SQLiteConnection {
             if code == SQLITE_DONE { return result }
             guard code == SQLITE_ROW else { throw DictionaryFailure(message: String(cString: sqlite3_errmsg(db))) }
             var row = [String: String]()
-            for index in 0..<sqlite3_column_count(stmt) {
-                let key = String(cString: sqlite3_column_name(stmt, index))
-                row[key] = sqlite3_column_text(stmt, index).map { String(cString: $0) } ?? ""
+            for (index, key) in columns.enumerated() {
+                row[key] = sqlite3_column_text(stmt, Int32(index)).map { String(cString: $0) } ?? ""
             }
             result.append(row)
         }
@@ -84,8 +95,9 @@ final class SQLiteConnection {
 
 actor DictionaryRepository {
     private var connection: SQLiteConnection?
+    private var statisticsCache = [String: [String: String]]()
 
-    func open(_ url: URL) throws { connection = try SQLiteConnection(url: url) }
+    func open(_ url: URL) throws { connection = try SQLiteConnection(url: url); statisticsCache = [:] }
 
     // Validate before touching the active connection; failed activation preserves it.
     func activate(_ url: URL, requireSample: Bool = true, commitPointer: () throws -> Void) throws {
@@ -93,11 +105,13 @@ actor DictionaryRepository {
         try candidate.validate(requireSample: requireSample)
         try commitPointer()
         connection = candidate
+        statisticsCache = [:]
     }
 
     func clear(commitPointer: () throws -> Void) throws {
         try commitPointer()
         connection = nil
+        statisticsCache = [:]
     }
 
     func languages() throws -> [String] {
@@ -132,9 +146,10 @@ actor DictionaryRepository {
         } else { sql += " ORDER BY rowid LIMIT ? OFFSET ?" }
         bindings.append(String(limit < 0 ? -1 : max(1, limit)))
         bindings.append(String(max(0, offset)))
+        let termSet = Set(terms)
         return try connection.rows(sql, bindings).map {
             let group = $0["字組"] ?? ""
-            let displayed = mode == .character ? group.split(whereSeparator: { $0.isWhitespace }).filter { terms.contains(String($0)) }.joined(separator: " ") : group
+            let displayed = mode == .character ? group.split(whereSeparator: { $0.isWhitespace }).filter { termSet.contains(String($0)) }.joined(separator: " ") : group
             return Reading(id: Int64($0["id"] ?? "0") ?? 0, characters: displayed, language: $0["語言"] ?? "", pronunciation: $0["讀音"] ?? "", note: $0["註釋"] ?? "")
         }
     }
@@ -144,6 +159,7 @@ actor DictionaryRepository {
 
     func tableStatistics(_ language: String) throws -> [String: String] {
         guard let connection else { return [:] }
+        if let cached = statisticsCache[language] { return cached }
         let rows = try connection.rows("SELECT 字組, 讀音, 註釋 FROM langs WHERE 語言 = ?", [language])
         guard !rows.isEmpty else { return [:] }
         var chars = Set<String>(), syllables = Set<String>(), toneless = Set<String>(), boxes = Set<String>()
@@ -156,7 +172,9 @@ actor DictionaryRepository {
             syllables.insert(pronunciation)
             toneless.insert(String(pronunciation.prefix { !$0.isNumber }))
         }
-        return ["字數": String(chars.count + boxes.count), "□數": String(boxes.count), "音節數": String(syllables.count), "不帶調音節數": String(toneless.count)]
+        let result = ["字數": String(chars.count + boxes.count), "□數": String(boxes.count), "音節數": String(syllables.count), "不帶調音節數": String(toneless.count)]
+        statisticsCache[language] = result
+        return result
     }
 
     func searchAll(_ input: String, mode: SearchMode, language: String, languages: [String]?) throws -> [Reading] {
@@ -164,4 +182,3 @@ actor DictionaryRepository {
     }
 
 }
-

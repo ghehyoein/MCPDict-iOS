@@ -42,6 +42,7 @@ enum UpstreamTables {
         guard tree.truncated != true else { throw DictionaryFailure(message: "上游目錄過大，無法安全取得完整字表清單") }
         guard let metadata = try JSONSerialization.jsonObject(with: await detailsData) as? [String: [String: Any]] else { throw DictionaryFailure(message: "上游分區資料格式變更") }
         let prefix = "tools/tables/output/"
+        let sourcePaths = Set(tree.tree.filter { $0.type == "blob" }.map(\.path))
         var tables = [TablePackage]()
         for entry in tree.tree where entry.type == "blob" && entry.path.hasPrefix(prefix) && entry.path.hasSuffix(".tsv") {
             let filename = String(entry.path.dropFirst(prefix.count))
@@ -60,7 +61,7 @@ enum UpstreamTables {
             var fields = metadataStrings(info)
             let sourceName = value("文件名")
             let sourcePath = "tools/tables/data/" + sourceName
-            if !sourceName.isEmpty, tree.tree.contains(where: { $0.path == sourcePath && $0.type == "blob" }) {
+            if !sourceName.isEmpty, sourcePaths.contains(sourcePath) {
                 fields["文件網址"] = URL(string: "https://github.com/osfans/MCPDict/blob/\(head.sha)/")!.appendingPathComponent(sourcePath).absoluteString
             }
             tables.append(TablePackage(id: String(id), name: name, fullName: value("語言"), atlas: path("地圖集二分區"), dictionary: path("音典分區"), administrative: admin.isEmpty ? ["未標註行政區"] : admin, source: value("字表來源"), sourceCommit: head.sha, recordCount: 0, size: size, sha256: identity, url: base.appendingPathComponent(filename), metadata: fields, location: TableLocation.parse(value("經緯度")), atlasColor: value("地圖集二顏色"), dictionaryColor: value("音典顏色"), format: "upstream-tsv-v1", gitBlob: entry.sha))

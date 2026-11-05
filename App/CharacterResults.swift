@@ -46,7 +46,7 @@ struct CharacterResultsView: View {
                 Text(current).font(.system(size: 58)).frame(width: 84, height: 84).background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
                 Text(current.unicodeScalars.map { String(format: "U+%04X", $0.value) }.joined(separator: " ")).foregroundStyle(.secondary)
             }
-            let groups = CharacterResults.groups(model.results, character: current)
+            let groups = model.characterGroups(current)
             if groups.isEmpty { Text(ui("此字在已下載字表中沒有讀音")).foregroundStyle(.secondary) }
             ForEach(groups) { group in
                 HStack(alignment: .top, spacing: 12) {

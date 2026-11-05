@@ -27,13 +27,19 @@ struct DialectMapView: View {
     @State private var copyTask: Task<Void, Never>?
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
     private var colorGrouping: TableGrouping { colorScheme == "dictionary" ? .dictionary : .atlas }
-    private var points: [DialectPoint] {
-        tables.filter { names.contains($0.name) && (activeCharacter.isEmpty || readings[$0.name] != nil) }
-            .compactMap { table in
-                guard var point = DialectPoint.make(table, grouping: colorGrouping, reading: readings[table.name] ?? "") else { return nil }
-                point.toneParts = ToneDisplay.parts(point.reading, table: table, style: toneStyle, pitchStyle: pitchStyle)
-                return point
-            }
+    @State private var points = [DialectPoint]()
+    @State private var tableByName = [String: TablePackage]()
+    private func rebuildMapTables() {
+        tableByName = Dictionary(uniqueKeysWithValues: tables.map { ($0.name, $0) })
+        rebuildPoints()
+    }
+    private func rebuildPoints() {
+        points = names.sorted().compactMap { name in
+            guard let table = tableByName[name], activeCharacter.isEmpty || readings[name] != nil,
+                  var point = DialectPoint.make(table, grouping: colorGrouping, reading: readings[name] ?? "") else { return nil }
+            point.toneParts = ToneDisplay.parts(point.reading, table: table, style: toneStyle, pitchStyle: pitchStyle)
+            return point
+        }
     }
     var body: some View {
         NavigationStack {
@@ -75,6 +81,14 @@ struct DialectMapView: View {
                     Button(ui("更新"), systemImage: "arrow.clockwise") { Task { await model.loadCatalog() } }.disabled(model.updating)
                 }
             }
+            .onAppear { rebuildMapTables() }
+            .onChange(of: tables) { _, _ in rebuildMapTables() }
+            .onChange(of: names) { _, _ in rebuildPoints() }
+            .onChange(of: readings) { _, _ in rebuildPoints() }
+            .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
+            .onChange(of: toneStyle) { _, _ in rebuildPoints() }
+            .onChange(of: pitchStyle) { _, _ in rebuildPoints() }
+            .onChange(of: colorScheme) { _, _ in rebuildPoints() }
             .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
             .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:]; variants = []; readingsByVariant = [:] }
             .sheet(item: $selected) { TableInfoView(table: $0) }
@@ -89,9 +103,8 @@ struct DialectMapView: View {
         querying = true
         defer { querying = false }
         do {
-            let expanded = CharacterVariants.expand(text)
-            var found = [String: [String: String]]()
-            for variant in expanded { found[variant] = try await model.repository.mapReadings(variant) }
+            let expanded = await Task.detached(priority: .userInitiated) { CharacterVariants.expand(text) }.value
+            let found = try await model.repository.mapReadingsForVariants(expanded)
             variants = expanded; readingsByVariant = found
             activeCharacter = text; readings = found[text] ?? [:]; fit += 1
         }
