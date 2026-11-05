@@ -36,7 +36,18 @@ def search(database: Path, text: str, mode="character", language="", offset=0):
     with closing(readonly(database)) as db:
         cursor = db.execute(sql, parameters)
         columns = [item[0] for item in cursor.description]
-        return [dict(zip(columns, row)) for row in cursor]
+        rows = [dict(zip(columns, row)) for row in cursor]
+        if mode == "character":
+            normalized = text.strip()
+            if normalized.upper().startswith("U+"):
+                try:
+                    normalized = chr(int(normalized[2:], 16))
+                except (ValueError, OverflowError):
+                    pass
+            requested = set(normalized)
+            for row in rows:
+                row["字組"] = " ".join(c for c in row["字組"].split() if c in requested)
+        return rows
 
 
 if __name__ == "__main__":

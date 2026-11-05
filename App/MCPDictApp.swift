@@ -100,8 +100,18 @@ final class AppModel: ObservableObject {
     }
     func cancelDownload() { updateTask?.cancel() }
     func updateInstalledTables() async {
-        await loadCatalog()
-        guard let catalog, !updating else { return }
+        guard !updating else { return }
+        updating = true
+        status = "正在檢查上游最新字表…"
+        do { catalog = try await tableStore.catalog() }
+        catch {
+            updating = false
+            status = "檢查失敗，現有資料仍可使用"
+            self.error = error.localizedDescription
+            return
+        }
+        updating = false
+        guard let catalog else { return }
         let ids = Set(installed?.tables.map(\.id) ?? [])
         guard ids.isSubset(of: Set(catalog.tables.map(\.id))) else {
             error = "部分已下載字表已從上游目錄移除，請在資料頁確認選擇後再套用。"
