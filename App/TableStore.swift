@@ -14,13 +14,16 @@ struct TablePackage: Codable, Identifiable, Hashable {
     let size: Int64
     let sha256: String
     let url: URL
+    var format: String? = nil
+    var gitBlob: String? = nil
+    var isUpstream: Bool { format == "upstream-tsv-v1" }
     var localName: String { id + "-" + sha256 + ".db" }
     func validate() throws {
         guard id.range(of: "^[0-9a-f]{24}$", options: .regularExpression) != nil,
               sha256.range(of: "^[0-9a-f]{64}$", options: .regularExpression) != nil,
               sourceCommit.range(of: "^[0-9a-f]{40}$", options: .regularExpression) != nil,
-              size > 0, size < 1_000_000_000, recordCount > 0, !name.isEmpty,
-              url.scheme == "https", url.host == "github.com", url.path.contains("/releases/download/") else {
+              size > 0, size < 1_000_000_000, (isUpstream || recordCount > 0), !name.isEmpty,
+              url.scheme == "https", (isUpstream ? (url.host == "raw.githubusercontent.com" && url.path == "/osfans/MCPDict/\(sourceCommit)/tools/tables/output/\(name).tsv" && gitBlob?.range(of: "^[0-9a-f]{40}$", options: .regularExpression) != nil) : (url.host == "github.com" && url.path.contains("/releases/download/"))) else {
             throw DictionaryFailure(message: "字表資料包格式不相容")
         }
     }
@@ -80,16 +83,16 @@ actor TableStore {
         return state
     }
     func catalog() async throws -> TableCatalog {
-        let request = URLRequest(url: Self.catalogURL, cachePolicy: .reloadIgnoringLocalCacheData)
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard (response as? HTTPURLResponse)?.statusCode == 200, data.count < 8_000_000 else {
-            throw DictionaryFailure(message: "字表目錄尚未發布或無法連線，已下載字表仍可離線使用")
-        }
-        let catalog = try JSONDecoder().decode(TableCatalog.self, from: data)
-        try catalog.validate()
-        return catalog
+        try await UpstreamTables.catalog()
     }
     private func verify(_ file: URL, table: TablePackage) throws {
+        if table.isUpstream {
+            let db = try SQLiteConnection(url: file)
+            try db.validate(requireSample: false)
+            guard try db.rows("SELECT 1 FROM langs WHERE 語言 != ? LIMIT 1", [table.name]).isEmpty,
+                  !(try db.rows("SELECT 1 FROM langs LIMIT 1")).isEmpty else { throw DictionaryFailure(message: "字表內容不符") }
+            return
+        }
         let size = try FileManager.default.attributesOfItem(atPath: file.path)[.size] as? NSNumber
         guard size?.int64Value == table.size else { throw DictionaryFailure(message: "\(table.name)：檔案大小不符") }
         let handle = try FileHandle(forReadingFrom: file)
@@ -121,7 +124,7 @@ actor TableStore {
         let tables = catalog.tables.filter { selected.contains($0.id) }.sorted { $0.id < $1.id }
         let bytes = tables.reduce(Int64(0)) { $0 + $1.size }
         let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
-        guard available > bytes * 3 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請預留所選字表三倍大小的空間") }
+        guard available > bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請預留所選原始字表十二倍大小的空間") }
         var created = [URL]()
         var committed = false
         defer { if !committed { for file in created { try? FileManager.default.removeItem(at: file) } } }
@@ -130,7 +133,13 @@ actor TableStore {
             await progress("\(offset + 1)/\(tables.count) · \(table.name)")
             let file = root.appendingPathComponent(table.localName)
             if !FileManager.default.fileExists(atPath: file.path) {
-                if let local = localFiles[table.id] {
+                created.append(file)
+                if table.isUpstream {
+                    let data: Data
+                    if let local = localFiles[table.id] { data = try Data(contentsOf: local) }
+                    else { data = try await UpstreamTables.get(table.url, limit: 200_000_000) }
+                    try UpstreamTables.importTSV(data, table: table, to: file)
+                } else if let local = localFiles[table.id] {
                     try FileManager.default.copyItem(at: local, to: file)
                 } else {
                     let (temporary, response) = try await URLSession.shared.download(from: table.url)
@@ -138,7 +147,6 @@ actor TableStore {
                     guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw DictionaryFailure(message: "\(table.name)：下載失敗") }
                     try FileManager.default.moveItem(at: temporary, to: file)
                 }
-                created.append(file)
             }
             try verify(file, table: table)
         }
@@ -157,7 +165,7 @@ actor TableStore {
                 try Task.checkCancellation()
                 _ = try output.rows("ATTACH DATABASE ? AS shard", [root.appendingPathComponent(table.localName).path])
                 _ = try output.rows("INSERT INTO main.langs SELECT 字組, 語言, 讀音, 註釋 FROM shard.langs ORDER BY rowid")
-                _ = try output.rows("INSERT INTO main.info SELECT * FROM shard.info")
+                _ = try output.rows("INSERT INTO main.info (簡稱, 語言) SELECT 簡稱, 語言 FROM shard.info")
                 _ = try output.rows("DETACH DATABASE shard")
             }
         }

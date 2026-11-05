@@ -25,7 +25,7 @@ struct DataView: View {
                     Text(catalog.scope).font(.caption).foregroundStyle(.secondary).padding(.horizontal)
                     Picker("分類方式", selection: $grouping) {
                         ForEach(TableGrouping.allCases) { Text($0.rawValue).tag($0) }
-                    }.padding(.horizontal)
+                    }.pickerStyle(.menu).padding(.horizontal)
                     TableGroupList(tables: catalog.tables.filter { table in
                         filter.isEmpty || ([table.name, table.fullName] + table.atlas + table.dictionary + table.administrative).contains { $0.localizedStandardContains(filter) }
                     }, grouping: grouping, depth: 0, selection: $selection)
@@ -54,7 +54,13 @@ struct DataView: View {
             }
             .navigationTitle("字表下載")
             .searchable(text: $filter, prompt: "搜尋字表、語言或地區")
-            .toolbar { Button("更新目錄") { Task { await model.loadCatalog() } }.disabled(model.updating) }
+            .toolbar {
+                Menu("更新") {
+                    Button("檢查上游目錄") { Task { await model.loadCatalog() } }
+                    Button("更新全部已下載字表") { Task { await model.updateInstalledTables() } }
+                        .disabled(model.installed?.tables.isEmpty != false)
+                }.disabled(model.updating)
+            }
             .task {
                 await model.start()
                 selection = Set(model.installed?.tables.map(\.id) ?? [])
@@ -103,7 +109,7 @@ struct TableGroupList: View {
                         VStack(alignment: .leading, spacing: 4) {
                             Text(table.name).font(.headline)
                             Text(table.fullName).font(.caption)
-                            Text("\(table.recordCount) 條 · \(ByteCountFormatter.string(fromByteCount: table.size, countStyle: .file))").font(.caption)
+                            Text("\(table.isUpstream ? "上游原始字表" : "\(table.recordCount) 條") · \(ByteCountFormatter.string(fromByteCount: table.size, countStyle: .file))").font(.caption)
                             Text(table.administrative.joined(separator: " / ")).font(.caption2)
                             if let installed = model.installed?.tables.first(where: { $0.id == table.id }) {
                                 Text(installed.sha256 == table.sha256 ? "已下載" : "可更新").font(.caption).foregroundStyle(.teal)
@@ -111,6 +117,28 @@ struct TableGroupList: View {
                         }
                     }
                 }.buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+struct LanguageGroupList: View {
+    let tables: [TablePackage]
+    let grouping: TableGrouping
+    let depth: Int
+    let choose: (String) -> Void
+    private var groups: [String: [TablePackage]] {
+        Dictionary(grouping: tables.filter { grouping.path($0).count > depth }) { grouping.path($0)[depth] }
+    }
+    var body: some View {
+        List {
+            ForEach(groups.keys.sorted(), id: \.self) { key in
+                NavigationLink {
+                    LanguageGroupList(tables: groups[key] ?? [], grouping: grouping, depth: depth + 1, choose: choose).navigationTitle(key)
+                } label: { LabeledContent(key, value: "\(groups[key]?.count ?? 0) 份") }
+            }
+            ForEach(tables.filter { grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
+                Button(table.name) { choose(table.name) }
             }
         }
     }

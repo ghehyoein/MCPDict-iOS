@@ -99,6 +99,16 @@ final class AppModel: ObservableObject {
         }
     }
     func cancelDownload() { updateTask?.cancel() }
+    func updateInstalledTables() async {
+        await loadCatalog()
+        guard let catalog, !updating else { return }
+        let ids = Set(installed?.tables.map(\.id) ?? [])
+        guard ids.isSubset(of: Set(catalog.tables.map(\.id))) else {
+            error = "部分已下載字表已從上游目錄移除，請在資料頁確認選擇後再套用。"
+            return
+        }
+        applyTables(ids)
+    }
     func save(_ reading: Reading) {
         guard !favorites.contains(where: { $0.reading.characters == reading.characters && $0.reading.language == reading.language && $0.reading.pronunciation == reading.pronunciation && $0.reading.note == reading.note }) else { return }
         let old = favorites
@@ -121,13 +131,16 @@ final class AppModel: ObservableObject {
 
 struct RootView: View {
     @EnvironmentObject var model: AppModel
+    @AppStorage("appearance") private var appearance = "system"
     var body: some View {
         TabView {
             SearchView().tabItem { Label("字典", systemImage: "character.book.closed") }
             FavoritesView().tabItem { Label("生字本", systemImage: "star") }
             DataView().tabItem { Label("資料", systemImage: "arrow.down.circle") }
+            SettingsView().tabItem { Label("設定", systemImage: "gearshape") }
         }
         .tint(.teal)
+        .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)
         .alert("提示", isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
             Button("好") { model.error = nil }
         } message: { Text(model.error ?? "") }
@@ -189,14 +202,19 @@ struct LanguageView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.dismiss) var dismiss
     @State private var filter = ""
+    @State private var grouping: TableGrouping = .atlas
     var body: some View {
         NavigationStack {
-            List {
-                Button("全部語言") { model.language = ""; dismiss() }
-                ForEach(model.languages.filter { filter.isEmpty || $0.localizedStandardContains(filter) }, id: \.self) { name in
-                    Button(name) { model.language = name; dismiss() }
-                }
-            }.searchable(text: $filter, prompt: "搜尋語言名稱").navigationTitle("選擇語言")
+            VStack {
+                Picker("分類方式", selection: $grouping) {
+                    ForEach(TableGrouping.allCases) { Text($0.rawValue).tag($0) }
+                }.pickerStyle(.menu).padding(.horizontal)
+                Button("全部已下載語言") { model.language = ""; dismiss() }
+                LanguageGroupList(tables: (model.installed?.tables ?? []).filter {
+                    filter.isEmpty || ([$0.name, $0.fullName] + $0.atlas + $0.dictionary + $0.administrative).contains { $0.localizedStandardContains(filter) }
+                }, grouping: grouping, depth: 0) { name in model.language = name; dismiss() }
+                if model.languages.isEmpty { Text("尚未下載字表，請先到「資料」選擇字表。").padding() }
+            }.searchable(text: $filter, prompt: "搜尋語言或分區").navigationTitle("選擇語言")
                 .toolbar { Button("完成") { dismiss() } }
         }
     }

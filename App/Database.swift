@@ -121,7 +121,9 @@ actor DictionaryRepository {
         sql += " ORDER BY rowid LIMIT 100 OFFSET ?"
         bindings.append(String(max(0, offset)))
         return try connection.rows(sql, bindings).map {
-            Reading(id: Int64($0["id"] ?? "0") ?? 0, characters: $0["字組"] ?? "", language: $0["語言"] ?? "", pronunciation: $0["讀音"] ?? "", note: $0["註釋"] ?? "")
+            let group = $0["字組"] ?? ""
+            let displayed = mode == .character ? group.split(whereSeparator: { $0.isWhitespace }).filter { terms.contains(String($0)) }.joined(separator: " ") : group
+            return Reading(id: Int64($0["id"] ?? "0") ?? 0, characters: displayed, language: $0["語言"] ?? "", pronunciation: $0["讀音"] ?? "", note: $0["註釋"] ?? "")
         }
     }
 }
