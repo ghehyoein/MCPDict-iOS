@@ -1,3 +1,14 @@
+# 0.3.1 / build 8：统一系统地图（2026-11-05）
+
+- 应用提交 e779be096e7cdd02df9914a95b4f797d12e51a76，地图统一使用 Apple MapKit。
+- 移除 MapTiler key 入口、WKWebView/MapLibre 地图资源及构建下载步骤；启动时清理旧 key 设置，不修改字表和收藏。
+- 图标改为直接编辑 tools/AppIcon.png；生成的资源目录不是编辑源。建议 1024 × 1024 不透明 PNG。
+- [CI 42021540816](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42021540816) 的 7 项 Python 和 9 项 iOS 测试全部通过，无跳过；地图测试改为在真实 MKMapView 上检查坐标、读音副标题、聚合标识、详情选择回调和清空点位。
+- [真机编译 42021540775](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42021540775) 成功。IPA 459,990 字节，SHA-256 `6e6aacba4c65307caa36fe19b5eac8f4abc0466fd7f0209a31531d40f144406d`。
+- 重新下载校验一致；安装包不包含 Web 地图运行资源或内置字表。真实 iPhone 手势、底图网络和布局仍需用户试用。
+
+以下为历史版本记录；MapTiler 配置与 Web 地图测试不适用于当前版本。
+
 # 0.3 地图实现范围（2026-11-05）
 
 - 上游字表目录 3,308 份，其中 3,295 份有有效经纬度；13 份缺少坐标，不放点。
