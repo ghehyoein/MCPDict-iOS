@@ -1,3 +1,19 @@
+# 0.3 地图实现范围（2026-11-05）
+
+- 上游字表目录 3,308 份，其中 3,295 份有有效经纬度；13 份缺少坐标，不放点。
+- 经纬度按上游「经度,纬度」解析，检查有限数值与范围；没有自行推测地点或转换坐标基准。
+- 无 MapTiler key 时使用 MapKit，有 key 时使用 MapLibre GL JS 5.6.1 + MapTiler Streets v4；API key 由用户在设备设置填写，没有沿用网站的密钥。
+- 原生系统地图与 MapLibre 都提供点位聚合；支持一级分区筛选、各级区域关键词、已下载筛选、点位详情、全览和单字读音分布。
+- 目录独立缓存；读音图只查已下载表，覆盖全部分页。没有离线底图包，也未移植网站的全部筛选和服务器功能。
+- 参考前端的 MIT 许可和渲染库许可证包含在 App/MapWeb。运行时 JS 在 App 内，构建时下载验证固定 SHA-256。
+- [最终 CI 42019063409](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42019063409)：7 项 Python 测试、9 项 iOS 测试全部通过，本轮没有跳过联网测试；实际下载普通话约 4.485 秒，WKWebView 地图测试约 9.586 秒。
+- 最终应用提交 e0fc3c03def48f6ed5da428d11bb6f7a194c7a53，0.3.0 / build 7；[真机编译 42019063253](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42019063253) 成功。
+- IPA 744,735 字节，SHA-256 `470314c979ee33a5dc82ba18de12507404cfc9f6dc77cb6cf106ed44e94e557e`；重新下载后校验一致，地图脚本、样式和许可证完整，无内置字表。
+- 中间提交 74373a7 的地图测试通过，但联网字表测试收到 GitHub 限流。随后将 HTTP 429 或 HTTP 403 且 X-RateLimit-Remaining=0 单独分类；CI 仅在该明确外部限流条件下标记联网测试跳过，其余网络或解析错误仍报失败。
+- 第一轮提交 647605141843e849273bf216ef1c45c4d1e0eda6：[CI 42017664792](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42017664792) 的 7 项 Python、9 项 XCTest 全部通过。
+- 新增地图测试覆盖经纬度顺序和非法坐标拒绝、135 个语言点的完整查询、真实 WKWebView 中 MapLibre 初始化及点位添加/清空。无 key 渲染测试耗时约 3.763 秒。
+- 未验证：用户 MapTiler key 的街道瓦片权限、额度和实际网络表现；iPhone 上的手势、密集点位性能及地图视觉布局仍需试用。
+
 # 0.2.0 / build 4 验证（2026-11-05）
 
 - 应用提交：a873c1d21415c5d6bd4d85a463bee3ed4cff3dfb。
