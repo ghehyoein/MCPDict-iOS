@@ -3,6 +3,7 @@ No pronunciations or language tables are included. Regenerate after data_pipelin
 """
 import argparse
 from collections import defaultdict
+from contextlib import closing
 import hashlib
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ import sqlite3
 
 def export(database: Path, destination: Path, commit: str):
     graph = defaultdict(set)
-    with sqlite3.connect(f'{database.resolve().as_uri()}?mode=ro', uri=True) as db:
+    with closing(sqlite3.connect(f'{database.resolve().as_uri()}?mode=ro', uri=True)) as db:
         for char, variants in db.execute('SELECT 漢字, 異體字 FROM mcpdict WHERE 異體字 IS NOT NULL'):
             if len(char) != 1:
                 continue
