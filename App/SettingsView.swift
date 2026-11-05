@@ -11,8 +11,8 @@ struct SettingsView: View {
         NavigationStack {
             Form {
 
-                Section {
-                    Picker(ui("顯示語言"), selection: $uiLanguage) {
+                Section(ui("顯示語言")) {
+                    Picker("", selection: $uiLanguage) {
                         Text(verbatim: "简体中文").tag("hans")
                         Text(verbatim: "繁體中文").tag("hant")
                     }.pickerStyle(.inline)
@@ -37,11 +37,11 @@ struct SettingsView: View {
                         Text(ui("音典分區")).tag("dictionary")
                     }
                 }
-                Section(ui("介面外觀")) {
-                    Picker(ui("黑白模式"), selection: $appearance) {
+                Section(ui("界面外觀")) {
+                    Picker("", selection: $appearance) {
                         Text(ui("跟隨系統")).tag("system")
-                        Text(ui("淺色（白色）")).tag("light")
-                        Text(ui("深色（黑色）")).tag("dark")
+                        Text(ui("淺色")).tag("light")
+                        Text(ui("深色")).tag("dark")
                     }.pickerStyle(.inline)
                 }
                 MapSettingsSection()

@@ -27,7 +27,7 @@ final class AppModel: ObservableObject {
     @Published var resultCharacters = [String]()
     @Published var downloading = false
     @Published var favorites = [SavedReading]()
-    @Published var query = "中"
+    @Published var query = ""
     @Published var mode: SearchMode = .character
     @Published var language = ""
     @Published var selectedLanguages: [String]?
@@ -83,13 +83,13 @@ final class AppModel: ObservableObject {
             let found: [Reading]
             let variants = request.1 == .character ? CharacterVariants.expand(request.0) : []
             if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
-            else { found = try await repository.search(request.0, mode: request.1, language: request.2, offset: more ? results.count : 0, languages: request.3) }
+            else { found = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3) }
             guard token == generation else { return }
             if more { results += found } else { results = found }
             lastSearch = request
             resultMode = request.1; resultQuery = request.0
-            resultCharacters = variants
-            hasMore = request.1 != .character && found.count == 100
+            resultCharacters = request.1 == .note ? CharacterResults.characters(found.map(\.characters).joined()) : variants
+            hasMore = false
         } catch { self.error = error.localizedDescription }
     }
     func loadCatalog() async {
@@ -240,29 +240,31 @@ struct SearchView: View {
                             .onSubmit { Task { await model.search() } }
                         Button(ui("查詢")) { Task { await model.search() } }.disabled(model.searching)
                     }
-                    Button { showLanguages = true } label: {
+                    Button { showLanguages.toggle() } label: {
                         LabeledContent(ui("語言"), value: model.language.isEmpty ? ui("全部語言") : model.language)
                     }
-                } footer: { Text(ui("讀音搜尋：先顯示開頭相同的讀音，再顯示包含輸入內容的讀音。搜尋使用字表原始音標。")) }
+                    if showLanguages {
+                        LanguageDropdown(tables: model.installed?.tables ?? [], initial: Set(model.selectedLanguages ?? model.languages)) { names in
+                            model.selectedLanguages = names.sorted(); model.language = ui("已選 \(names.count) 個語言點"); showLanguages = false
+                        }
+                    }
+                }
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.installed?.tables.isEmpty != false {
                     ContentUnavailableView(ui("先選擇字表"), systemImage: "arrow.down.circle", description: Text(ui("本版不內置字表。前往「字表」按分區或名稱下載，完成後可離線使用。")))
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
-                if model.resultMode == .character && !model.resultQuery.isEmpty {
+                if (model.resultMode == .character || model.resultMode == .note) && !model.resultQuery.isEmpty {
                     CharacterResultsView()
                 } else {
-                    ForEach(model.results) { reading in
-                        ReadingView(reading: reading)
-                            .swipeActions { Button(ui("收藏"), systemImage: "star") { model.save(reading) }.tint(.orange) }
-                            .contextMenu { Button(ui("加入生字本"), systemImage: "star") { model.save(reading) } }
-                    }
+                    HomophoneResultsView()
+
                 }
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
             }
             .navigationTitle(ui("漢字音典"))
-            .sheet(isPresented: $showLanguages) { LanguageView() }
+
         }
     }
 }
@@ -294,7 +296,7 @@ struct FavoritesView: View {
     var body: some View {
         NavigationStack {
             List {
-                if model.favorites.isEmpty { Text(ui("在查詢結果上向左滑動，即可收藏。")) }
+                if model.favorites.isEmpty { Text(ui("點擊查詢結果旁的星號，即可加入生字本。")) }
                 ForEach($model.favorites) { $saved in
                     VStack(alignment: .leading) {
                         ReadingView(reading: saved.reading)

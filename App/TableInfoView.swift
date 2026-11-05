@@ -4,6 +4,7 @@ struct TableInfoView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.dismiss) var dismiss
     let table: TablePackage
+    @State private var log = ""
     @State private var statistics = [String: String]()
     private var current: TablePackage { model.table(named: table.name) ?? table }
     private func value(_ key: String) -> String {
@@ -13,9 +14,9 @@ struct TableInfoView: View {
         if key == "地點" { return current.administrative.joined(separator: "/") }
         if key == "地圖集二分區" { return current.atlas.joined(separator: "－") }
         if key == "音典分區" { return current.dictionary.joined(separator: "－") }
-        if key == "解析日志" { return ui("上游目錄未提供解析日誌") }
+        if key == "解析日志" { return log }
         if ["字數", "□數", "音節數", "不帶調音節數"].contains(key) { return ui("下載字表後統計") }
-        return ui("未填寫")
+        return ""
     }
     private let first = ["名稱", "地點", "經緯度", "地圖集二分區", "音典分區", "字數", "□數", "音節數", "不帶調音節數"]
     private let second = ["錄入人", "維護人", "版本", "文件名", "字表來源", "參考文獻", "字表修改情況", "字表品質", "字表品質説明"]
@@ -40,6 +41,7 @@ struct TableInfoView: View {
             .task {
                 if current.metadata == nil && !model.updating { await model.loadCatalog() }
                 if let result = try? await model.repository.tableStatistics(current.name) { statistics = result }
+                log = (try? await UpstreamDiagnostics.shared.log(for: current)) ?? ""
             }
         }
     }

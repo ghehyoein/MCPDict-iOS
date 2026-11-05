@@ -18,7 +18,6 @@ def export(database: Path, destination: Path, commit: str):
                 continue
             for variant in variants.split():
                 if len(variant) == 1 and variant != char:
-                    graph[char].add(variant)
                     graph[variant].add(char)
     destination.mkdir(parents=True, exist_ok=True)
     hashes = {}
@@ -29,7 +28,7 @@ def export(database: Path, destination: Path, commit: str):
         (destination / name).write_bytes(content)
         hashes[name] = hashlib.sha256(content).hexdigest()
     info = {'sourceRepository': 'https://github.com/osfans/MCPDict', 'sourceCommit': commit,
-            'sourceField': 'mcpdict.異體字', 'algorithm': 'direct bidirectional relations; no transitive closure',
+            'sourceField': 'mcpdict.異體字', 'algorithm': 'upstream reverse lookup: SELECT 漢字 WHERE 異體字 MATCH input',
             'characters': len(graph), 'links': sum(map(len, graph.values())), 'sha256': hashes}
     (destination / 'variants-source.json').write_text(json.dumps(info, indent=2, ensure_ascii=False), encoding='utf-8')
     return info
