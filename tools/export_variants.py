@@ -1,4 +1,4 @@
-"""Export direct, bidirectional variants from an upstream-built MCPDict database.
+"""Export upstream reverse variant lookups without adding opposite-direction edges.
 No pronunciations or language tables are included. Regenerate after data_pipeline.py.
 """
 import argparse
@@ -41,3 +41,4 @@ if __name__ == '__main__':
     parser.add_argument('--commit', required=True)
     args = parser.parse_args()
     print(json.dumps(export(args.database, args.destination, args.commit), ensure_ascii=False))
+
