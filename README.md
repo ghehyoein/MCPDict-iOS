@@ -2,7 +2,9 @@
 
 目标是逐步移植汉字音典，先完成稳定的数据与查询闭环。数据直接来自 [osfans/MCPDict](https://github.com/osfans/MCPDict) 的 GitHub 字表，经 Python 构建 SQLite；本工程没有读取、解包或下载 APK。
 
-**这是开发初版，不是已经完成全部功能或通过真机验收的 iOS 成品。** 目前 Windows 本地验证 Python；iOS 的编译、模拟器测试交给 GitHub Actions 的 macOS runner。现在不需要 Apple 付费开发者账号，也没有配置签名、TestFlight 或 App Store 发布。
+**这是开发初版，不是已经完成全部功能或通过真机验收的 iOS 成品。** Windows 本地验证 Python；iOS 的编译、模拟器测试交给 GitHub Actions 的 macOS runner。2026-11-05 首次云端检查已全部通过：4 项 Python 测试、iOS 编译及 3 项 XCTest。现在不需要 Apple 付费开发者账号，也没有配置签名、TestFlight 或 App Store 发布。
+
+仓库：[ghehyoein/MCPDict-iOS](https://github.com/ghehyoein/MCPDict-iOS)。[首次通过的完整运行记录](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/41994679817)，对应代码提交 `ac11ed2cb58baeabb5079773d7f544ce18495094`。
 
 ## Python 和 Swift 各自负责什么
 
@@ -63,7 +65,7 @@ py -3 -m unittest discover -s tools -p "test_*.py" -v
 
 GitHub runner 提供 macOS/Xcode 环境；它不是 Windows 上的交互式 iPhone 模拟器。下载的 `SimulatorApp.zip` 不能直接装到 iPhone，也不能在 Windows 上运行。后续稳定后再接入 Apple 开发者账号和签名。
 
-工作流尚未在你的 GitHub 仓库执行；本地也没有 Xcode，因此不能把源码检查等同于 iOS 编译通过。GitHub Actions 的可用额度和费用遵循账号设置，可先查看仓库 Actions 设置。
+工作流已在此仓库实际执行并通过，运行页面的 Artifacts 包含测试报告和模拟器应用包。后续代码推送将自动运行检查，也可手动运行。仅文档更新可在提交消息注明 `[skip ci]`，避免重复构建。GitHub Actions 的可用额度和费用遵循账号设置。
 
 相关官方说明：[GitHub 托管 runner](https://docs.github.com/en/actions/how-tos/manage-runners/github-hosted-runners/use-github-hosted-runners)、[XcodeGen](https://github.com/yonaskolb/XcodeGen)。
 
@@ -82,7 +84,7 @@ https://github.com/你的用户名/你的仓库/releases/download/data-latest/ma
 
 当前开发阶段只开放手动构建数据，尚未启用定时发布。待编译和测试稳定后，再配置每天检查上游。同一上游提交不重复构建。手机启动时只检查，下载仍由用户触发。初版前台整库下载，不压缩、不做差分，需预留约两倍新库大小加 100 MB 的空闲空间；旧库另外占用空间。
 
-初版下载器支持可公开访问的 GitHub Releases，没有私有仓库鉴权。请勿把访问令牌写进 App。仓库尚未替你创建或发布；只有工作流文件已准备。上游代码许可不自动覆盖每一份字表的再分发许可，公开发布数据前应保留并核对上游来源说明。
+初版下载器支持可公开访问的 GitHub Releases，没有私有仓库鉴权。请勿把访问令牌写进 App。源码已上传仓库，数据 Release 尚未构建或发布，更新网址目前还不能下载数据。上游代码许可不自动覆盖每一份字表的再分发许可，公开发布数据前应保留并核对上游来源说明。
 
 ## 手动使用 Python 构建
 
