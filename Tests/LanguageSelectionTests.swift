@@ -10,6 +10,8 @@ final class LanguageSelectionTests: XCTestCase {
         }
         let tables = try [table("旁列點", ["漢語", "吳語"]), table("深層甲", ["漢語", "吳語", "太湖", "蘇嘉湖"]), table("深層乙", ["漢語", "吳語", "太湖", "蘇嘉湖"]), table("淺層", ["漢語", "粵語"]), table("無分區", [])]
         XCTAssertEqual(Set(LanguageSelectionScope.terminalGroups.eligible(tables, grouping: .atlas).map(\.name)), ["旁列點", "深層甲", "深層乙", "淺層"])
+        XCTAssertEqual(RegionSelection.restore(tables: tables, grouping: .atlas, names: ["深層甲", "深層乙"], saved: "漢語\u{0}吳語\u{0}太湖\u{0}蘇嘉湖"), "漢語\u{0}吳語\u{0}太湖\u{0}蘇嘉湖")
+        XCTAssertNil(RegionSelection.restore(tables: tables, grouping: .atlas, names: ["深層甲", "淺層"], saved: nil))
         for root in ["歷史音", "民族語"] {
             let special = try table(root, [root])
             XCTAssertEqual(TableGrouping.dictionary.path(special).first, root)

@@ -7,6 +7,7 @@ struct SelectionTree: View {
     var depth = 0
     var nodePath = [String]()
     var selectedRegion: Binding<String?> = .constant(nil)
+    var regionTables: [TablePackage] = []
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
     @State private var expanded = Set<String>()
@@ -14,11 +15,13 @@ struct SelectionTree: View {
         let groups = Dictionary(grouping: tables.filter { grouping.path($0).count > depth }) { grouping.path($0)[depth] }
         ForEach(groups.keys.sorted(), id: \.self) { key in
             let members = groups[key] ?? []
+            let fullRegion = nodePath + [key]
+            let selectable = scope == .terminalGroups ? regionTables.filter { grouping.path($0).starts(with: fullRegion) } : members
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    check(Set(members.map(\.id)), label: key, region: (nodePath + [key]).joined(separator: "\u{0}"))
+                    check(Set(selectable.map(\.id)), label: key, region: (nodePath + [key]).joined(separator: "\u{0}"))
                     if scope == .topGroups || (scope == .terminalGroups && !members.contains(where: { grouping.path($0).count > depth + 1 })) {
-                        Button { toggle(Set(members.map(\.id)), region: (nodePath + [key]).joined(separator: "\u{0}")) } label: { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }.buttonStyle(.plain)
+                        Button { toggle(Set(selectable.map(\.id)), region: (nodePath + [key]).joined(separator: "\u{0}")) } label: { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }.buttonStyle(.plain)
                     } else {
                     Button { if !expanded.insert(key).inserted { expanded.remove(key) } } label: {
                         HStack { Image(systemName: expanded.contains(key) ? "chevron.down" : "chevron.right"); Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }
@@ -28,7 +31,7 @@ struct SelectionTree: View {
                     }
                 }
                 if scope != .topGroups && expanded.contains(key) {
-                    SelectionTree(tables: members, grouping: grouping, scope: scope, depth: depth+1, nodePath: nodePath + [key], selectedRegion: selectedRegion, selection: $selection, inspect: inspect).padding(.leading, 18)
+                    SelectionTree(tables: members, grouping: grouping, scope: scope, depth: depth+1, nodePath: nodePath + [key], selectedRegion: selectedRegion, regionTables: regionTables, selection: $selection, inspect: inspect).padding(.leading, 18)
                 }
             }.padding(.vertical, 4).id((nodePath + [key]).joined(separator: "\u{0}"))
         }
@@ -88,7 +91,7 @@ struct LanguageDropdown: View {
             }
             ScrollView {
                 VStack(alignment: .leading) {
-                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selectedRegion: $selectedRegion, selection: selection, inspect: inspect)
+                    SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selectedRegion: $selectedRegion, regionTables: eligible, selection: selection, inspect: inspect)
                 }.frame(maxWidth: .infinity)
             }.frame(height: 240)
             HStack {
@@ -105,14 +108,7 @@ struct LanguageDropdown: View {
                 grouping = initialGrouping
                 if scope == .terminalGroups {
                     let saved = UserDefaults.standard.string(forKey: "regionNode." + regionCacheKey)
-                    let paths = Set(eligible.flatMap { table in
-                        let path = grouping.path(table)
-                        return (1...path.count).map { Array(path.prefix($0)) }
-                    }).sorted { $0.count < $1.count }
-                    let matching = paths.filter { path in
-                        Set(eligible.filter { grouping.path($0).starts(with: path) }.map(\.name)) == names
-                    }.map { $0.joined(separator: "\u{0}") }
-                    selectedRegion = matching.contains(saved ?? "") ? saved : matching.first
+                    selectedRegion = RegionSelection.restore(tables: eligible, grouping: grouping, names: names, saved: saved)
                     if selectedRegion == nil { names = [] }
                 }
             }
