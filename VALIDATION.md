@@ -1,3 +1,17 @@
+# 0.2.0 / build 4 验证（2026-11-05）
+
+- 应用提交：a873c1d21415c5d6bd4d85a463bee3ed4cff3dfb。
+- [CI 42012883035](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42012883035)：7 项 Python 测试、6 项 XCTest 全部通过，0 failures，模拟器编译通过。
+- 模拟器直接从 osfans/MCPDict 获取上游目录，下载普通话 TSV，验证 Git blob、转换 SQLite，查询“中”只得到“中”的 zhong1 / zhong4。联网测试约 4.839 秒。
+- 回归覆盖旧同音字组的单字显示、读音检索仍返回同音字、Unicode 扩展字、坏哈希拒绝、旧数据恢复及删除。
+- 本地逐行检查固定上游提交 d88e3bcaff6f17399a33bc3010794ed1c2dd707e 的 3,308 份带元数据 TSV，没有缺失汉字或读音列的记录；这不是所有字表的内容正确性或真机性能验证。
+- [真机编译 42012882982](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42012882982)：arm64 / iPhoneOS，通过打包校验，最低 iOS 17，无内置数据库。
+- [下载 build 4](https://github.com/ghehyoein/MCPDict-iOS/releases/tag/iphone-dev-4-a873c1d)：390,885 字节；SHA-256 `6b92d1ecfced826c094b90540e0e39173ad5a6a3873468b4985aec2ecd8c02ac`。公开下载后重新校验一致。
+- 图标复用上游 app/src/main/ic_launcher-playstore.png（同一固定提交），macOS 构建时调整到 1024 像素；保留上游许可证。
+- 语言页的三种分区和设置外观已编译通过；尚未进行 iPhone 实机布局、外观切换及大批量下载性能验收。IPA 仍需本机签名安装。
+
+以下为历史版本记录，三表目录限制不适用于 0.2。
+
 # 首次验证记录
 
 ## 按需下载试验版追加验证（2026-11-05）
@@ -50,3 +64,4 @@
 - 与 Android 的全功能结果一致性；当前只实现声明的基础查询子集。
 
 因此此交付是可继续开发的初版工程与已验证的 Python 数据基础，不是已经验证稳定的完整 iOS 应用。
+
