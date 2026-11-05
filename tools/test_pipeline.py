@@ -6,7 +6,7 @@ import tempfile
 import unittest
 
 from data_pipeline import package, sha256, validate
-from query import search
+from query_contract import search
 
 
 class DataContractTests(unittest.TestCase):
@@ -61,3 +61,5 @@ class DataContractTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
