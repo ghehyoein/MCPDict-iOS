@@ -9,7 +9,10 @@ final class NavigationTests: XCTestCase {
         app.buttons["check-漢語"].tap()
         XCTAssertTrue(app.buttons["downloadTables"].isEnabled)
         for key in ["漢語", "官話", "北京"] {
-            app.buttons["expand-" + key].tap()
+            let expand = app.buttons["expand-" + key]
+            XCTAssertTrue(expand.waitForExistence(timeout: 5))
+            expand.tap()
+            XCTAssertEqual(expand.value as? String, "expanded")
             XCTAssertTrue(app.buttons["downloadTables"].isHittable)
         }
         app.buttons["check-示例語言點"].tap()
@@ -25,3 +28,4 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.sliders["fontSizeSlider"].exists)
     }
 }
+
