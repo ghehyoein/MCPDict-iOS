@@ -13,7 +13,7 @@ final class NavigationTests: XCTestCase {
             XCTAssertTrue(app.buttons["removeTables"].isHittable)
         }
         app.buttons["示例語言點"].tap()
-        XCTAssertTrue(app.staticTexts.containing(NSPredicate(format: "label CONTAINS %@", "測試維護人")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "測試維護人")).firstMatch.waitForExistence(timeout: 5))
         app.buttons["完成"].tap()
         app.tabBars.buttons["設定"].tap()
         let simplified = app.descendants(matching: .any).matching(identifier: "简体中文").firstMatch
@@ -26,14 +26,15 @@ final class NavigationTests: XCTestCase {
         XCTAssertEqual(app.buttons["downloadTables"].label, "字表下载")
         XCTAssertEqual(app.buttons["removeTables"].label, "字表移除")
         app.tabBars.buttons["字典"].tap()
-        app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "全部语言")).firstMatch.tap()
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "全部语言")).firstMatch.tap()
         for title in ["汉语", "官话", "北京"] {
             XCTAssertTrue(app.buttons["selectWholeRegion"].exists)
             app.staticTexts[title].firstMatch.tap()
         }
         app.buttons["selectWholeRegion"].tap()
-        XCTAssertTrue(app.buttons.containing(NSPredicate(format: "label CONTAINS %@", "北京")).firstMatch.exists)
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "北京")).firstMatch.exists)
         app.tabBars.buttons["地图"].tap()
         for title in ["语言", "自选", "分区", "行政区"] { XCTAssertTrue(app.buttons[title].exists) }
     }
 }
+
