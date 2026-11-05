@@ -44,4 +44,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="iphone-dev-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:7}"
-          gh release create "$tag" dist/* --prerelease --title "iPhone development build ${GITHUB_RUN_NUMBER} — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA"
+          RELEASE_TAG="$tag" python tools/carry_diagnostics.py
+          gh release create "$tag" dist/* --latest --title "iPhone development build ${GITHUB_RUN_NUMBER} — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA"
+
+
