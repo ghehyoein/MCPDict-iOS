@@ -41,40 +41,37 @@ struct NativeDialectMap: UIViewRepresentable {
             }
         }
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
-            let view = (mapView.dequeueReusableAnnotationView(withIdentifier: "dialect") as? MKMarkerAnnotationView) ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "dialect")
+            guard let point = annotation as? PointAnnotation else { return nil }
+            let view = mapView.dequeueReusableAnnotationView(withIdentifier: "dialect-dot") ?? MKAnnotationView(annotation: annotation, reuseIdentifier: "dialect-dot")
             view.annotation = annotation
-            if let point = annotation as? PointAnnotation {
-                view.clusteringIdentifier = "dialects"
-                let hex = UInt32(point.point.color.dropFirst(), radix: 16) ?? 0x008080
-                view.markerTintColor = UIColor(red: CGFloat((hex >> 16) & 255) / 255, green: CGFloat((hex >> 8) & 255) / 255, blue: CGFloat(hex & 255) / 255, alpha: 1)
-                view.glyphText = nil
-                view.canShowCallout = true
-                view.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
-            } else if let cluster = annotation as? MKClusterAnnotation {
-                view.clusteringIdentifier = nil
-                view.markerTintColor = .systemTeal
-                view.glyphText = String(cluster.memberAnnotations.count)
-                view.canShowCallout = false
-                view.rightCalloutAccessoryView = nil
-            } else { return nil }
+            view.clusteringIdentifier = nil
+            view.displayPriority = .required
+            view.centerOffset = .zero
+            let hex = UInt32(point.point.color.dropFirst(), radix: 16) ?? 0x008080
+            let color = UIColor(red: CGFloat((hex >> 16) & 255) / 255, green: CGFloat((hex >> 8) & 255) / 255, blue: CGFloat(hex & 255) / 255, alpha: 1)
+            view.image = UIGraphicsImageRenderer(size: CGSize(width: 14, height: 14)).image { _ in
+                color.setFill()
+                let circle = UIBezierPath(ovalIn: CGRect(x: 1, y: 1, width: 12, height: 12))
+                circle.fill(); UIColor.white.setStroke(); circle.lineWidth = 1.5; circle.stroke()
+            }
+            view.canShowCallout = true
+            view.rightCalloutAccessoryView = UIButton(type: .detailDisclosure)
             return view
         }
         func mapView(_ mapView: MKMapView, didSelect view: MKAnnotationView) {
-            if let cluster = view.annotation as? MKClusterAnnotation {
-                let unique = Set(cluster.memberAnnotations.map { "\($0.coordinate.longitude),\($0.coordinate.latitude)" })
-                if unique.count > 1 { mapView.showAnnotations(cluster.memberAnnotations, animated: true) }
-                else {
-                    // Overlapping source coordinates are not displaced or discarded.
-                    let menu = UIAlertController(title: "同一座標的字表", message: nil, preferredStyle: .actionSheet)
-                    for annotation in cluster.memberAnnotations.compactMap({ $0 as? PointAnnotation }) {
-                        menu.addAction(UIAlertAction(title: annotation.point.name, style: .default) { _ in self.choose(annotation.point.id) })
-                    }
-                    menu.addAction(UIAlertAction(title: "取消", style: .cancel))
-                    menu.popoverPresentationController?.sourceView = view
-                    menu.popoverPresentationController?.sourceRect = view.bounds
-                    mapView.window?.rootViewController?.present(menu, animated: true)
-                }
+            guard let selected = view.annotation as? PointAnnotation else { return }
+            let samePlace = mapView.annotations.compactMap { $0 as? PointAnnotation }.filter {
+                $0.coordinate.latitude == selected.coordinate.latitude && $0.coordinate.longitude == selected.coordinate.longitude
             }
+            guard samePlace.count > 1 else { return }
+            let menu = UIAlertController(title: ui("同一座標的語言點"), message: nil, preferredStyle: .actionSheet)
+            for point in samePlace.sorted(by: { $0.point.name < $1.point.name }) {
+                menu.addAction(UIAlertAction(title: point.point.name, style: .default) { _ in self.choose(point.point.id) })
+            }
+            menu.addAction(UIAlertAction(title: ui("取消"), style: .cancel))
+            menu.popoverPresentationController?.sourceView = view
+            menu.popoverPresentationController?.sourceRect = view.bounds
+            mapView.window?.rootViewController?.present(menu, animated: true)
         }
         func mapView(_ mapView: MKMapView, annotationView view: MKAnnotationView, calloutAccessoryControlTapped control: UIControl) {
             if let point = view.annotation as? PointAnnotation { choose(point.point.id) }

@@ -19,7 +19,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: 漢字音典·試作
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        MARKETING_VERSION: "0.3.1"
+        MARKETING_VERSION: "0.4.0"
         CURRENT_PROJECT_VERSION: 1
     dependencies:
       - sdk: libsqlite3.tbd
@@ -33,10 +33,19 @@ targets:
     dependencies:
       - target: MCPDictIOS
       - sdk: libsqlite3.tbd
+  MCPDictIOSUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: MCPDictIOS
 schemes:
   MCPDictIOS:
     build:
       targets:
         MCPDictIOS: all
     test:
-      targets: [MCPDictIOSTests]
+      targets: [MCPDictIOSTests, MCPDictIOSUITests]
