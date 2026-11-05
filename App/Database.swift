@@ -105,7 +105,7 @@ actor DictionaryRepository {
     }
 
     func search(_ input: String, mode: SearchMode, language: String, offset: Int = 0) throws -> [Reading] {
-        guard let connection else { throw DictionaryFailure(message: "請先在「資料」頁下載詞典") }
+        guard let connection else { throw DictionaryFailure(message: "請先在「字表」頁下載詞典") }
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         if mode == .character && text.uppercased().hasPrefix("U+"),
            let number = UInt32(text.dropFirst(2), radix: 16), let scalar = UnicodeScalar(number) {
@@ -126,4 +126,14 @@ actor DictionaryRepository {
             return Reading(id: Int64($0["id"] ?? "0") ?? 0, characters: displayed, language: $0["語言"] ?? "", pronunciation: $0["讀音"] ?? "", note: $0["註釋"] ?? "")
         }
     }
+    func searchAllCharacters(_ input: String, language: String) throws -> [Reading] {
+        var result = [Reading]()
+        while true {
+            try Task.checkCancellation()
+            let page = try search(input, mode: .character, language: language, offset: result.count)
+            result += page
+            if page.count < 100 { return result }
+        }
+    }
+
 }

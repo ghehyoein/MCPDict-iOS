@@ -14,6 +14,7 @@ struct TablePackage: Codable, Identifiable, Hashable {
     let size: Int64
     let sha256: String
     let url: URL
+    var metadata: [String: String]? = nil
     var location: TableLocation? = nil
     var atlasColor: String? = nil
     var dictionaryColor: String? = nil
@@ -130,6 +131,9 @@ actor TableStore {
         guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
         busy = true
         defer { busy = false }
+        return try await applyInternal(catalog, selected: selected, localFiles: localFiles, progress: progress)
+    }
+    private func applyInternal(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], progress: @Sendable (String) async -> Void) async throws -> TableInstallation {
         try catalog.validate()
         guard selected.isSubset(of: Set(catalog.tables.map(\.id))) else { throw DictionaryFailure(message: "選取項目不在目前目錄中") }
         try prepare()
@@ -197,4 +201,79 @@ actor TableStore {
         }
         return state
     }
+    // Download is additive. Completed, verified tables are activated even on cancellation.
+    func download(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], progress: @escaping @Sendable (String) async -> Void) async throws -> TableDownloadResult {
+        guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
+        busy = true
+        defer { busy = false }
+        try catalog.validate()
+        guard selected.isSubset(of: Set(catalog.tables.map(\.id))) else { throw DictionaryFailure(message: "選取項目不在目前目錄中") }
+        try prepare()
+        let previous = try await restore()
+        var retained = Dictionary(uniqueKeysWithValues: (previous?.tables ?? []).map { ($0.id, $0) })
+        let requested = catalog.tables.filter { selected.contains($0.id) }.sorted { $0.id < $1.id }
+        let bytes = requested.reduce(Int64(0)) { $0 + $1.size }
+        let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
+        guard available > bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請先釋放儲存空間") }
+        var failure: String?
+        var completed = 0
+        do {
+            for (offset, table) in requested.enumerated() {
+                try Task.checkCancellation()
+                await progress("\(offset + 1)/\(requested.count) · \(table.name)")
+                try Task.checkCancellation()
+                let file = root.appendingPathComponent(table.localName)
+                if !FileManager.default.fileExists(atPath: file.path) {
+                    let staging = root.appendingPathComponent(UUID().uuidString + ".partial")
+                    defer { try? FileManager.default.removeItem(at: staging) }
+                    if table.isUpstream {
+                        let data: Data
+                        if let local = localFiles[table.id] { data = try Data(contentsOf: local) }
+                        else { data = try await UpstreamTables.get(table.url, limit: 200_000_000) }
+                        try UpstreamTables.importTSV(data, table: table, to: staging)
+                    } else if let local = localFiles[table.id] {
+                        try FileManager.default.copyItem(at: local, to: staging)
+                    } else {
+                        let (temporary, response) = try await URLSession.shared.download(from: table.url)
+                        defer { try? FileManager.default.removeItem(at: temporary) }
+                        guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw DictionaryFailure(message: "\(table.name)：下載失敗") }
+                        try FileManager.default.moveItem(at: temporary, to: staging)
+                    }
+                    try verify(staging, table: table)
+                    try FileManager.default.moveItem(at: staging, to: file)
+                } else { try verify(file, table: table) }
+                retained[table.id] = table
+                completed += 1
+                await progress("已完成 \(completed)/\(requested.count) · \(table.name)")
+            }
+        } catch {
+            if !Task.isCancelled && !(error is CancellationError) { failure = error.localizedDescription }
+        }
+        let cancelled = Task.isCancelled
+        await progress(cancelled ? "正在保存已完成的字表…" : "正在建立查詢索引…")
+        let combined = TableCatalog(schemaVersion: 1, version: catalog.version, sourceRepository: catalog.sourceRepository, sourceCommit: catalog.sourceCommit, scope: "", tables: Array(retained.values))
+        // A new task intentionally finishes the atomic save after the user cancels networking.
+        let state = try await Task.detached {
+            try await self.applyInternal(combined, selected: Set(combined.tables.map(\.id))) { _ in }
+        }.value
+        return TableDownloadResult(installation: state, cancelled: cancelled, failure: failure, completed: completed)
+    }
+    func remove(selected: Set<String>) async throws -> TableInstallation {
+        guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
+        busy = true
+        defer { busy = false }
+        let previous = try await restore()
+        let remaining = (previous?.tables ?? []).filter { !selected.contains($0.id) }
+        let catalog = TableCatalog(schemaVersion: 1, version: previous?.catalogVersion ?? "local", sourceRepository: UpstreamTables.repository, sourceCommit: remaining.first?.sourceCommit ?? "", scope: "", tables: remaining)
+        return try await applyInternal(catalog, selected: Set(remaining.map(\.id))) { _ in }
+    }
+
+}
+
+
+struct TableDownloadResult {
+    let installation: TableInstallation
+    let cancelled: Bool
+    let failure: String?
+    let completed: Int
 }
