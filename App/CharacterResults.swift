@@ -50,13 +50,13 @@ struct CharacterResultsView: View {
             if groups.isEmpty { Text(ui("此字在已下載字表中沒有讀音")).foregroundStyle(.secondary) }
             ForEach(groups) { group in
                 HStack(alignment: .top, spacing: 12) {
-                    Button(group.language) { information = model.table(named: group.language) }
-                        .font(.subheadline.bold()).frame(width: 96).padding(.vertical, 8)
-                        .foregroundStyle(.white).background(.teal, in: RoundedRectangle(cornerRadius: 7))
-                        .buttonStyle(.plain)
+                    Button { information = model.table(named: group.language) } label: { LanguageBadge(name: group.language, table: model.table(named: group.language)) }.buttonStyle(.plain)
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(group.readings) { reading in
-                            (Text(reading.pronunciation).font(.title3) + Text(reading.note.isEmpty ? "" : "  " + reading.note).font(.subheadline).foregroundColor(.secondary))
+                            VStack(alignment: .leading, spacing: 2) {
+                                PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3)
+                                if !reading.note.isEmpty { Text(reading.note).font(.subheadline).foregroundStyle(.secondary) }
+                            }
                                 .textSelection(.enabled)
                                 .contextMenu { Button(ui("加入生字本"), systemImage: "star") { model.save(reading) } }
                         }

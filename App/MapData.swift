@@ -20,10 +20,12 @@ struct DialectPoint: Codable, Identifiable, Equatable {
     let latitude: Double
     let color: String
     let reading: String
+    var toneParts: [ToneDisplay.Part]? = nil
     static func make(_ table: TablePackage, grouping: TableGrouping, reading: String = "") -> DialectPoint? {
         guard let location = table.location, location.valid else { return nil }
         let rawColor = grouping == .dictionary ? table.dictionaryColor : table.atlasColor
-        let color = rawColor?.range(of: "^#[0-9A-Fa-f]{6}$", options: .regularExpression) != nil ? rawColor! : "#008080"
+        let values = TableColors.hexes(rawColor)
+        let color = values.isEmpty ? "#008080" : values.joined(separator: ",")
         return DialectPoint(id: table.id, name: table.name, longitude: location.longitude, latitude: location.latitude, color: color, reading: reading)
     }
 }

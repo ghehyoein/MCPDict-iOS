@@ -29,12 +29,13 @@ final class AppModel: ObservableObject {
     @Published var query = "中"
     @Published var mode: SearchMode = .character
     @Published var language = ""
+    @Published var selectedLanguages: [String]?
     @Published var error: String?
     @Published var status = "尚未下載詞典"
     @Published var updating = false
     @Published var searching = false
     @Published var hasMore = false
-    private var lastSearch: (String, SearchMode, String)?
+    private var lastSearch: (String, SearchMode, String, [String]?)?
     private var generation = 0
     private var started = false
     private var updateTask: Task<Void, Never>?
@@ -51,6 +52,8 @@ final class AppModel: ObservableObject {
         if ProcessInfo.processInfo.arguments.contains("--ui-fixture") {
             UserDefaults.standard.set("hant", forKey: "uiLanguage")
             catalog = UITestFixtures.catalog
+            installed = TableInstallation(catalogVersion: "ui-test", tables: UITestFixtures.catalog.tables, databaseFile: nil)
+            languages = UITestFixtures.catalog.tables.map(\.name)
             status = ""
             return
         }
@@ -74,11 +77,11 @@ final class AppModel: ObservableObject {
         searching = true
         defer { searching = false }
         let token = generation
-        let request = more ? (lastSearch ?? (query, mode, language)) : (query, mode, language)
+        let request = more ? (lastSearch ?? (query, mode, language, selectedLanguages)) : (query, mode, language, selectedLanguages)
         do {
             let found: [Reading]
-            if request.1 == .character { found = try await repository.searchAllCharacters(request.0, language: request.2) }
-            else { found = try await repository.search(request.0, mode: request.1, language: request.2, offset: more ? results.count : 0) }
+            if request.1 == .character { found = try await repository.searchAllCharacters(request.0, language: request.2, languages: request.3) }
+            else { found = try await repository.search(request.0, mode: request.1, language: request.2, offset: more ? results.count : 0, languages: request.3) }
             guard token == generation else { return }
             if more { results += found } else { results = found }
             lastSearch = request
@@ -130,7 +133,10 @@ final class AppModel: ObservableObject {
         generation += 1
         results = []; hasMore = false; lastSearch = nil
         languages = try await repository.languages()
-        if !languages.contains(language) { language = "" }
+        if let selection = selectedLanguages {
+            selectedLanguages = selection.filter { languages.contains($0) }
+            if selectedLanguages?.isEmpty == true { selectedLanguages = nil; language = "" }
+        } else if !languages.contains(language) { language = "" }
     }
     func cancelDownload() { updateTask?.cancel(); status = "正在取消並保存已完成的字表…" }
     func table(named name: String) -> TablePackage? {
@@ -181,6 +187,7 @@ struct RootView: View {
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
     @State private var tab = 0
+    @AppStorage("fontSize") private var fontSize = 17.0
     var body: some View {
         TabView(selection: $tab) {
             SearchView().tag(0).tabItem { Label(ui("字典"), systemImage: "character.book.closed") }
@@ -191,6 +198,7 @@ struct RootView: View {
         }
         .id(uiLanguage)
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
+        .dynamicTypeSize(AppTypography.size(fontSize))
         .tint(.teal)
         .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)
         .alert(ui("提示"), isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
@@ -205,8 +213,8 @@ struct ReadingView: View {
     let reading: Reading
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button(reading.language) { information = model.table(named: reading.language) }.font(.caption)
-            Text(reading.pronunciation).font(.title3.bold()).foregroundStyle(.teal)
+            Button { information = model.table(named: reading.language) } label: { LanguageBadge(name: reading.language, table: model.table(named: reading.language)) }.buttonStyle(.plain)
+            PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).foregroundStyle(.primary)
             Text(reading.characters).font(.title3).textSelection(.enabled)
             if !reading.note.isEmpty { Text(reading.note).font(.subheadline).textSelection(.enabled) }
         }.padding(.vertical, 6).sheet(item: $information) { TableInfoView(table: $0) }
@@ -232,7 +240,7 @@ struct SearchView: View {
                     Button { showLanguages = true } label: {
                         LabeledContent(ui("語言"), value: model.language.isEmpty ? ui("全部語言") : model.language)
                     }
-                } footer: { Text(ui("漢字按字分別匹配；讀音、註釋使用原始資料的 FTS 詞項檢索。本版尚未加入繁簡、異體字與拼音轉換。")) }
+                } footer: { Text(ui("讀音搜尋：先顯示開頭相同的讀音，再顯示包含輸入內容的讀音。搜尋使用字表原始音標。")) }
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.installed?.tables.isEmpty != false {
                     ContentUnavailableView(ui("先選擇字表"), systemImage: "arrow.down.circle", description: Text(ui("本版不內置字表。前往「字表」按分區或名稱下載，完成後可離線使用。")))
@@ -267,10 +275,10 @@ struct LanguageView: View {
                 Picker(ui("分類方式"), selection: $grouping) {
                     ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
                 }.pickerStyle(.menu).padding(.horizontal)
-                Button(ui("全部已下載語言")) { model.language = ""; dismiss() }
+                Button(ui("全部已下載語言")) { model.language = ""; model.selectedLanguages = nil; dismiss() }
                 LanguageGroupList(tables: (model.installed?.tables ?? []).filter {
                     filter.isEmpty || ([$0.name, $0.fullName] + $0.atlas + $0.dictionary + $0.administrative).contains { InterfaceLanguage.matches($0, filter) }
-                }, grouping: grouping, depth: 0) { name in model.language = name; dismiss() }
+                }, grouping: grouping, depth: 0) { names, title in model.language = title; model.selectedLanguages = names; dismiss() }
                 if model.languages.isEmpty { Text(ui("尚未下載字表，請先到「字表」選擇字表。")).padding() }
             }.searchable(text: $filter, prompt: ui("搜尋語言或分區")).navigationTitle(ui("選擇語言"))
                 .toolbar { Button(ui("完成")) { dismiss() } }
