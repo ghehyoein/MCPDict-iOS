@@ -27,6 +27,7 @@ struct LanguageSelectionPanel: View {
                 HStack { Text(ui("已選 \(names.count) 個語言點")); Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down") }
             }.buttonStyle(.borderless).accessibilityIdentifier(entryID)
             if expanded {
+                VStack(alignment: .leading, spacing: 8) {
                 Picker(ui("檢索選項"), selection: $kind) {
                     ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
                 }.pickerStyle(.segmented).labelsHidden()
@@ -38,6 +39,7 @@ struct LanguageSelectionPanel: View {
                 LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key + grouping.rawValue, inspect: inspect) {
                     expanded = false; finished()
                 }.id(key + grouping.rawValue)
+                }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
             }
         }
         .onAppear { restoreInitial() }

@@ -105,7 +105,7 @@ struct LanguageDropdown: View {
                 Spacer(minLength: 32)
                 Button(ui("完成"), action: done).accessibilityIdentifier("finishLanguages")
             }.buttonStyle(.borderless)
-        }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+        }
             .onAppear {
                 grouping = initialGrouping
                 if scope == .terminalGroups {
