@@ -5,15 +5,7 @@ enum LanguageSelectionScope {
 
     func eligible(_ tables: [TablePackage], grouping: TableGrouping) -> [TablePackage] {
         guard self != .points else { return tables }
-        let paths = Set(tables.map { grouping.path($0) }.filter { !$0.isEmpty })
-        if self == .topGroups { return tables.filter { !grouping.path($0).isEmpty } }
-        // Only terminal regions are selectable. A point beside a deeper region is hidden.
-        var ancestors = Set<[String]>()
-        for path in paths where path.count > 1 {
-            for length in 1..<path.count { ancestors.insert(Array(path.prefix(length))) }
-        }
-        let terminals = paths.subtracting(ancestors)
-        return tables.filter { terminals.contains(grouping.path($0)) }
+        return tables.filter { !grouping.path($0).isEmpty }
     }
 }
 

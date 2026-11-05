@@ -1,6 +1,11 @@
 name: Build iPhone IPA for local signing
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Publish a release after user approval
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -58,6 +63,7 @@ jobs:
           echo "Simulator checks did not complete; keeping the previous release."
           exit 1
       - name: Publish downloadable development IPA
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

@@ -4,40 +4,55 @@ enum TableGrouping: String, CaseIterable, Identifiable {
     case atlas = "地圖集二分區", dictionary = "音典分區", administrative = "行政區劃", name = "語言點"
     var id: String { rawValue }
     func path(_ table: TablePackage) -> [String] {
+        let raw: [String]
         switch self {
-        case .atlas: return table.atlas
-        case .dictionary: return table.dictionary
+        case .atlas: raw = table.atlas
+        case .dictionary: raw = table.dictionary
         case .administrative: return table.administrative
         case .name: return []
         }
+        // These are independent root categories, even when the other classification
+        // supplies a language-family path. Never nest them under a dialect region.
+        let roots = ["歷史音", "民族語"]
+        if let root = table.atlas.first, roots.contains(root) {
+            if let index = raw.firstIndex(of: root) { return Array(raw[index...]) }
+            return [root] + raw.filter { $0 != "未分類" }
+        }
+        if let index = raw.firstIndex(where: { roots.contains($0) }) { return Array(raw[index...]) }
+        return raw
     }
 }
 
 struct DataView: View {
     @EnvironmentObject var model: AppModel
-    @State private var names = Set<String>()
+    @State private var grouping: TableGrouping = .atlas
+    @State private var selection = Set<String>()
     @State private var filter = ""
     @State private var information: TablePackage?
     private var available: [TablePackage] {
         var map = Dictionary(uniqueKeysWithValues: (model.installed?.tables ?? []).map { ($0.id, $0) })
         for table in model.catalog?.tables ?? [] { map[table.id] = table }
-        return map.values.sorted { $0.name < $1.name }
+        return Array(map.values)
     }
     var body: some View {
-        let tables = available
-        let selection = Set(tables.filter { names.contains($0.name) }.map(\.id))
         NavigationStack {
             List {
-                Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
-                LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "downloads", entryID: "downloadLanguageSelection", inspect: { information = $0 }).disabled(model.updating)
-                ForEach(tables.filter { names.contains($0.name) && (filter.isEmpty || InterfaceLanguage.matches($0.name, filter)) }) { table in
-                    Button { information = table } label: { LanguageBadge(name: table.name, table: table) }.buttonStyle(.plain)
+                Picker(ui("分類方式"), selection: $grouping) {
+                    ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
                 }
-                if model.updating { HStack { ProgressView(); Text(ui(model.status)).font(.caption) } }
+                Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
+                SelectionTree(tables: available.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, selection: $selection, inspect: { information = $0 })
+                    .disabled(model.updating)
+                if model.updating {
+                    HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
+                }
             }
             .navigationTitle(ui("字表")).navigationBarTitleDisplayMode(.large)
-            .searchable(text: $filter, placement: .navigationBarDrawer(displayMode: .automatic), prompt: ui("搜尋已選語言點"))
-            .toolbar { Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
+            .searchable(text: $filter, placement: .navigationBarDrawer(displayMode: .automatic), prompt: ui("搜尋語言點或地區"))
+            .toolbar {
+                Button(ui("全選")) { selection = Set(available.map(\.id)) }.disabled(model.updating).accessibilityIdentifier("selectAllTables")
+                Button(ui("清空")) { selection = [] }.disabled(model.updating)
+                Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
             .safeAreaInset(edge: .bottom, spacing: 0) { TableActions(selection: selection) }
             .sheet(item: $information) { TableInfoView(table: $0) }
         }.task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }

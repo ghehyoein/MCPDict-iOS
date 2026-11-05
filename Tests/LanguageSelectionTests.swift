@@ -2,14 +2,20 @@ import XCTest
 @testable import MCPDictIOS
 
 final class LanguageSelectionTests: XCTestCase {
-    func testTerminalGroupsHaveVariableDepthAndHideSiblingPoints() throws {
+    func testRegionGroupsIncludeAllDescendantsAtEveryDepth() throws {
         func table(_ name: String, _ path: [String]) throws -> TablePackage {
             var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(UITestFixtures.catalog.tables[0])) as? [String: Any])
             json["id"] = name; json["name"] = name; json["atlas"] = path
             return try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: json))
         }
         let tables = try [table("旁列點", ["漢語", "吳語"]), table("深層甲", ["漢語", "吳語", "太湖", "蘇嘉湖"]), table("深層乙", ["漢語", "吳語", "太湖", "蘇嘉湖"]), table("淺層", ["漢語", "粵語"]), table("無分區", [])]
-        XCTAssertEqual(Set(LanguageSelectionScope.terminalGroups.eligible(tables, grouping: .atlas).map(\.name)), ["深層甲", "深層乙", "淺層"])
+        XCTAssertEqual(Set(LanguageSelectionScope.terminalGroups.eligible(tables, grouping: .atlas).map(\.name)), ["旁列點", "深層甲", "深層乙", "淺層"])
+        for root in ["歷史音", "民族語"] {
+            let special = try table(root, [root])
+            XCTAssertEqual(TableGrouping.dictionary.path(special).first, root)
+            let nested = try table(root, ["吳語", root, "子類"])
+            XCTAssertEqual(TableGrouping.atlas.path(nested), [root, "子類"])
+        }
         XCTAssertEqual(LanguageSelectionScope.points.eligible(tables, grouping: .atlas).count, 5)
         XCTAssertEqual(LanguageSelectionScope.topGroups.eligible(tables, grouping: .atlas).count, 4)
     }
