@@ -2,7 +2,6 @@
 Source: osfans/MCPDict app/src/main/ic_launcher-playstore.png
 Commit: d88e3bcaff6f17399a33bc3010794ed1c2dd707e; see UPSTREAM-LICENSE.txt.
 """
-import base64
 import json
 from pathlib import Path
 import subprocess
@@ -14,7 +13,7 @@ def main():
     icon = root / 'AppIcon.appiconset'
     icon.mkdir(parents=True, exist_ok=True)
     image = icon / 'AppIcon.png'
-    image.write_bytes(base64.b64decode(Path(__file__).with_name('android_icon.png.b64').read_text()))
+    image.write_bytes(Path(__file__).with_name('AppIcon.png').read_bytes())
     if sys.platform == 'darwin':
         subprocess.run(['sips', '-z', '1024', '1024', str(image)], check=True, capture_output=True)
     else:

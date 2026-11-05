@@ -15,15 +15,7 @@ struct NativeDialectMap: UIViewRepresentable {
     }
     func updateUIView(_ map: MKMapView, context: Context) {
         context.coordinator.choose = choose
-        if context.coordinator.points != points {
-            context.coordinator.points = points
-            map.removeAnnotations(map.annotations)
-            map.addAnnotations(points.map(PointAnnotation.init))
-        }
-        if context.coordinator.fit != fit {
-            context.coordinator.fit = fit
-            if !map.annotations.isEmpty { map.showAnnotations(map.annotations, animated: true) }
-        }
+        context.coordinator.update(map, points: points, fit: fit)
     }
     final class PointAnnotation: NSObject, MKAnnotation {
         let point: DialectPoint
@@ -37,6 +29,17 @@ struct NativeDialectMap: UIViewRepresentable {
         var fit = 0
         var choose: (String) -> Void
         init(choose: @escaping (String) -> Void) { self.choose = choose }
+        func update(_ map: MKMapView, points: [DialectPoint], fit: Int) {
+            if self.points != points {
+                self.points = points
+                map.removeAnnotations(map.annotations)
+                map.addAnnotations(points.map(PointAnnotation.init))
+            }
+            if self.fit != fit {
+                self.fit = fit
+                if !map.annotations.isEmpty { map.showAnnotations(map.annotations, animated: true) }
+            }
+        }
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             let view = (mapView.dequeueReusableAnnotationView(withIdentifier: "dialect") as? MKMarkerAnnotationView) ?? MKMarkerAnnotationView(annotation: annotation, reuseIdentifier: "dialect")
             view.annotation = annotation

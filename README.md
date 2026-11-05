@@ -2,7 +2,7 @@
 
 数据直接来自 osfans/MCPDict 的 GitHub 规范化字表，在 iPhone 本地建立查询索引，不读取或提取 APK。当前目标是验证 iPhone 安装、分类目录、独立字表下载和离线查询，并非 Android 版完整复刻。
 
-当前版本 0.3 新增底部地图：系统地图可直接试用；设置中填写自己的 MapTiler API key 后切换街道图。
+当前版本 0.3.1：底部地图统一使用 iOS 系统地图（MapKit），无需地图账号或 API key。
 
 0.2 功能继续保留：复用安卓图标；汉字查询只显示所查字；查询语言列表支持三种分区；底部设置可选浅色、深色或跟随系统。实际验证以对应提交的 Actions 和 VALIDATION.md 为准。
 
@@ -36,9 +36,9 @@ App 每次检查更新先读取上游 master 最新提交，再从同一固定�
 
 首次需要联网获取目录，不必下载字表内容。目录会缓存，重启可继续显示点位；底图需联网，不提供离线瓦片包。
 
-无 key 时使用 Apple MapKit。到「設定 → 地圖底圖」填入自己的 MapTiler API key 后使用 Streets v4 矢量街道图；没有嵌入参考网站的第三方密钥。用量和限制以自己的 MapTiler 账号为准。WKWebView User-Agent 为 `MCPDict-iOS/0.3`，可设置对应的 key 限制。key 保存在本机 App 设置中，不上传 GitHub。
+地图统一使用 Apple MapKit，支持缩放、聚合与字表详情。外观跟随 App 的浅色／深色设置。已移除 MapTiler 配置入口、Web 地图渲染库及相关构建下载步骤；升级时清理旧地图 key 设置，字表和收藏保留。
 
-参考 [vearvip/mcpdict-frontend](https://github.com/vearvip/mcpdict-frontend) 的 MapLibre、经纬度和分区标记方案，保留 MIT 许可。MapLibre GL JS 5.6.1 由 Python 构建脚本下载并验证固定 SHA-256 后随 App 打包；运行时不加载远程脚本。MapTiler 与 OpenStreetMap 署名和 MapTiler logo 保留。没有移植网站的服务器接口、统计或全部筛选功能。
+地图点位与分区展示最初参考 vearvip/mcpdict-frontend 的功能思路；当前地图由原生 MapKit 实现，不再打包 Web 地图代码或运行资源。
 
 ## GitHub Actions
 
@@ -50,6 +50,10 @@ App 每次检查更新先读取上游 master 最新提交，再从同一固定�
 代码推送会运行 iOS 检查，App 或真机打包文件变化会生成新的真机包。数据和目录工作流支持手动运行，也在各自构建文件变更时运行，尚未启用每天定时更新。旧整库与三表目录工作流保留作开发工具；当前 App 更新直接连接上游，无需运行这些工作流。
 
 首次基础版本的 [成功记录](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/41994679817)。后续按需下载版本以 Actions 对应提交为准。实际验证范围见 [VALIDATION.md](VALIDATION.md)。
+
+## 编辑应用图标
+
+直接编辑 `tools/AppIcon.png`，建议使用 1024 × 1024 不透明 PNG。构建脚本会复制到 Xcode 资源目录，并在 macOS 调整至标准尺寸。不要编辑生成的 App/Assets.xcassets 图标文件；它会在构建时覆盖。
 
 ## Python 优先
 
