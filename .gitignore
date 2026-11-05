@@ -13,6 +13,3 @@ TestResults.xcresult/
 DeviceBuild/
 App/Assets.xcassets/
 
-App/MapWeb/maplibre-gl.js
-App/MapWeb/maplibre-gl.css
-App/MapWeb/LICENSE.txt

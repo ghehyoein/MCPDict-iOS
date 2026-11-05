@@ -2,7 +2,6 @@ import SwiftUI
 
 struct DialectMapView: View {
     @EnvironmentObject var model: AppModel
-    @AppStorage("mapTilerKey") private var key = ""
     @State private var grouping: TableGrouping = .atlas
     @State private var region = ""
     @State private var filter = ""
@@ -12,8 +11,6 @@ struct DialectMapView: View {
     @State private var readings = [String: String]()
     @State private var querying = false
     @State private var selected: TablePackage?
-    @State private var showSettings = false
-    @State private var mapError: String?
     @State private var fit = 0
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
     private var regions: [String] { Array(Set(tables.compactMap { grouping.path($0).first })).sorted() }
@@ -49,15 +46,7 @@ struct DialectMapView: View {
                 }.padding(.horizontal)
                 Text("\(points.count) 個點位" + (activeCharacter.isEmpty ? " · 依字表檔案經緯度" : " ·「\(activeCharacter)」僅查已下載字表"))
                     .font(.caption).foregroundStyle(.secondary)
-                if key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                    NativeDialectMap(points: points, fit: fit, choose: choose)
-                    Button("目前使用系統底圖 · 設定 MapTiler") { showSettings = true }.font(.caption)
-                } else {
-                    MapTilerWebView(points: points, apiKey: key.trimmingCharacters(in: .whitespacesAndNewlines), fit: fit, choose: choose, report: { mapError = $0 })
-                }
-                if let mapError {
-                    Text(mapError).font(.caption).foregroundStyle(.red).padding(.horizontal)
-                }
+                NativeDialectMap(points: points, fit: fit, choose: choose)
                 if tables.isEmpty { Text("尚無點位目錄，點右上方更新取得；不會下載字表內容。").font(.caption).padding(.horizontal) }
                 if querying || model.updating { ProgressView().padding(4) }
             }
@@ -70,9 +59,7 @@ struct DialectMapView: View {
             }
             .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
             .onChange(of: grouping) { _, _ in region = "" }
-            .onChange(of: key) { _, _ in mapError = nil }
             .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:] }
-            .sheet(isPresented: $showSettings) { SettingsView() }
             .sheet(item: $selected) { table in
                 NavigationStack {
                     List {

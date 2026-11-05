@@ -8,7 +8,7 @@ on:
       - 'project.yml'
       - 'tools/package_ipa.py'
       - 'tools/prepare_assets.py'
-      - 'tools/prepare_map_assets.py'
+      - 'tools/AppIcon.png'
       - '.github/workflows/device.yml'
 permissions:
   contents: write
@@ -30,7 +30,6 @@ jobs:
         run: |
           brew install xcodegen
           python tools/prepare_assets.py
-          python3 tools/prepare_map_assets.py
           xcodegen generate
       - name: Build for physical iPhone without account credentials
         run: xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath DeviceBuild CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build

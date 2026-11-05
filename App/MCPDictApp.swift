@@ -44,6 +44,8 @@ final class AppModel: ObservableObject {
     }
     func start() async {
         guard !started else { return }; started = true
+        // Remove the retired optional map-provider setting on upgrade.
+        UserDefaults.standard.removeObject(forKey: "mapTilerKey")
         do {
             if FileManager.default.fileExists(atPath: favoritesURL.path) {
                 favorites = try JSONDecoder().decode([SavedReading].self, from: Data(contentsOf: favoritesURL))
