@@ -1,0 +1,46 @@
+name: Build iPhone IPA for local signing
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'App/**'
+      - 'project.yml'
+      - 'tools/package_ipa.py'
+      - 'tools/prepare_assets.py'
+      - '.github/workflows/device.yml'
+permissions:
+  contents: write
+concurrency:
+  group: device-release
+  cancel-in-progress: false
+jobs:
+  device:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test package and query contracts
+        run: python -m unittest discover -s tools -p 'test_*.py' -v
+      - name: Generate assets and project
+        run: |
+          brew install xcodegen
+          python tools/prepare_assets.py
+          xcodegen generate
+      - name: Build for physical iPhone without account credentials
+        run: xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -configuration Release -sdk iphoneos -destination 'generic/platform=iOS' -derivedDataPath DeviceBuild CURRENT_PROJECT_VERSION="$GITHUB_RUN_NUMBER" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO build
+      - name: Verify device platform and package IPA
+        run: python tools/package_ipa.py DeviceBuild/Build/Products/Release-iphoneos/MCPDictIOS.app dist/MCPDict-iPhone-unsigned.ipa
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iPhone-IPA-requires-local-signing
+          path: dist/*
+      - name: Publish downloadable development IPA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="iphone-dev-${GITHUB_RUN_NUMBER}-${GITHUB_SHA:0:7}"
+          gh release create "$tag" dist/* --prerelease --title "iPhone development build ${GITHUB_RUN_NUMBER} — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA"

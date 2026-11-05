@@ -1,5 +1,9 @@
 import SwiftUI
 
+enum AppConfiguration {
+    static let manifestURL = "https://github.com/ghehyoein/MCPDict-iOS/releases/download/data-latest/manifest.json"
+}
+
 @main
 struct MCPDictApp: App {
     @StateObject private var model = AppModel()
@@ -37,6 +41,7 @@ final class AppModel: ObservableObject {
     private var updateTask: Task<Void, Never>?
     private let favoritesURL: URL
     init() {
+        UserDefaults.standard.register(defaults: ["manifestURL": AppConfiguration.manifestURL])
         let repository = DictionaryRepository()
         self.repository = repository
         updater = DataUpdater(repository: repository)
@@ -227,7 +232,7 @@ struct FavoritesView: View {
 
 struct DataView: View {
     @EnvironmentObject var model: AppModel
-    @AppStorage("manifestURL") private var manifestURL = ""
+    @AppStorage("manifestURL") private var manifestURL = AppConfiguration.manifestURL
     @AppStorage("autoCheck") private var autoCheck = false
     var body: some View {
         NavigationStack {

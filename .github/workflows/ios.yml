@@ -13,6 +13,7 @@ jobs:
       - name: Generate Xcode project
         run: |
           brew install xcodegen
+          python3 tools/prepare_assets.py
           xcodegen generate
       - name: Compile for iOS Simulator without signing
         run: xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -sdk iphonesimulator -configuration Debug -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build

@@ -1,6 +1,12 @@
 name: Build dictionary from GitHub source
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/data.yml'
+      - 'tools/data_pipeline.py'
+      - 'tools/requirements-build.txt'
 permissions:
   contents: write
 concurrency:
