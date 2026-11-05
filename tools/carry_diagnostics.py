@@ -7,7 +7,7 @@ def gh(*args):
  return subprocess.run(["gh",*args],check=False,capture_output=True,text=True)
 latest=gh("api",f"repos/{repo}/releases/latest","--jq",".tag_name").stdout.strip()
 got=gh("release","download",latest,"--pattern","diagnostics.json","--pattern","upstream-warnings.txt","--dir",str(prior))
-if got.returncode:
+if got.returncode or not all((prior/name).is_file() for name in ("diagnostics.json", "upstream-warnings.txt")):
  fallback="data-3cf11dfc9125-c6566da54634"
  subprocess.run(["gh","release","download",fallback,"--pattern","manifest.json","--pattern","upstream-warnings.txt","--dir",str(prior),"--clobber"],check=True)
  source=json.loads((prior/"manifest.json").read_text())["sourceCommit"]
