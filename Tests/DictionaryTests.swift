@@ -1,5 +1,6 @@
 import XCTest
 import SQLite3
+import CryptoKit
 @testable import MCPDictIOS
 
 final class DictionaryTests: XCTestCase {
@@ -64,5 +65,46 @@ final class DictionaryTests: XCTestCase {
     func testManifestRejectsIncompatibleSchema() throws {
         let manifest = DataManifest(schemaVersion: 99, version: "test", sourceCommit: String(repeating: "a", count: 40), sourceRepository: "https://github.com/osfans/MCPDict", database: .init(url: URL(string: "https://github.com/example/data/releases/download/test/mcpdict.db")!, size: 1024, sha256: String(repeating: "b", count: 64)))
         XCTAssertThrowsError(try manifest.validate())
+    }
+
+    func testTableDownloadContractRestoreAndRemoval() async throws {
+        let file = try fixture()
+        do {
+            let db = try SQLiteConnection(url: file, readOnly: false)
+            _ = try db.rows("DELETE FROM langs WHERE 語言 != '普通話'")
+        }
+        let bytes = try Data(contentsOf: file)
+        let digest = SHA256.hash(data: bytes).map { String(format: "%02x", $0) }.joined()
+        func table(_ hash: String) -> TablePackage {
+            TablePackage(id: String(repeating: "a", count: 24), name: "普通話", fullName: "普通話", atlas: ["現代標準漢語"], dictionary: ["現代標準漢語"], administrative: ["北京"], source: "Test fixture", sourceCommit: String(repeating: "b", count: 40), recordCount: 2, size: Int64(bytes.count), sha256: hash, url: URL(string: "https://github.com/example/data/releases/download/test/table.db")!)
+        }
+        func catalog(_ package: TablePackage) -> TableCatalog {
+            TableCatalog(schemaVersion: 1, version: "test", sourceRepository: "https://github.com/osfans/MCPDict", sourceCommit: package.sourceCommit, scope: "test", tables: [package])
+        }
+        let package = table(digest)
+        let repo = DictionaryRepository()
+        let directory = file.deletingLastPathComponent().appendingPathComponent("installed")
+        let store = TableStore(repository: repo, root: directory)
+        let installed = try await store.apply(catalog(package), selected: [package.id], localFiles: [package.id: file]) { _ in }
+        XCTAssertEqual(installed.tables.count, 1)
+        XCTAssertTrue(FileManager.default.fileExists(atPath: file.path), "Original import must not be moved")
+        let rows = try await repo.search("中", mode: .character, language: "普通話")
+        XCTAssertEqual(rows.count, 2)
+        do {
+            let bad = table(String(repeating: "0", count: 64))
+            _ = try await store.apply(catalog(bad), selected: [bad.id], localFiles: [bad.id: file]) { _ in }
+            XCTFail("Bad hash must fail")
+        } catch { }
+        let unchanged = try await repo.search("中", mode: .character, language: "普通話")
+        XCTAssertEqual(unchanged, rows)
+        let restoredRepo = DictionaryRepository()
+        let restoredStore = TableStore(repository: restoredRepo, root: directory)
+        let restored = try await restoredStore.restore()
+        XCTAssertEqual(restored?.tables, [package])
+        let restoredRows = try await restoredRepo.search("中", mode: .character, language: "普通話")
+        XCTAssertEqual(restoredRows, rows)
+        _ = try await store.apply(catalog(package), selected: []) { _ in }
+        let languages = try await repo.languages()
+        XCTAssertTrue(languages.isEmpty)
     }
 }

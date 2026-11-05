@@ -1,119 +1,67 @@
-# 漢字音典 iOS 試作
+# 漢字音典 iOS · 按需下载试验版
 
-目标是逐步移植汉字音典，先完成稳定的数据与查询闭环。数据直接来自 [osfans/MCPDict](https://github.com/osfans/MCPDict) 的 GitHub 字表，经 Python 构建 SQLite；本工程没有读取、解包或下载 APK。
+数据直接来自 osfans/MCPDict 的 GitHub 字表，经 Python 构建，不读取或提取 APK。当前目标是验证 iPhone 安装、分类目录、独立字表下载和离线查询，并非 Android 版完整复刻。
 
-**这是开发初版，不是已经完成全部功能或通过真机验收的 iOS 成品。** Windows 本地验证 Python；iOS 的编译、模拟器测试交给 GitHub Actions 的 macOS runner。2026-11-05 首次云端检查已全部通过：4 项 Python 测试、iOS 编译及 3 项 XCTest。现在不需要 Apple 付费开发者账号，也没有配置签名、TestFlight 或 App Store 发布。
+## 安装到 iPhone
 
-仓库：[ghehyoein/MCPDict-iOS](https://github.com/ghehyoein/MCPDict-iOS)。[首次通过的完整运行记录](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/41994679817)，对应代码提交 `ac11ed2cb58baeabb5079773d7f544ce18495094`。
+支持 iOS 17+，本次目标为 iPhone 13 / iOS 26。到本仓库 Releases 选择最新 iPhone development build，下载 MCPDict-iPhone-unsigned.ipa。IPA 未签名，须通过 Windows AltServer / AltStore Classic 使用自己的 Apple 账号签名安装，不能在 Safari 下载后直接点开。详见 [INSTALL-IPHONE.md](INSTALL-IPHONE.md)。
 
-真机测试路线：新增 `Build iPhone IPA for local signing` 工作流，生成 arm64 iPhone IPA 并发布到 Releases。安装前需要在 Windows 上通过 AltServer / AltStore Classic 免费账号签名；操作步骤见 [INSTALL-IPHONE.md](INSTALL-IPHONE.md)。当前不在 GitHub 保存 Apple 账号或证书。
+## 不内置字表
 
-## Python 和 Swift 各自负责什么
+首次安装没有词典内容。进入「資料」取得小型目录，选中字表后点击「套用選擇」。本试验目录仅有普通話、廣州、杭州三份真实字表，合计约 2 MB；不是上游完整目录，也没有通用汉字/字书基础库。
 
-| 部分 | 语言 | 文件 |
-|---|---|---|
-| 上游字表解析、规范化、数据库生成 | Python（调用上游脚本） | `tools/data_pipeline.py` |
-| 数据完整性校验、SHA-256、版本清单 | Python | `tools/data_pipeline.py` |
-| 查询参考实现与命令行 | Python | `tools/query.py` |
-| Windows 本地查字测试界面 | Python / Tkinter | `tools/preview.py` |
-| 数据测试 | Python unittest | `tools/test_pipeline.py` |
-| iPhone 界面、离线 SQLite 读取、下载切换、收藏 | Swift / SwiftUI | `App/` |
-| iOS 查询、更新失败保留旧连接测试 | Swift / XCTest | `Tests/` |
+支持地图集二分区、音典分区、行政区划（省、市、县、镇、村等逐级选择）以及字表名称检索。可以选取一个分类的全部试验字表，也可单独选择某表。分类只是同一字表的不同入口，稳定 ID 去重，不会重复下载。
 
-Python 负责可复用的数据生产和参考实现；手机内不嵌入 Python 解释器。手机离线使用系统 SQLite，避免第一版引入解释器和额外打包依赖。Python 测试界面用于 Windows 开发，不代表 iOS 界面。
+页面显示需下载大小和将移除的字表数量。取消勾选已下载字表，再套用选择，会移除该表。查询只覆盖已下载字表，收藏和笔记独立保存。确认下载架构后再扩展完整目录和默认内置字表。
 
-## 已实现的初版功能
+## 数据与稳定性
 
-- 汉字查询、多字 OR 查询、`U+4E2D` 查询。
-- 原始读音与注释的 FTS5 词项查询、单语言筛选、每次加载 100 条。
-- 如实显示同音字组，未把每行误认为单个汉字。
-- 收藏查询结果快照、个人笔记，独立文件保存；更新词典不覆盖收藏。
-- 更新按钮、可选启动检查、下载取消、大小/SHA-256/SQLite/字段/FTS5 验证。
-- 下载到新文件，验证后原子更新当前指针；失败保留旧库，成功后保留上一份文件。
-- GitHub 自动数据构建及 iOS macOS 编译/模拟器测试工作流。
+Python data_pipeline.py 使用上游 make.py -i 从固定提交构建整库；build_table_catalog.py 再提取独立 SQLite 字表包，保留同音字组、读音、注释、语言元数据和 FTS5 配置。每份字表记录稳定 ID、分类、来源提交、大小、记录数、SHA-256 和不可变 Release 地址。
 
-尚未完成：繁简及异体字自动扩展、完整音韵/拼音转换、形码/部首/笔画查询、字书详情、离线地图、双向矩阵、猜字练习、扩展字体、收藏导入导出、后台下载、百分比进度、旧版本手动回退界面。未宣称与 Android 全功能或全部结果完全一致。
+iOS 下载并校验所选包，复用相同哈希的已有包，再在临时数据库建立合并查询索引，成功后原子切换本地指针。下载、校验或建立索引失败保留旧数据；成功切换后清理未选择的字表。
 
-## 现在在 Windows 上试查
+当前同时保存独立包和一份合并查询库，磁盘占用大于网络下载量，操作前要求约三倍所选包大小加 30 MB 可用空间。需要保持 App 在前台，显示处理阶段与字表进度，没有后台下载或字节百分比。上游简称变化会成为新字表，改名迁移需后续处理。
 
-安装 Python 3.12 或更新版本（包含 Tcl/Tk）。查询界面只使用标准库，无需安装构建字表的依赖。
+[试验目录 catalog.json](https://github.com/ghehyoein/MCPDict-iOS/releases/download/tables-latest/catalog.json)
 
-在本工程目录打开终端：
+## GitHub Actions
+
+- Check iOS and Python：Python 测试、工程生成、iOS 编译与模拟器 XCTest。
+- Build iPhone IPA for local signing：真机编译，检查 Mach-O 的 arm64/iOS 平台，打包并发布待本地签名 IPA。
+- Build dictionary from GitHub source：构建并验证上游整库，发布清单和源数据诊断。
+- Publish experimental downloadable tables：从已验证整库提取三份独立字表，发布包和目录。
+
+代码推送会运行 iOS 检查，App 或真机打包文件变化会生成新的真机包。数据和目录工作流支持手动运行，也在各自构建文件变更时运行，尚未启用每天定时更新。上游更新后，先手动运行整库流程，成功后运行字表目录流程。
+
+首次基础版本的 [成功记录](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/41994679817)。后续按需下载版本以 Actions 对应提交为准。实际验证范围见 [VALIDATION.md](VALIDATION.md)。
+
+## Python 优先
+
+Python 负责数据构建、字表拆分、目录清单、参考查询、Windows 测试界面、图标生成、IPA 验证和打包。Swift 负责 iPhone 原生界面、SQLite 查询、下载与数据切换。手机内不嵌入 Python 解释器。
+
+Windows 安装 Python 3.12+ 后可运行：
 
 ```powershell
+py -3 -m unittest discover -s tools -p "test_*.py" -v
 py -3 tools/preview.py sample-data/mcpdict.db
 ```
 
-也可以双击 `启动Python查字.cmd`。若本地没有 `sample-data/mcpdict.db`，先从自己的数据 Release 下载 `mcpdict.db`，或按下文构建；可以把数据库路径直接传给脚本。
+Windows 界面是独立的完整开发快照查字工具，不代表 iOS 的下载界面。本地工程目录附有快照，Git 仓库不提交大型数据库。
 
-当前电脑的工程目录已附真实数据库。启动脚本优先使用 `py`，未安装时会尝试此电脑已有的 Python 运行时。仅源码压缩包不含约 484 MB 的数据库；需要保留或另行拷贝 `sample-data/mcpdict.db`。实际测试范围见 `VALIDATION.md`。
-
-命令行查字与测试：
-
-```powershell
-py -3 tools/query.py sample-data/mcpdict.db 中 --language 普通話
-py -3 tools/query.py sample-data/mcpdict.db zhong1 --mode pronunciation --language 普通話
-py -3 -m unittest discover -s tools -p "test_*.py" -v
-```
-
-读音必须用数据库原始格式。简体字不一定自动匹配繁体字；没有结果时请尝试原始字形。部分语言使用 IPA。生僻字的显示还取决于系统字体。
-
-## Windows 写代码，GitHub macOS 编译 iOS
-
-1. 在你的 GitHub 账号创建一个代码仓库，将本目录的源码上传。务必包含隐藏目录 `.github/workflows`，不要把大数据库提交到 Git。
-2. 打开仓库 **Actions → Check iOS and Python → Run workflow**，或推送代码触发检查。
-3. 工作流安装 XcodeGen、生成 Xcode 工程、编译模拟器版本、运行 XCTest，再上传测试报告和模拟器 `.app`。
-4. 红色失败时查看失败步骤日志；修改后重新推送。先以持续通过编译和自动测试为目标。
-
-GitHub runner 提供 macOS/Xcode 环境；它不是 Windows 上的交互式 iPhone 模拟器。下载的 `SimulatorApp.zip` 不能直接装到 iPhone，也不能在 Windows 上运行。后续稳定后再接入 Apple 开发者账号和签名。
-
-工作流已在此仓库实际执行并通过，运行页面的 Artifacts 包含测试报告和模拟器应用包。后续代码推送将自动运行检查，也可手动运行。仅文档更新可在提交消息注明 `[skip ci]`，避免重复构建。GitHub Actions 的可用额度和费用遵循账号设置。
-
-相关官方说明：[GitHub 托管 runner](https://docs.github.com/en/actions/how-tos/manage-runners/github-hosted-runners/use-github-hosted-runners)、[XcodeGen](https://github.com/yonaskolb/XcodeGen)。
-
-## 配置直接从 GitHub 字表更新
-
-1. 在同一个代码仓库中，打开 **Actions → Build dictionary from GitHub source → Run workflow**。
-2. 它锁定上游 `master` 的完整提交 SHA，下载该提交，使用上游 Python `make.py -i` 构建，不生成 APK。暂不启用额外耗时的同音字统计 `-c`；SQLite、必要字段和查询校验仍必须通过。
-3. 全部校验成功后发布不可变的版本数据 Release，再更新 `data-latest` 中的发现清单。若构建失败，原有发布不会被替换。
-4. iOS「资料」页填写下面格式的网址（替换为你的用户名与仓库名）：
-
-```text
-https://github.com/你的用户名/你的仓库/releases/download/data-latest/manifest.json
-```
-
-5. 点击「检查更新」再点「更新资料」。以后无需重装 App 即可更新兼容结构的数据。
-
-当前开发阶段支持手动构建，修改数据构建脚本或该工作流时也会触发一次构建，尚未启用定时发布。同一上游提交不重复构建。手机启动时只检查，下载仍由用户触发。初版前台整库下载，不压缩、不做差分，需预留约两倍新库大小加 100 MB 的空闲空间；旧库另外占用空间。
-
-初版下载器支持可公开访问的 GitHub Releases，没有私有仓库鉴权。请勿把访问令牌写进 App。源码已上传仓库，数据 Release 尚未构建或发布，更新网址目前还不能下载数据。上游代码许可不自动覆盖每一份字表的再分发许可，公开发布数据前应保留并核对上游来源说明。
-
-## 手动使用 Python 构建
-
-以下步骤在本工程根目录执行。首次构建会读取大量表格，可能耗时较长：
+手动构建完整数据（在 Python 虚拟环境中）：
 
 ```text
 git clone https://github.com/osfans/MCPDict.git data-build/upstream
-python -m venv .venv
-```
-
-激活虚拟环境后运行：
-
-```text
 python -m pip install -r tools/requirements-build.txt
-python tools/data_pipeline.py --checkout data-build/upstream --repository YOUR_NAME/YOUR_REPO --output dist
+python tools/data_pipeline.py --checkout data-build/upstream --repository ghehyoein/MCPDict-iOS --output dist
 ```
 
-`YOUR_NAME/YOUR_REPO` 只用于生成真实部署后的 Release 地址，本地打包不会自动上传。输出包括 `mcpdict.db`、`manifest.json`、`validation.json`。清单内的地址只有在对应 Release 发布后才可下载。
+上游构建可能报告源文件缺失或格式警告，生成成功不代表资料无误。字表来源和许可需要独立核对，上游 MIT 代码许可证不自动覆盖全部数据。
 
-构建依赖固定为此次验证的版本；上游新增依赖时需主动更新并重新验证，避免无提示地随依赖发布改变构建结果。上游源码本身按每次构建的提交 SHA 锁定。
+## 功能边界
 
-## 稳定性与后续顺序
+基础汉字、多字、Unicode、原始读音与注释查询、语言筛选、分页、收藏、笔记和按需字表管理已写入。
 
-1. 先让 GitHub iOS 编译和测试通过，记录 Xcode 和 runner 版本；当前工作流使用 `macos-latest`，稳定后可固定环境。
-2. 扩充 Android 对照样例，验证多音字、异体字、IPA、语言排序；目前只验证明确支持的查询子集。
-3. 加入断网、取消、磁盘不足、损坏数据库、App 重启恢复的设备集成测试。
-4. 移植 OpenCC 与音韵转换，再加入字书/形码、矩阵、地图和练习。
-5. 软件稳定后才处理签名、真机分发和开发者账号。
+尚未移植：繁简/异体字、复杂音韵/拼音转换、形码/部首/笔画、字书详情、矩阵、离线地图、猜字/猜方言、扩展字体、收藏导入导出。行政分类是字表选择入口，不是离线地图。
 
-更新验证的边界：SHA-256 检查传输和文件一致性；清单来自用户配置的 HTTPS GitHub 源，没有额外数字签名。当前没有完整更新故障注入测试，也没有真机性能结论。上游构建可能输出缺失字表或格式警告，生成成功并不代表源资料没有问题。
+真机签名、安装和使用效果仍需在你的 iPhone 上确认。当前是开发测试包，不是 App Store 或 TestFlight 成品。

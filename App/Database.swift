@@ -29,8 +29,9 @@ enum SearchMode: String, CaseIterable, Identifiable {
 // Instances never leave the repository actor. All user values use bound parameters.
 final class SQLiteConnection {
     private var db: OpaquePointer?
-    init(url: URL) throws {
-        guard sqlite3_open_v2(url.path, &db, SQLITE_OPEN_READONLY | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK else {
+    init(url: URL, readOnly: Bool = true) throws {
+        let flags = readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
+        guard sqlite3_open_v2(url.path, &db, flags | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK else {
             let message = db.map { String(cString: sqlite3_errmsg($0)) } ?? "無法打開資料庫"
             if let db { sqlite3_close(db) }
             db = nil
@@ -65,7 +66,7 @@ final class SQLiteConnection {
         }
     }
 
-    func validate() throws {
+    func validate(requireSample: Bool = true) throws {
         guard try rows("PRAGMA quick_check").first?.values.first == "ok" else {
             throw DictionaryFailure(message: "資料庫完整性檢查失敗")
         }
@@ -73,7 +74,8 @@ final class SQLiteConnection {
             let actual = Set(try rows("PRAGMA table_info(\(table))").compactMap { $0["name"] })
             guard Set(fields).isSubset(of: actual) else { throw DictionaryFailure(message: "不相容的資料表：\(table)") }
         }
-        guard try !rows("SELECT rowid FROM langs WHERE langs MATCH ? LIMIT 1", ["字組 : \"中\""]).isEmpty else {
+        let sample = try rows("SELECT rowid FROM langs WHERE langs MATCH ? LIMIT 1", ["字組 : \"中\""])
+        guard !requireSample || !sample.isEmpty else {
             throw DictionaryFailure(message: "FTS5 查字測試未通過")
         }
     }
@@ -85,11 +87,16 @@ actor DictionaryRepository {
     func open(_ url: URL) throws { connection = try SQLiteConnection(url: url) }
 
     // Validate before touching the active connection; failed activation preserves it.
-    func activate(_ url: URL, commitPointer: () throws -> Void) throws {
+    func activate(_ url: URL, requireSample: Bool = true, commitPointer: () throws -> Void) throws {
         let candidate = try SQLiteConnection(url: url)
-        try candidate.validate()
+        try candidate.validate(requireSample: requireSample)
         try commitPointer()
         connection = candidate
+    }
+
+    func clear(commitPointer: () throws -> Void) throws {
+        try commitPointer()
+        connection = nil
     }
 
     func languages() throws -> [String] {

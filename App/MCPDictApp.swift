@@ -1,9 +1,5 @@
 import SwiftUI
 
-enum AppConfiguration {
-    static let manifestURL = "https://github.com/ghehyoein/MCPDict-iOS/releases/download/data-latest/manifest.json"
-}
-
 @main
 struct MCPDictApp: App {
     @StateObject private var model = AppModel()
@@ -21,9 +17,9 @@ struct SavedReading: Identifiable, Codable {
 @MainActor
 final class AppModel: ObservableObject {
     let repository: DictionaryRepository
-    let updater: DataUpdater
-    @Published var installed: DataManifest?
-    @Published var available: DataManifest?
+    let tableStore: TableStore
+    @Published var installed: TableInstallation?
+    @Published var catalog: TableCatalog?
     @Published var languages = [String]()
     @Published var results = [Reading]()
     @Published var favorites = [SavedReading]()
@@ -41,10 +37,9 @@ final class AppModel: ObservableObject {
     private var updateTask: Task<Void, Never>?
     private let favoritesURL: URL
     init() {
-        UserDefaults.standard.register(defaults: ["manifestURL": AppConfiguration.manifestURL])
         let repository = DictionaryRepository()
         self.repository = repository
-        updater = DataUpdater(repository: repository)
+        tableStore = TableStore(repository: repository)
         favoritesURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("favorites.json")
     }
     func start() async {
@@ -55,13 +50,10 @@ final class AppModel: ObservableObject {
             }
         } catch { self.error = "收藏讀取失敗：\(error.localizedDescription)" }
         do {
-            installed = try await updater.restore()
+            installed = try await tableStore.restore()
             languages = try await repository.languages()
-            status = installed.map { "已安裝 \($0.version)" } ?? "請先設定更新網址，再下載詞典"
+            status = "已下載 \(installed?.tables.count ?? 0) 份字表"
         } catch { self.error = error.localizedDescription }
-        if UserDefaults.standard.bool(forKey: "autoCheck"), let url = UserDefaults.standard.string(forKey: "manifestURL"), !url.isEmpty {
-            await check(url)
-        }
     }
     func search(more: Bool = false) async {
         guard !searching else { return }
@@ -77,33 +69,31 @@ final class AppModel: ObservableObject {
             hasMore = found.count == 100
         } catch { self.error = error.localizedDescription }
     }
-    func check(_ url: String) async {
+    func loadCatalog() async {
         guard !updating else { return }
         updating = true
         defer { updating = false }
-        available = nil
-        status = "正在檢查 GitHub 資料版本…"
+        status = "正在取得字表目錄…"
         do {
-            let manifest = try await updater.check(url)
-            if manifest.database.sha256 == installed?.database.sha256 { status = "已是此更新源的最新資料" }
-            else { available = manifest; status = "發現資料版本 \(manifest.version)" }
+            catalog = try await tableStore.catalog()
+            status = "目錄已更新 · 已下載 \(installed?.tables.count ?? 0) 份字表"
         } catch { status = "檢查失敗，現有資料仍可使用"; self.error = error.localizedDescription }
     }
-    func download() {
-        guard !updating, let manifest = available else { return }
+    func applyTables(_ selection: Set<String>) {
+        guard !updating, let catalog else { return }
         updating = true
-        status = "正在下載及校驗，請保持 App 開啟…"
+        status = "正在處理所選字表，請保持 App 開啟…"
         updateTask = Task {
             defer { updating = false; updateTask = nil }
             do {
-                try await updater.install(manifest)
-                installed = manifest
-                available = nil
+                installed = try await tableStore.apply(catalog, selected: selection) { message in
+                    await MainActor.run { self.status = message }
+                }
                 generation += 1
                 results = []; hasMore = false; lastSearch = nil
                 languages = try await repository.languages()
                 if !languages.contains(language) { language = "" }
-                status = "更新完成，可離線查詢"
+                status = "已下載 \(installed?.tables.count ?? 0) 份字表；查詢只覆蓋已下載資料"
             } catch is CancellationError { status = "已取消，現有資料仍可使用" }
             catch { status = "更新失敗，現有資料仍可使用"; self.error = error.localizedDescription }
         }
@@ -177,8 +167,8 @@ struct SearchView: View {
                     }
                 } footer: { Text("漢字按字分別匹配；讀音、註釋使用原始資料的 FTS 詞項檢索。本版尚未加入繁簡、異體字與拼音轉換。") }
                 if model.searching { ProgressView("查詢中…") }
-                if model.installed == nil {
-                    ContentUnavailableView("先下載詞典資料", systemImage: "arrow.down.circle", description: Text("前往「資料」設定 GitHub 更新源。下載完成後可離線使用。"))
+                if model.installed?.tables.isEmpty != false {
+                    ContentUnavailableView("先選擇字表", systemImage: "arrow.down.circle", description: Text("本版不內置字表。前往「資料」按分區或名稱下載，完成後可離線使用。"))
                 } else if model.results.isEmpty && !model.searching {
                     Text("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。")
                 }
@@ -230,39 +220,3 @@ struct FavoritesView: View {
     }
 }
 
-struct DataView: View {
-    @EnvironmentObject var model: AppModel
-    @AppStorage("manifestURL") private var manifestURL = AppConfiguration.manifestURL
-    @AppStorage("autoCheck") private var autoCheck = false
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("目前資料") {
-                    LabeledContent("版本", value: model.installed?.version ?? "尚未安裝")
-                    if let commit = model.installed?.sourceCommit { LabeledContent("上游提交", value: String(commit.prefix(12))) }
-                    Text(model.status)
-                    if model.updating { ProgressView() }
-                }
-                Section {
-                    TextField("manifest.json 的 HTTPS 網址", text: $manifestURL, axis: .vertical)
-                        .textInputAutocapitalization(.never).autocorrectionDisabled().keyboardType(.URL)
-                        .disabled(model.updating)
-                        .onChange(of: manifestURL) { _, _ in model.available = nil }
-                    Toggle("啟動時檢查更新", isOn: $autoCheck)
-                    Button("檢查更新") { Task { await model.check(manifestURL) } }.disabled(model.updating || manifestURL.isEmpty)
-                    if let manifest = model.available {
-                        Text("可下載：\(manifest.version) · \(ByteCountFormatter.string(fromByteCount: manifest.database.size, countStyle: .file))")
-                        Button("更新資料（下載）") { model.download() }.disabled(model.updating)
-                    }
-                    if model.updating { Button("取消下載", role: .cancel) { model.cancelDownload() } }
-                } header: { Text("GitHub 資料更新")
-                } footer: { Text("更新源由配套 GitHub Actions 直接從 osfans/MCPDict 字表構建，完全不使用 APK。請填寫你部署後的 manifest 網址。初版需要保持前台下載，無固定時刻的背景更新。") }
-                Section("關於試作版") {
-                    Link("上游字表與來源說明", destination: URL(string: "https://github.com/osfans/MCPDict")!)
-                    Text("0.1 · 原生 SwiftUI / SQLite FTS5。資料與收藏分開儲存；更新驗證大小、SHA-256、資料表和查字能力。")
-                    Text("尚未移植：離線地圖、矩陣、猜字／猜方言、形碼檢索、OpenCC、音標轉換與擴展字體。")
-                }
-            }.navigationTitle("詞典資料")
-        }
-    }
-}
