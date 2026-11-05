@@ -30,7 +30,8 @@ jobs:
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           if gh release download data-latest --pattern manifest.json --dir prior; then
             previous=$(python -c 'import json; print(json.load(open("prior/manifest.json"))["sourceCommit"])')
-            if [ "$sha" = "$previous" ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; fi
+            profile=$(python -c 'import json; print(json.load(open("prior/manifest.json")).get("diagnosticsProfile", ""))')
+            if [ "$sha" = "$previous" ] && [ "$profile" = "upstream-c-v1" ]; then echo "skip=true" >> "$GITHUB_OUTPUT"; fi
           fi
       - uses: actions/checkout@v4
         if: steps.source.outputs.skip != 'true'

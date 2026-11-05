@@ -58,7 +58,7 @@ def build(checkout: Path) -> Path:
     for module in (tools / "tables").glob("*.py"):
         module.touch()
     (tools / "tables/output/_詳情.json").touch()
-    subprocess.run([sys.executable, "make.py", "-i"], cwd=tools,
+    subprocess.run([sys.executable, "make.py", "-c", "-i"], cwd=tools,
                    env={**os.environ, "PYTHONUTF8": "1"}, check=True)
     return checkout / "app/src/main/assets/databases/mcpdict.db"
 
@@ -78,6 +78,7 @@ def package(database: Path, output: Path, commit: str, repository: str) -> dict:
     manifest = {
         "schemaVersion": 1, "version": tag, "sourceCommit": commit,
         "sourceRepository": SOURCE,
+        "diagnosticsProfile": "upstream-c-v1",
         "database": {"url": f"https://github.com/{repository}/releases/download/{tag}/mcpdict.db",
                      "size": target.stat().st_size, "sha256": digest},
     }
