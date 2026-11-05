@@ -71,6 +71,8 @@ final class AppModel: ObservableObject {
             return
         }
         #endif
+        updating = true; status = "正在準備內置字表…"
+        defer { updating = false }
         // Remove the retired optional map-provider setting on upgrade.
         UserDefaults.standard.removeObject(forKey: "mapTilerKey")
         do {
@@ -79,6 +81,7 @@ final class AppModel: ObservableObject {
             }
         } catch { self.error = "收藏讀取失敗：\(error.localizedDescription)" }
         do {
+            try await tableStore.installBundledTablesIfNeeded()
             installed = try await tableStore.restore()
             catalog = await tableStore.cachedCatalog()
             languages = try await repository.languages()
@@ -296,8 +299,9 @@ struct SearchView: View {
                     LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection")
                 }
                 if model.searching { ProgressView(ui("查詢中…")) }
-                if model.installed?.tables.isEmpty != false {
-                    ContentUnavailableView(ui("先選擇字表"), systemImage: "arrow.down.circle", description: Text(ui("本版不內置字表。前往「字表」按分區或名稱下載，完成後可離線使用。")))
+                if model.updating { ProgressView(ui(model.status)) }
+                else if model.installed?.tables.isEmpty != false {
+                    ContentUnavailableView(ui("先選擇字表"), systemImage: "arrow.down.circle", description: Text(ui("前往「字表」恢復所需字表，或手動檢查上游更新。")))
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }

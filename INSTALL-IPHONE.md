@@ -21,3 +21,8 @@
 AltStore 官方说明：免费账号安装的 App 通常 7 天后过期，需要通过 AltServer 刷新；免费侧载有同时激活数量限制。请在过期前进入 My Apps 使用 Refresh All，并保持电脑 AltServer 可连接。参见 [AltStore 使用与续签说明](https://faq.altstore.io/altstore-classic/your-altstore)。
 
 
+
+
+## 内置字表与更新
+
+0.7.0 内置 osfans/MCPDict 快照 `3cf11dfc91250259a20bf2f271eac4ad8134040a` 的全部可用字表，首次打开会在设备本地准备数据库，无需下载字表。以后在「字表」页手动刷新上游目录、选中语言点，再点击「字表下载」即可更新。已移除的字表不会因重新打开 App 而自动恢复；收藏、设置和已有手动更新会保留。

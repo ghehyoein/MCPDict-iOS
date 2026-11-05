@@ -13,3 +13,6 @@ TestResults.xcresult/
 DeviceBuild/
 App/Assets.xcassets/
 
+
+App/BundledTables/
+bundled-source/
