@@ -31,18 +31,13 @@ struct DialectPoint: Codable, Identifiable, Equatable {
 }
 
 extension DictionaryRepository {
-    // Read every result page; the map must not silently stop after the first 100.
+    // One complete query, without repeated OFFSET scans or a 100-result cutoff.
     func mapReadings(_ character: String) throws -> [String: String] {
         guard character.count == 1 else { throw DictionaryFailure(message: "讀音地圖請輸入一個漢字") }
         var result = [String: Set<String>]()
-        var offset = 0
-        while true {
-            try Task.checkCancellation()
-            let page = try search(character, mode: .character, language: "", offset: offset)
-            for row in page { result[row.language, default: []].insert(row.pronunciation) }
-            if page.count < 100 { break }
-            offset += page.count
-        }
+        let rows = try searchAllCharacters(character, language: "")
+        for row in rows { result[row.language, default: []].insert(row.pronunciation) }
         return result.mapValues { $0.sorted().joined(separator: " / ") }
     }
 }
+
