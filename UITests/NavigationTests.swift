@@ -16,7 +16,12 @@ final class NavigationTests: XCTestCase {
             XCTAssertTrue(app.buttons["downloadTables"].isHittable)
         }
         app.buttons["check-示例語言點"].tap()
+        XCTAssertEqual(app.buttons["check-示例語言點"].value as? String, "unchecked")
         XCTAssertFalse(app.buttons["downloadTables"].isEnabled)
+        XCTAssertFalse(app.buttons["完成"].exists)
+        app.buttons["示例語言點"].tap()
+        XCTAssertTrue(app.buttons["完成"].waitForExistence(timeout: 5))
+        app.buttons["完成"].tap()
         app.tabBars.buttons["字典"].tap()
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "全部語言")).firstMatch.tap()
         app.buttons["check-漢語"].tap()
