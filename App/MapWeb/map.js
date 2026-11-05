@@ -9,9 +9,9 @@ let current = {points:[],key:'',fit:0};
 let key = ''; let lastFit = 0; let popup;
 const collection = () => ({type:'FeatureCollection',features:current.points.map(p=>({type:'Feature',geometry:{type:'Point',coordinates:[p.longitude,p.latitude]},properties:{id:p.id,name:p.name,color:p.color,reading:p.reading}}))});
 function paint(){
-  if(!map.isStyleLoaded()) return;
   const source = map.getSource('dialects');
   if(source) {source.setData(collection());return;}
+  if(!map.isStyleLoaded()) return;
   map.addSource('dialects',{type:'geojson',data:collection(),cluster:true,clusterRadius:36,clusterMaxZoom:14});
   map.addLayer({id:'clusters',type:'circle',source:'dialects',filter:['has','point_count'],paint:{'circle-color':'#007f86','circle-radius':18,'circle-stroke-color':'white','circle-stroke-width':2}});
   // Count labels require the style's glyph source; circles remain usable without a key.
@@ -64,4 +64,4 @@ map.on('click',async event=>{
   popup?.remove();popup=new maplibregl.Popup().setLngLat(event.lngLat).setDOMContent(container).addTo(map);
 });
 // Local diagnostic used by the WKWebView integration test; no key returned.
-window.mapDiagnostic=()=>({loaded:map.isStyleLoaded(),points:map.getSource('dialects')?current.points.length:0});
+window.mapDiagnostic=()=>({loaded:map.isStyleLoaded(),points:map.getSource('dialects')?.serialize().data?.features?.length || 0});
