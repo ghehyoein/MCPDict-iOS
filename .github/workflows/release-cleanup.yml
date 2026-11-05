@@ -4,41 +4,60 @@ on:
     paths: ['.github/workflows/release-cleanup.yml']
 permissions:
   contents: write
-  actions: read
+  actions: write
 jobs:
   cleanup:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 45
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
       - uses: actions/checkout@v4
-      - name: Require passing application checks
-        run: gh run watch 42065401362 --exit-status --interval 20
-      - name: Retrieve verified build
+      - name: Start final build from current main
         run: |
-          gh run download 42065401409 --name iPhone-IPA-requires-local-signing --dir dist
+          gh run cancel 42065401409 || true
+          gh run cancel 42065401362 || true
+          gh workflow run device.yml --ref "$GITHUB_REF_NAME"
+          for attempt in 1 2 3 4 5 6; do
+            run=$(gh run list --workflow device.yml --event workflow_dispatch --commit "$GITHUB_SHA" --json databaseId --jq '.[0].databaseId // empty')
+            if [ -n "$run" ]; then echo "DEVICE_RUN=$run" >> "$GITHUB_ENV"; break; fi
+            sleep 5
+          done
+          test -n "$run"
+      - name: Wait for build and tests
+        run: |
+          gh run watch "$DEVICE_RUN" --exit-status --interval 20 || true
+          check=$(gh run list --workflow ios.yml --commit "$GITHUB_SHA" --json databaseId --jq '.[0].databaseId')
+          gh run watch "$check" --exit-status --interval 20
+      - name: Retrieve and verify package
+        run: |
+          gh run download "$DEVICE_RUN" --name iPhone-IPA-requires-local-signing --dir dist
           python3 - <<'PY'
-          import json, hashlib
+          import json, hashlib, os
           from pathlib import Path
           p=Path("dist/MCPDict-iPhone-unsigned.ipa")
           report=json.loads(p.with_suffix(".json").read_text())
-          assert report["version"]=="0.6.1" and report["build"]=="20"
+          assert report["version"]=="0.6.1" and report["platform"]=="iPhoneOS"
           assert hashlib.sha256(p.read_bytes()).hexdigest()==report["sha256"]
+          with open(os.environ["GITHUB_ENV"],"a") as f:
+              f.write(f"RELEASE_TAG=iphone-dev-{report['build']}-{os.environ['GITHUB_SHA'][:7]}\n")
           PY
-      - name: Publish latest build
+      - name: Publish complete latest release
         run: |
-          tag=iphone-dev-20-54bbfcd
-          RELEASE_TAG="$tag" python3 tools/carry_diagnostics.py
+          python3 tools/carry_diagnostics.py
           for attempt in 1 2 3 4 5; do
-            if gh release view "$tag" >/dev/null 2>&1; then break; fi
-            gh release create "$tag" --latest --title "iPhone development build 20 — local signing required" --notes-file INSTALL-IPHONE.md --target 478199e3ae365b66c9ffdb9db542d6bd2a5c3054 && break
+            if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then break; fi
+            gh release create "$RELEASE_TAG" --latest --title "iPhone development build — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA" && break
             sleep 10
           done
-          gh release upload "$tag" dist/* --clobber
-      - name: Remove explicitly requested historical releases
+          gh release upload "$RELEASE_TAG" dist/* --clobber
+          gh release edit "$RELEASE_TAG" --latest --prerelease=false
+      - name: Keep only this latest release
         run: |
-          for id in 434966767 435372842 434978416 434978370 435426888; do
-            gh api --method DELETE "repos/$GH_REPO/releases/$id"
-          done
+          keep=$(gh release view "$RELEASE_TAG" --json databaseId --jq .databaseId)
+          test -n "$keep"
+          gh api "repos/$GH_REPO/releases?per_page=100" --jq '.[].id' > release-ids.txt
+          while read -r id; do
+            if [ "$id" != "$keep" ]; then gh api --method DELETE "repos/$GH_REPO/releases/$id"; fi
+          done < release-ids.txt
