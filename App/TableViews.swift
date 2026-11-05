@@ -4,22 +4,12 @@ enum TableGrouping: String, CaseIterable, Identifiable {
     case atlas = "地圖集二分區", dictionary = "音典分區", administrative = "行政區劃", name = "語言點"
     var id: String { rawValue }
     func path(_ table: TablePackage) -> [String] {
-        let raw: [String]
         switch self {
-        case .atlas: raw = table.atlas
-        case .dictionary: raw = table.dictionary
+        case .atlas: return table.atlas
+        case .dictionary: return table.dictionary
         case .administrative: return table.administrative
         case .name: return []
         }
-        // These are independent root categories, even when the other classification
-        // supplies a language-family path. Never nest them under a dialect region.
-        let roots = ["歷史音", "民族語"]
-        if let root = table.atlas.first, roots.contains(root) {
-            if let index = raw.firstIndex(of: root) { return Array(raw[index...]) }
-            return [root] + raw.filter { $0 != "未分類" }
-        }
-        if let index = raw.firstIndex(where: { roots.contains($0) }) { return Array(raw[index...]) }
-        return raw
     }
 }
 
@@ -42,7 +32,7 @@ struct DataView: View {
                 }
                 Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
                 SelectionTree(tables: available.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, selection: $selection, inspect: { information = $0 })
-                    .disabled(model.updating)
+                    .id(grouping.rawValue).disabled(model.updating)
                 if model.updating {
                     HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
                 }

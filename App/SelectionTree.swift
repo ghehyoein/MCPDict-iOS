@@ -13,6 +13,7 @@ struct SelectionTree: View {
     @State private var expanded = Set<String>()
     var body: some View {
         let groups = Dictionary(grouping: tables.filter { grouping.path($0).count > depth }) { grouping.path($0)[depth] }
+        VStack(alignment: .leading, spacing: 8) {
         ForEach(groups.keys.sorted(), id: \.self) { key in
             let members = groups[key] ?? []
             let fullRegion = nodePath + [key]
@@ -21,7 +22,7 @@ struct SelectionTree: View {
                 HStack {
                     check(Set(selectable.map(\.id)), label: key, region: (nodePath + [key]).joined(separator: "\u{0}"))
                     if scope == .topGroups || (scope == .terminalGroups && !members.contains(where: { grouping.path($0).count > depth + 1 })) {
-                        Button { toggle(Set(selectable.map(\.id)), region: (nodePath + [key]).joined(separator: "\u{0}")) } label: { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }.buttonStyle(.plain)
+                        Button { toggle(Set(selectable.map(\.id)), region: (nodePath + [key]).joined(separator: "\u{0}")) } label: { HStack { Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) } }.buttonStyle(.plain)
                     } else {
                     Button { if !expanded.insert(key).inserted { expanded.remove(key) } } label: {
                         HStack { Image(systemName: expanded.contains(key) ? "chevron.down" : "chevron.right"); Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }
@@ -44,6 +45,7 @@ struct SelectionTree: View {
                 }.buttonStyle(.plain)
                 Spacer()
             }.padding(.vertical, 4)
+        }
         }
     }
     private func toggle(_ ids: Set<String>, region: String? = nil) {
@@ -92,8 +94,8 @@ struct LanguageDropdown: View {
             ScrollView {
                 VStack(alignment: .leading) {
                     SelectionTree(tables: eligible.filter { t in filter.isEmpty || ([t.name] + t.atlas + t.dictionary + t.administrative).contains { InterfaceLanguage.matches($0, filter) } }, grouping: grouping, scope: scope, selectedRegion: $selectedRegion, regionTables: eligible, selection: selection, inspect: inspect)
-                }.frame(maxWidth: .infinity)
-            }.frame(height: 240)
+                }.frame(maxWidth: .infinity).id(grouping.rawValue)
+            }.frame(height: 240).accessibilityIdentifier("languageTreeScroll")
             HStack {
                 if scope != .terminalGroups {
                     Button(ui("全選")) { names = Set(eligible.map(\.name)) }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
