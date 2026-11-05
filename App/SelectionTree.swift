@@ -16,7 +16,9 @@ struct SelectionTree: View {
                     check(Set(members.map(\.id)), label: key)
                     Button { if !expanded.insert(key).inserted { expanded.remove(key) } } label: {
                         HStack { Image(systemName: expanded.contains(key) ? "chevron.down" : "chevron.right"); Text(ui(key)); Spacer(); Text("\(members.count)").foregroundStyle(.secondary) }
+                            .contentShape(Rectangle())
                     }.buttonStyle(.plain).accessibilityIdentifier("expand-" + key)
+                        .accessibilityValue(expanded.contains(key) ? "expanded" : "collapsed")
                 }
                 if expanded.contains(key) {
                     SelectionTree(tables: members, grouping: grouping, depth: depth+1, selection: $selection, inspect: inspect).padding(.leading, 18)
@@ -112,3 +114,4 @@ struct HomophoneResultsView: View {
         }.sheet(item: $info) { TableInfoView(table: $0) }
     }
 }
+
