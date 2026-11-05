@@ -10,3 +10,5 @@ sample-data/*.db
 sample-data/*.db-*
 *.zip
 TestResults.xcresult/
+DeviceBuild/
+App/Assets.xcassets/

@@ -6,6 +6,8 @@
 
 仓库：[ghehyoein/MCPDict-iOS](https://github.com/ghehyoein/MCPDict-iOS)。[首次通过的完整运行记录](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/41994679817)，对应代码提交 `ac11ed2cb58baeabb5079773d7f544ce18495094`。
 
+真机测试路线：新增 `Build iPhone IPA for local signing` 工作流，生成 arm64 iPhone IPA 并发布到 Releases。安装前需要在 Windows 上通过 AltServer / AltStore Classic 免费账号签名；操作步骤见 [INSTALL-IPHONE.md](INSTALL-IPHONE.md)。当前不在 GitHub 保存 Apple 账号或证书。
+
 ## Python 和 Swift 各自负责什么
 
 | 部分 | 语言 | 文件 |
@@ -72,7 +74,7 @@ GitHub runner 提供 macOS/Xcode 环境；它不是 Windows 上的交互式 iPho
 ## 配置直接从 GitHub 字表更新
 
 1. 在同一个代码仓库中，打开 **Actions → Build dictionary from GitHub source → Run workflow**。
-2. 它锁定上游 `master` 的完整提交 SHA，下载该提交，使用上游 Python `make.py -c -i` 构建，不生成 APK。
+2. 它锁定上游 `master` 的完整提交 SHA，下载该提交，使用上游 Python `make.py -i` 构建，不生成 APK。暂不启用额外耗时的同音字统计 `-c`；SQLite、必要字段和查询校验仍必须通过。
 3. 全部校验成功后发布不可变的版本数据 Release，再更新 `data-latest` 中的发现清单。若构建失败，原有发布不会被替换。
 4. iOS「资料」页填写下面格式的网址（替换为你的用户名与仓库名）：
 
@@ -82,7 +84,7 @@ https://github.com/你的用户名/你的仓库/releases/download/data-latest/ma
 
 5. 点击「检查更新」再点「更新资料」。以后无需重装 App 即可更新兼容结构的数据。
 
-当前开发阶段只开放手动构建数据，尚未启用定时发布。待编译和测试稳定后，再配置每天检查上游。同一上游提交不重复构建。手机启动时只检查，下载仍由用户触发。初版前台整库下载，不压缩、不做差分，需预留约两倍新库大小加 100 MB 的空闲空间；旧库另外占用空间。
+当前开发阶段支持手动构建，修改数据构建脚本或该工作流时也会触发一次构建，尚未启用定时发布。同一上游提交不重复构建。手机启动时只检查，下载仍由用户触发。初版前台整库下载，不压缩、不做差分，需预留约两倍新库大小加 100 MB 的空闲空间；旧库另外占用空间。
 
 初版下载器支持可公开访问的 GitHub Releases，没有私有仓库鉴权。请勿把访问令牌写进 App。源码已上传仓库，数据 Release 尚未构建或发布，更新网址目前还不能下载数据。上游代码许可不自动覆盖每一份字表的再分发许可，公开发布数据前应保留并核对上游来源说明。
 
