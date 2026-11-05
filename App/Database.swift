@@ -54,6 +54,7 @@ final class SQLiteConnection {
         }
         var result = [[String: String]]()
         while true {
+            try Task.checkCancellation()
             let code = sqlite3_step(stmt)
             if code == SQLITE_DONE { return result }
             guard code == SQLITE_ROW else { throw DictionaryFailure(message: String(cString: sqlite3_errmsg(db))) }
@@ -104,7 +105,7 @@ actor DictionaryRepository {
         return try connection.rows("SELECT DISTINCT 簡稱 FROM info WHERE 簡稱 != '' ORDER BY 簡稱").compactMap { $0["簡稱"] }
     }
 
-    func search(_ input: String, mode: SearchMode, language: String, offset: Int = 0, languages: [String]? = nil) throws -> [Reading] {
+    func search(_ input: String, mode: SearchMode, language: String, offset: Int = 0, languages: [String]? = nil, limit: Int = 100) throws -> [Reading] {
         guard let connection else { throw DictionaryFailure(message: "請先在「字表」頁下載詞典") }
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         if mode == .character && text.uppercased().hasPrefix("U+"),
@@ -126,9 +127,10 @@ actor DictionaryRepository {
             bindings.append(String(data: try JSONEncoder().encode(languages), encoding: .utf8)!)
         } else if !language.isEmpty { sql += " AND 語言 = ?"; bindings.append(language) }
         if mode == .pronunciation {
-            sql += " ORDER BY CASE WHEN instr(讀音, ?) = 1 THEN 0 ELSE 1 END, rowid LIMIT 100 OFFSET ?"
+            sql += " ORDER BY CASE WHEN instr(讀音, ?) = 1 THEN 0 ELSE 1 END, rowid LIMIT ? OFFSET ?"
             bindings.append(text)
-        } else { sql += " ORDER BY rowid LIMIT 100 OFFSET ?" }
+        } else { sql += " ORDER BY rowid LIMIT ? OFFSET ?" }
+        bindings.append(String(limit < 0 ? -1 : max(1, limit)))
         bindings.append(String(max(0, offset)))
         return try connection.rows(sql, bindings).map {
             let group = $0["字組"] ?? ""
@@ -137,13 +139,7 @@ actor DictionaryRepository {
         }
     }
     func searchAllCharacters(_ input: String, language: String, languages: [String]? = nil) throws -> [Reading] {
-        var result = [Reading]()
-        while true {
-            try Task.checkCancellation()
-            let page = try search(input, mode: .character, language: language, offset: result.count, languages: languages)
-            result += page
-            if page.count < 100 { return result }
-        }
+        try search(input, mode: .character, language: language, languages: languages, limit: -1)
     }
 
     func tableStatistics(_ language: String) throws -> [String: String] {
@@ -164,13 +160,8 @@ actor DictionaryRepository {
     }
 
     func searchAll(_ input: String, mode: SearchMode, language: String, languages: [String]?) throws -> [Reading] {
-        var result = [Reading]()
-        while true {
-            try Task.checkCancellation()
-            let page = try search(input, mode: mode, language: language, offset: result.count, languages: languages)
-            result += page
-            if page.count < 100 { return result }
-        }
+        try search(input, mode: mode, language: language, languages: languages, limit: -1)
     }
 
 }
+

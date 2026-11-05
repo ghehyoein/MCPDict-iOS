@@ -18,8 +18,8 @@ struct SavedReading: Identifiable, Codable {
 final class AppModel: ObservableObject {
     let repository: DictionaryRepository
     let tableStore: TableStore
-    @Published var installed: TableInstallation?
-    @Published var catalog: TableCatalog?
+    @Published var installed: TableInstallation? { didSet { rebuildTableLookup() } }
+    @Published var catalog: TableCatalog? { didSet { rebuildTableLookup() } }
     @Published var languages = [String]()
     @Published var results = [Reading]()
     @Published var resultMode: SearchMode = .character
@@ -142,9 +142,14 @@ final class AppModel: ObservableObject {
         } else if !languages.contains(language) { language = "" }
     }
     func cancelDownload() { updateTask?.cancel(); status = "正在取消並保存已完成的字表…" }
-    func table(named name: String) -> TablePackage? {
-        catalog?.tables.first { $0.name == name } ?? installed?.tables.first { $0.name == name }
+    private var tableLookup = [String: TablePackage]()
+    private func rebuildTableLookup() {
+        var lookup = [String: TablePackage]()
+        for table in installed?.tables ?? [] { lookup[table.name] = table }
+        for table in catalog?.tables ?? [] { lookup[table.name] = table }
+        tableLookup = lookup
     }
+    func table(named name: String) -> TablePackage? { tableLookup[name] }
     func updateInstalledTables() async {
         guard !updating else { return }
         updating = true

@@ -35,12 +35,14 @@ struct DataView: View {
                     .disabled(model.updating)
                 if model.updating {
                     HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
-                    if model.downloading { Button(ui("取消下載")) { model.cancelDownload() } }
                 }
             }
             .navigationTitle(ui("字表")).navigationBarTitleDisplayMode(.large)
             .searchable(text: $filter, placement: .navigationBarDrawer(displayMode: .automatic), prompt: ui("搜尋語言點或地區"))
-            .toolbar { Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
+            .toolbar {
+                Button(ui("全選")) { selection = Set(available.map(\.id)) }.disabled(model.updating).accessibilityIdentifier("selectAllTables")
+                Button(ui("清空")) { selection = [] }.disabled(model.updating)
+                Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
             .safeAreaInset(edge: .bottom, spacing: 0) { TableActions(selection: selection) }
             .sheet(item: $information) { TableInfoView(table: $0) }
         }.task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
@@ -56,7 +58,11 @@ struct TableActions: View {
         HStack(spacing: 10) {
             Spacer(minLength: 0)
             Text(ui("已選 \(selection.count) 份")).foregroundStyle(.white)
-            Button(ui("字表下載")) { model.downloadTables(online) }.disabled(model.updating || online.isEmpty).accessibilityIdentifier("downloadTables")
+            if model.downloading {
+                Button(ui("取消下載")) { model.cancelDownload() }.accessibilityIdentifier("cancelDownload")
+            } else {
+                Button(ui("字表下載")) { model.downloadTables(online) }.disabled(model.updating || online.isEmpty).accessibilityIdentifier("downloadTables")
+            }
             Button(ui("字表移除"), role: .destructive) { model.removeTables(local) }.disabled(model.updating || local.isEmpty).accessibilityIdentifier("removeTables")
         }.font(.subheadline).buttonStyle(.bordered).padding(.horizontal, 10).padding(.vertical, 4)
             .background(.ultraThinMaterial).background(Color.black.opacity(0.45))
@@ -90,3 +96,4 @@ struct LanguageGroupList: View {
         }
     }
 }
+
