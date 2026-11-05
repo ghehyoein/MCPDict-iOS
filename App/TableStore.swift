@@ -14,6 +14,9 @@ struct TablePackage: Codable, Identifiable, Hashable {
     let size: Int64
     let sha256: String
     let url: URL
+    var location: TableLocation? = nil
+    var atlasColor: String? = nil
+    var dictionaryColor: String? = nil
     var format: String? = nil
     var gitBlob: String? = nil
     var isUpstream: Bool { format == "upstream-tsv-v1" }
@@ -83,7 +86,16 @@ actor TableStore {
         return state
     }
     func catalog() async throws -> TableCatalog {
-        try await UpstreamTables.catalog()
+        let latest = try await UpstreamTables.catalog()
+        try prepare()
+        try JSONEncoder().encode(latest).write(to: root.appendingPathComponent("catalog.json"), options: .atomic)
+        return latest
+    }
+    func cachedCatalog() -> TableCatalog? {
+        guard let data = try? Data(contentsOf: root.appendingPathComponent("catalog.json")),
+              let cached = try? JSONDecoder().decode(TableCatalog.self, from: data),
+              (try? cached.validate()) != nil else { return nil }
+        return cached
     }
     private func verify(_ file: URL, table: TablePackage) throws {
         if table.isUpstream {

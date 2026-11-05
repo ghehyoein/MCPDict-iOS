@@ -51,6 +51,7 @@ final class AppModel: ObservableObject {
         } catch { self.error = "收藏讀取失敗：\(error.localizedDescription)" }
         do {
             installed = try await tableStore.restore()
+            catalog = await tableStore.cachedCatalog()
             languages = try await repository.languages()
             status = "已下載 \(installed?.tables.count ?? 0) 份字表"
         } catch { self.error = error.localizedDescription }
@@ -146,6 +147,7 @@ struct RootView: View {
         TabView {
             SearchView().tabItem { Label("字典", systemImage: "character.book.closed") }
             FavoritesView().tabItem { Label("生字本", systemImage: "star") }
+            DialectMapView().tabItem { Label("地圖", systemImage: "map") }
             DataView().tabItem { Label("資料", systemImage: "arrow.down.circle") }
             SettingsView().tabItem { Label("設定", systemImage: "gearshape") }
         }
