@@ -121,7 +121,8 @@ final class NavigationTests: XCTestCase {
             if let previous { XCTAssertEqual(app.buttons["check-" + previous].value as? String, "unchecked") }
             app.buttons["expand-" + root].tap()
             let child = app.buttons["check-" + root + "子區"]
-            XCTAssertTrue(child.exists)
+            for _ in 0..<5 { if child.isHittable { break }; scroll.swipeUp() }
+            XCTAssertTrue(child.isHittable, "Lazy rows must appear when scrolled into view")
             XCTAssertGreaterThan(child.frame.minX, rootX)
             previous = root
         }
