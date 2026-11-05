@@ -12,6 +12,10 @@ targets:
     type: application
     platform: iOS
     sources: [App]
+    info:
+      path: Generated/Info.plist
+      properties:
+        LSApplicationQueriesSchemes: [maps, iosamap, baidumap, comgooglemaps]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.ghehyoein.MCPDictIOS

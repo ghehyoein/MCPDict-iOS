@@ -5,6 +5,8 @@ struct NativeDialectMap: UIViewRepresentable {
     let points: [DialectPoint]
     let fit: Int
     var fontSize: Double = 17
+    var mapStyle: String = "standard"
+    var centerChanged: (TableLocation) -> Void = { _ in }
     let choose: (String) -> Void
     func makeCoordinator() -> Coordinator { Coordinator(choose: choose) }
     func makeUIView(context: Context) -> MKMapView {
@@ -16,6 +18,9 @@ struct NativeDialectMap: UIViewRepresentable {
     }
     func updateUIView(_ map: MKMapView, context: Context) {
         context.coordinator.choose = choose
+        context.coordinator.centerChanged = centerChanged
+        let type = (BaseMapStyle(rawValue: mapStyle) ?? .standard).type
+        if map.mapType != type { map.mapType = type }
         context.coordinator.update(map, points: points, fit: fit, fontSize: fontSize)
     }
     final class PointAnnotation: NSObject, MKAnnotation {
@@ -29,8 +34,13 @@ struct NativeDialectMap: UIViewRepresentable {
         var points = [DialectPoint]()
         var fit = 0
         var fontSize = 17.0
+        var centerChanged: (TableLocation) -> Void = { _ in }
         var choose: (String) -> Void
         init(choose: @escaping (String) -> Void) { self.choose = choose }
+        func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+            let center = TableLocation(longitude: mapView.centerCoordinate.longitude, latitude: mapView.centerCoordinate.latitude)
+            DispatchQueue.main.async { [weak self] in self?.centerChanged(center) }
+        }
         func update(_ map: MKMapView, points: [DialectPoint], fit: Int, fontSize: Double = 17) {
             if self.points != points || self.fontSize != fontSize {
                 self.fontSize = fontSize
@@ -127,4 +137,3 @@ final class LabelAnnotationView: MKAnnotationView {
         collisionMode = .rectangle
     }
 }
-

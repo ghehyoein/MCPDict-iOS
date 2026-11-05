@@ -33,7 +33,10 @@ struct TableInfoView: View {
                 }.frame(maxWidth: .infinity, alignment: .leading).padding()
             }
             .navigationTitle(table.name).navigationBarTitleDisplayMode(.inline)
-            .toolbar { Button(ui("完成")) { dismiss() } }
+            .toolbar {
+                if let location = current.location { ExternalMapMenu(location: location, name: current.name) }
+                Button(ui("完成")) { dismiss() }
+            }
             .task {
                 if current.metadata == nil && !model.updating { await model.loadCatalog() }
                 if let result = try? await model.repository.tableStatistics(current.name) { statistics = result }

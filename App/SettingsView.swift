@@ -10,6 +10,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+
                 Section {
                     Picker(ui("顯示語言"), selection: $uiLanguage) {
                         Text(verbatim: "简体中文").tag("hans")
@@ -43,7 +44,9 @@ struct SettingsView: View {
                         Text(ui("深色（黑色）")).tag("dark")
                     }.pickerStyle(.inline)
                 }
+                MapSettingsSection()
             }.navigationTitle(ui("設定"))
         }
     }
 }
+

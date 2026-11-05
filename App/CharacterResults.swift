@@ -28,7 +28,7 @@ struct CharacterResultsView: View {
     @EnvironmentObject var model: AppModel
     @State private var selectedCharacter = ""
     @State private var information: TablePackage?
-    private var characters: [String] { CharacterResults.characters(model.resultQuery) }
+    private var characters: [String] { model.resultCharacters.isEmpty ? CharacterResults.characters(model.resultQuery) : model.resultCharacters }
     private var current: String { characters.contains(selectedCharacter) ? selectedCharacter : characters.first ?? "" }
     var body: some View {
         Section {
