@@ -2,6 +2,8 @@
 
 数据直接来自 osfans/MCPDict 的 GitHub 字表，经 Python 构建，不读取或提取 APK。当前目标是验证 iPhone 安装、分类目录、独立字表下载和离线查询，并非 Android 版完整复刻。
 
+2026-11-05：七项 Python 测试、五项 iOS 测试全部通过，包括模拟器实际从公开 GitHub 下载普通话字表并查字。[查看完整验证记录](https://github.com/ghehyoein/MCPDict-iOS/actions/runs/42000812068)。真实 iPhone 的签名安装仍需用户完成。
+
 ## 安装到 iPhone
 
 支持 iOS 17+，本次目标为 iPhone 13 / iOS 26。到本仓库 Releases 选择最新 iPhone development build，下载 MCPDict-iPhone-unsigned.ipa。IPA 未签名，须通过 Windows AltServer / AltStore Classic 使用自己的 Apple 账号签名安装，不能在 Safari 下载后直接点开。详见 [INSTALL-IPHONE.md](INSTALL-IPHONE.md)。
