@@ -8,7 +8,11 @@ final class DownloadIntegrationTests: XCTestCase {
         addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
         let repository = DictionaryRepository()
         let store = TableStore(repository: repository, root: directory)
-        let catalog = try await store.catalog()
+        let catalog: TableCatalog
+        do { catalog = try await store.catalog() }
+        catch is UpstreamRateLimit {
+            throw XCTSkip("GitHub explicitly rate-limited this runner; local download/import contracts remain tested.")
+        }
         XCTAssertGreaterThan(catalog.tables.count, 100)
         XCTAssertTrue(catalog.tables.allSatisfy { $0.url.host == "raw.githubusercontent.com" })
         let mandarin = try XCTUnwrap(catalog.tables.first { $0.name == "普通話" })
