@@ -34,7 +34,7 @@ jobs:
           python3 tools/carry_diagnostics.py
           for attempt in 1 2 3 4 5; do
             if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then break; fi
-            gh release create "$RELEASE_TAG" --latest --title "iPhone development build — local signing required" --notes-file INSTALL-IPHONE.md --target aa79f53dbe55f8ff3c1b2e4e03fd251d8798864f && break
+            gh release create "$RELEASE_TAG" --latest --title "iPhone development build — local signing required" --notes-file INSTALL-IPHONE.md --target "$GITHUB_SHA" && break
             sleep 10
           done
           gh release upload "$RELEASE_TAG" dist/* --clobber
@@ -47,6 +47,7 @@ jobs:
           while read -r id; do
             if [ "$id" != "$keep" ]; then gh api --method DELETE "repos/$GH_REPO/releases/$id"; fi
           done < release-ids.txt
+
 
 
 
