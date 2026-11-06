@@ -307,6 +307,21 @@ final class NavigationTests: XCTestCase {
         app.buttons["selectAllLanguages"].tap(); app.buttons["finishLanguages"].tap()
         XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
     }
+    @MainActor func testPinnedHeaderPreservesInputAndLanguageMenu() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--long-results-fixture"]; app.launch()
+        app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
+        app.buttons["查詢"].tap()
+        XCTAssertTrue(app.staticTexts["dictionaryHeadword"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.textFields.firstMatch.isHittable)
+        app.buttons["dictionaryLanguageSelection"].tap()
+        XCTAssertTrue(app.buttons["finishLanguages"].isHittable)
+        app.buttons["finishLanguages"].tap()
+        app.swipeUp(); app.swipeUp()
+        XCTAssertTrue(app.buttons["中"].isHittable)
+        let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "滾動後固定選字區及頂部遮罩"; picture.lifetime = .keepAlways; add(picture)
+    }
+
     @MainActor func testNoteInputVariantsAreAvailableBeforeQuery() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
