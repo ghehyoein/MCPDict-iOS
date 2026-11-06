@@ -12,8 +12,9 @@ final class NavigationTests: XCTestCase {
         XCTAssertEqual(app.staticTexts["dictionaryCopyStatus"].label, "已複製到剪貼板")
         app.buttons["dictionaryLanguageSelection"].tap()
         app.segmentedControls.buttons["行政區"].tap()
+        app.buttons["check-北京"].tap()
         app.buttons["finishLanguages"].tap()
-        XCTAssertTrue(ipa.exists)
+        XCTAssertTrue(ipa.waitForExistence(timeout: 8))
         let star = app.buttons["加入生字本"].firstMatch
         if star.exists { star.tap(); app.buttons["全選"].tap(); app.buttons["完成"].tap() }
         app.tabBars.buttons["生字本"].tap()
@@ -293,7 +294,7 @@ final class NavigationTests: XCTestCase {
         app.buttons["新建生字表"].tap()
         let alert = app.alerts["新建生字表"]
         XCTAssertTrue(alert.waitForExistence(timeout: 3))
-        let title = "測試表-" + UUID().uuidString.prefix(6)
+        let title = "測試表-" + String(UUID().uuidString.prefix(6))
         alert.textFields.firstMatch.tap(); alert.textFields.firstMatch.typeText(String(title))
         alert.buttons["儲存"].tap()
         XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS %@", String(title))).firstMatch.waitForExistence(timeout: 3))

@@ -15,12 +15,12 @@ struct NotebookArchive: Codable {
 
     static func decode(_ data: Data) throws -> Self {
         let decoder = JSONDecoder()
+        let state: Self
         if let old = try? decoder.decode([SavedReading].self, from: data) {
             var migrated = Self()
             migrated.entries = old
-            return migrated
-        }
-        let state = try decoder.decode(Self.self, from: data)
+            state = migrated
+        } else { state = try decoder.decode(Self.self, from: data) }
         let ids = Set(state.books.map(\.id))
         guard state.version == 1, ids.count == state.books.count,
               Set(state.entries.map(\.id)).count == state.entries.count,

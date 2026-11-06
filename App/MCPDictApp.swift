@@ -386,12 +386,18 @@ struct ReadingView: View {
     }
 }
 
+private struct ResultHeaderPosition: PreferenceKey {
+    static var defaultValue = CGFloat.greatestFiniteMagnitude
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = min(value, nextValue()) }
+}
+
 struct SearchView: View {
     @AppStorage("dictionaryPalette") private var palette = "atlas"
     @FocusState private var searchFocused: Bool
     @State private var menuOpen = false
     @State private var reference: ReferencePage?
     @State private var selectedCharacter = ""
+    @State private var resultHeaderTop = CGFloat.greatestFiniteMagnitude
     @StateObject private var feedback = CopyFeedback()
     private func submitQuery() {
         searchFocused = false
@@ -432,6 +438,10 @@ struct SearchView: View {
             }
             .listStyle(.plain)
             .coordinateSpace(name: "dictionaryScroll")
+            .onPreferenceChange(ResultHeaderPosition.self) { resultHeaderTop = $0 }
+            .toolbarBackground(resultHeaderTop <= 1 ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
+            .toolbarBackground(resultHeaderTop <= 1 ? .visible : .automatic, for: .navigationBar)
+            .toolbarColorScheme(resultHeaderTop <= 1 ? .dark : nil, for: .navigationBar)
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
             .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }
@@ -468,7 +478,8 @@ struct SearchView: View {
                          .background {
                              GeometryReader { geometry in
                                  let top = max(0, geometry.frame(in: .named("dictionaryScroll")).minY)
-                                 Color.black.frame(height: top).offset(y: -top)
+                                 Color.black.frame(width: geometry.size.width + 32, height: top).offset(x: -16, y: -top)
+                                     .preference(key: ResultHeaderPosition.self, value: geometry.frame(in: .named("dictionaryScroll")).minY)
                              }
                          }.zIndex(1)
                     }
