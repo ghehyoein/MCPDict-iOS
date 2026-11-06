@@ -89,9 +89,12 @@ struct LanguageDropdown: View {
     @State private var wheel = false
     @State private var roles = Set(PersonRole.allCases)
     @State private var eligible = [TablePackage]()
+    private var treeScope: LanguageSelectionScope {
+        grouping == .administrative && scope == .points ? .administrativeGroups : scope
+    }
     private var choices: [TableGrouping] { TableGrouping.allCases.filter { scope == .points || $0 != .name } }
     private func refresh(prune: Bool) {
-        eligible = scope.eligible(tables.filter(flags.matches), grouping: grouping, roles: roles)
+        eligible = treeScope.eligible(tables.filter(flags.matches), grouping: grouping, roles: roles)
         let ids = Set(eligible.map(\.name))
         if prune { names = names.intersection(ids) }
         if scope == .terminalGroups {
@@ -126,7 +129,7 @@ struct LanguageDropdown: View {
             }
             ScrollView {
                 VStack(alignment: .leading) {
-                    SelectionTree(tables: eligible, grouping: grouping, roles: roles, badgeGrouping: palette, scope: scope, selectedRegion: $selectedRegion, filterQuery: filter, selection: selection, inspect: inspect)
+                    SelectionTree(tables: eligible, grouping: grouping, roles: roles, badgeGrouping: palette, scope: treeScope, selectedRegion: $selectedRegion, filterQuery: filter, selection: selection, inspect: inspect)
                 }.frame(maxWidth: .infinity).id(grouping.rawValue)
             }.frame(height: wheel ? 130 : 200).accessibilityIdentifier("languageTreeScroll")
             HStack {
