@@ -81,9 +81,9 @@ struct DialectMapView: View {
                             ForEach(BaseMapStyle.allCases) { Text(ui($0.title)).tag($0.rawValue) }
                         }
                         ExternalMapMenu(location: center, name: ui("地圖中心"))
-                    } label: { Image(systemName: "map") }
-                    Button(ui("全覽"), systemImage: "arrow.up.left.and.arrow.down.right") { fit += 1 }
-                    Button(ui("更新"), systemImage: "arrow.clockwise") { Task { await model.loadCatalog() } }.disabled(model.updating)
+                    } label: { Image(systemName: "map") }.simultaneousGesture(TapGesture().onEnded { menuOpen = false })
+                    Button(ui("全覽"), systemImage: "arrow.up.left.and.arrow.down.right") { menuOpen = false; fit += 1 }
+                    Button(ui("更新"), systemImage: "arrow.clockwise") { menuOpen = false; Task { await model.loadCatalog() } }.disabled(model.updating)
                 }
             }
             .onAppear { rebuildMapTables() }
