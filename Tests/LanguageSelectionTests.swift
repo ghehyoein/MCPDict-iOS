@@ -28,7 +28,7 @@ final class LanguageSelectionTests: XCTestCase {
         }
         let a = try table("甲", "歷史音", ["錄入人":"A,B","維護人":"B","方言島":"true","歷史音":"0"])
         let b = try table("乙", "吳語", ["錄入人":"B", "維護人":"", "方言島":"true"])
-        let c = try table("丙", "吳語", ["維護人":"A", "歷史音":"1"])
+        let c = try table("丙", "吳語", ["維護人":"A", "歷史音":"#BADDFF"])
         let tables = [a,b,c]
         let index = SelectionIndex(tables: tables, grouping: .person)
         XCTAssertEqual(index.nodes[index.roots[0]]?.title, "(無)")
@@ -37,8 +37,8 @@ final class LanguageSelectionTests: XCTestCase {
         XCTAssertEqual(index.nodes["g:B"]?.children.count, 2)
         XCTAssertTrue(SelectionIndex(tables: tables, grouping: .person, roles: []).roots.isEmpty)
         XCTAssertEqual(SelectionIndex(tables: tables, grouping: .person, roles: [.maintainer]).nodes["g:B"]?.ids, ["甲"])
-        XCTAssertEqual(tables.filter(LanguageFlags(island: true, history: true).matches).map(\.name), ["甲"])
-        XCTAssertEqual(tables.filter(LanguageFlags(history: true).matches).map(\.name), ["甲","丙"])
+        XCTAssertEqual(tables.filter(LanguageFlags(island: true, history: true).matches).map(\.name), [])
+        XCTAssertEqual(tables.filter(LanguageFlags(history: true).matches).map(\.name), ["丙"])
     }
     func testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing() throws {
         func table(_ name: String, _ metadata: [String:String]) throws -> TablePackage {

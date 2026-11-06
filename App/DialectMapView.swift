@@ -70,12 +70,15 @@ struct DialectMapView: View {
     }
     private var observedContent: some View {
         VStack(spacing: 8) {
+            Picker(ui("查詢方式"), selection: $mode) {
+                ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
+            }.pickerStyle(.segmented).padding(.horizontal)
             SelectionMenuButton(count: names.count, entryID: "", expanded: $menuOpen).hidden().accessibilityHidden(true).padding(.horizontal)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }
         }
-        .overlay(alignment: .top) { menu.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal) }
+        .overlay(alignment: .top) { VStack(spacing: 8) { Picker(ui("查詢方式"), selection: $mode) { ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) } }.pickerStyle(.segmented).hidden().accessibilityHidden(true); menu }.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal) }
         .onAppear { rebuildMapTables(); receiveHandoff() }
         .onChange(of: model.mapHandoff?.id) { _, _ in receiveHandoff() }
         .onChange(of: tables) { _, _ in rebuildMapTables() }
@@ -88,7 +91,7 @@ struct DialectMapView: View {
     }
     private var menu: some View {
         LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region,
-                               searchMode: $mode, colorScheme: $colorScheme, expanded: $menuOpen)
+                               finished: { Task { await query() } }, colorScheme: $colorScheme, expanded: $menuOpen)
     }
     private var mapContent: some View {
         VStack(spacing: 8) {

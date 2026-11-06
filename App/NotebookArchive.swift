@@ -22,7 +22,11 @@ struct NotebookArchive: Codable {
         }
         let state = try decoder.decode(Self.self, from: data)
         let ids = Set(state.books.map(\.id))
-        guard state.version == 1, ids.count == state.books.count, state.selected.isSubset(of: ids),
+        guard state.version == 1, ids.count == state.books.count,
+              Set(state.entries.map(\.id)).count == state.entries.count,
+              Set(state.books.map(\.name)).count == state.books.count,
+              state.books.allSatisfy({ !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }),
+              state.selected.isSubset(of: ids),
               state.entries.allSatisfy({ !$0.membership.isEmpty && $0.membership.isSubset(of: ids) }) else {
             throw DictionaryFailure(message: "生字表資料格式不相容")
         }

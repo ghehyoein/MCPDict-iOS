@@ -8,9 +8,16 @@ struct SettingsView: View {
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
     @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
     @AppStorage(AppTypography.readingKey) private var readingSize = 16.0
+    @State private var referenceSettings = false
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    NavigationLink { DataView() } label: { Text(ui("字表下載")) }
+                    Button(ui("字頭資料顯示")) { referenceSettings = true }.foregroundStyle(.teal)
+                }
+                FavoriteSettingsSection()
+
 
                 Section(ui("顯示語言")) {
                     option("简体中文", value: "hans", selection: $uiLanguage)
@@ -43,7 +50,7 @@ struct SettingsView: View {
                 }
                 MapSettingsSection()
             }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
-        }
+        }.sheet(isPresented: $referenceSettings) { ReferenceSettingsView() }
     }
     private func sizeSlider(_ label: String, _ size: Binding<Double>, range: ClosedRange<Double>, identifier: String) -> some View {
         VStack(alignment: .leading) {
