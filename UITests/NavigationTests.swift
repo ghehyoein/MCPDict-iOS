@@ -59,7 +59,10 @@ final class NavigationTests: XCTestCase {
         app.tabBars.buttons["設定"].tap()
         let map = app.sliders["mapSizeSlider"]
         let other = app.sliders["fontSizeSlider"]
-        for _ in 0..<3 { if map.isHittable && other.isHittable { break }; app.swipeUp() }
+        for _ in 0..<4 {
+            if other.isHittable { break }
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.7)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)))
+        }
         XCTAssertTrue(map.waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(other.exists)
         let reading = app.sliders["mapReadingSlider"]

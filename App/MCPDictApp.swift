@@ -432,7 +432,6 @@ struct SearchView: View {
                     }
                     LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } }, colorScheme: $palette, expanded: $menuOpen)
                 }
-                .background(Color(uiColor: .systemBackground)).zIndex(3)
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.updating { ProgressView(ui(model.status)) }
                 else if model.installed?.tables.isEmpty != false {
@@ -483,8 +482,8 @@ struct SearchView: View {
                          .background {
                              GeometryReader { geometry in
                                  let top = max(0, geometry.frame(in: .named("dictionaryScroll")).minY)
-                                 Color.black.frame(width: geometry.size.width + 32, height: top).offset(x: -16, y: -top)
-                                     .preference(key: ResultHeaderPosition.self, value: geometry.frame(in: .named("dictionaryScroll")).minY)
+                                 Color.clear.preference(key: ResultHeaderPosition.self, value: geometry.frame(in: .named("dictionaryScroll")).minY)
+                                 if top <= 16 { Color.black.frame(width: geometry.size.width + 32, height: top).offset(x: -16, y: -top) }
                              }.allowsHitTesting(false)
                          }.zIndex(1)
                     }
