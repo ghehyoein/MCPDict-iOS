@@ -20,6 +20,19 @@ final class RevisionTests: XCTestCase {
         XCTAssertEqual(CharacterResults.characters("中中𰻞"), ["中", "𰻞"])
         XCTAssertEqual(CharacterResults.characters("U+4E2D"), ["中"])
     }
+    @MainActor func testCatalogRefreshMarksOnlyChangedInstalledContent() {
+        func table(_ name: String, _ version: String, _ hash: String) -> TablePackage {
+            TablePackage(id: name, name: name, fullName: name, atlas: [], dictionary: [], administrative: [], source: "", sourceCommit: version, recordCount: 1, size: 1, sha256: hash, url: URL(fileURLWithPath: "/fixture"))
+        }
+        let model = AppModel()
+        let old = [table("甲", "old", "a"), table("乙", "old", "b"), table("丙", "old", "c")]
+        model.installed = TableInstallation(catalogVersion: "old", tables: old, databaseFile: nil)
+        let new = [table("甲", "new", "a"), table("乙", "new", "changed"), table("丁", "new", "d")]
+        model.catalog = TableCatalog(schemaVersion: 1, version: "new", sourceRepository: "", sourceCommit: "new", scope: "", tables: new)
+        XCTAssertEqual(model.downloadStates, ["甲": .downloaded, "乙": .update, "丙": .downloaded, "丁": .missing])
+        model.installed = TableInstallation(catalogVersion: "new", tables: [new[1]], databaseFile: nil)
+        XCTAssertEqual(model.downloadStates, ["甲": .missing, "乙": .downloaded, "丁": .missing])
+    }
     func testAllMetadataFieldsAndSafeLinks() {
         let fields = UpstreamTables.metadataStrings(["維護人":"甲", "空欄":"", "字數":12, "自訂欄":["x":1]])
         XCTAssertEqual(fields.count, 4)

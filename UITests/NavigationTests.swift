@@ -96,8 +96,11 @@ final class NavigationTests: XCTestCase {
         XCTAssertEqual(app.buttons["check-示例語言點"].value as? String, "unchecked")
         XCTAssertFalse(app.buttons["downloadTables"].isEnabled)
         XCTAssertTrue(app.buttons["finishLanguages"].exists)
+        XCTAssertEqual(app.staticTexts["downloadState-" + String(repeating: "a", count: 24)].label, "已下載")
         app.buttons.matching(identifier: "示例語言點").firstMatch.tap()
         XCTAssertTrue(app.navigationBars.buttons["完成"].waitForExistence(timeout: 5))
+        let vanished = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.navigationBars.buttons["完成"])
+        XCTAssertEqual(XCTWaiter.wait(for: [vanished], timeout: 1.5), .timedOut)
         app.navigationBars.buttons["完成"].tap()
         app.tabBars.buttons["字典"].tap()
         XCTAssertFalse(app.segmentedControls.buttons["自選"].exists)
@@ -183,11 +186,14 @@ final class NavigationTests: XCTestCase {
         let restored = app.staticTexts.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
         XCTAssertTrue(restored.waitForExistence(timeout: 10), app.staticTexts["mapPointStatus"].debugDescription)
 
+        let labelFrame = reading.frame
         app.buttons["mapLanguageSelection"].tap()
+        XCTAssertEqual(reading.frame.midY, labelFrame.midY, accuracy: 1)
+        XCTAssertEqual(reading.frame.midX, labelFrame.midX, accuracy: 1)
         app.segmentedControls.buttons["自選"].tap()
         XCTAssertTrue(app.buttons["finishLanguages"].exists)
-        // Dismiss from the input area without submitting a new lookup.
-        input.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        // The floating menu covers the search bar. Tap the map below the menu.
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.83)).tap()
         XCTAssertFalse(app.buttons["finishLanguages"].exists)
         XCTAssertTrue(reading.exists, "Switching draft selections must retain the submitted map result")
 

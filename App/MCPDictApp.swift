@@ -20,6 +20,7 @@ struct SavedReading: Identifiable, Codable {
 final class AppModel: ObservableObject {
     let repository: DictionaryRepository
     let tableStore: TableStore
+    @Published var tableDetail: TablePackage?
     @Published var installed: TableInstallation? { didSet { rebuildTableLookup() } }
     @Published var catalog: TableCatalog? { didSet { rebuildTableLookup() } }
     @Published var languages = [String]()
@@ -178,6 +179,7 @@ final class AppModel: ObservableObject {
     }
     func cancelDownload() { updateTask?.cancel(); status = "正在取消並保存已完成的字表…" }
     private(set) var availableTables = [TablePackage]()
+    private(set) var downloadStates = [String: TableDownloadState]()
     private var tableLookup = [String: TablePackage]()
     private func rebuildTableLookup() {
         var lookup = [String: TablePackage]()
@@ -185,7 +187,12 @@ final class AppModel: ObservableObject {
         for table in catalog?.tables ?? [] { lookup[table.name] = table }
         tableLookup = lookup
         var byID = Dictionary(uniqueKeysWithValues: (installed?.tables ?? []).map { ($0.id, $0) })
-        for table in catalog?.tables ?? [] { byID[table.id] = table }
+        var states = byID.mapValues { _ in TableDownloadState.downloaded }
+        for table in catalog?.tables ?? [] {
+            states[table.id] = byID[table.id].map { $0.sha256 == table.sha256 ? .downloaded : .update } ?? .missing
+            byID[table.id] = table
+        }
+        downloadStates = states
         availableTables = byID.values.sorted { $0.name < $1.name }
     }
     func table(named name: String) -> TablePackage? { tableLookup[name] }
@@ -323,6 +330,7 @@ struct RootView: View {
             DataView().tag(3).tabItem { Label(ui("字表"), systemImage: "arrow.down.circle") }
             SettingsView().tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
+        .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
         .id(uiLanguage)
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
         .dynamicTypeSize(AppTypography.size(fontSize))
@@ -336,15 +344,14 @@ struct RootView: View {
 
 struct ReadingView: View {
     @EnvironmentObject var model: AppModel
-    @State private var information: TablePackage?
     let reading: Reading
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button { information = model.table(named: reading.language) } label: { LanguageBadge(name: reading.language, table: model.table(named: reading.language)) }.buttonStyle(.plain)
+            Button { model.tableDetail = model.table(named: reading.language) } label: { LanguageBadge(name: reading.language, table: model.table(named: reading.language)) }.buttonStyle(.plain)
             PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).foregroundStyle(.primary)
             Text(reading.characters).font(.title3).textSelection(.enabled)
             if !reading.note.isEmpty { Text(reading.note).font(.subheadline).textSelection(.enabled) }
-        }.padding(.vertical, 6).sheet(item: $information) { TableInfoView(table: $0) }
+        }.padding(.vertical, 6)
     }
 }
 

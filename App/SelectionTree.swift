@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SelectionTree: View {
+    @Environment(\.tableDownloadStates) private var downloadStates
     @Environment(\.mapLabelSize) private var mapLabelSize
     let tables: [TablePackage]
     let grouping: TableGrouping
@@ -33,6 +34,10 @@ struct SelectionTree: View {
                             LanguageBadge(name: table.name, table: table, grouping: badgeGrouping ?? grouping).frame(minHeight: 44).contentShape(Rectangle())
                         }.buttonStyle(.plain)
                         Spacer()
+                        if let state = downloadStates[table.id] {
+                            Text(ui(state.rawValue)).font(.caption).foregroundStyle(state == .update ? Color.orange : Color.secondary)
+                                .accessibilityIdentifier("downloadState-" + table.id)
+                        }
                     } else if row.expandable {
                         Button {
                             if !expanded.insert(row.id).inserted { expanded.remove(row.id) }
@@ -176,12 +181,11 @@ struct HomophoneResultsView: View {
     let copy: (String) -> Void
     @EnvironmentObject var model: AppModel
     private var groups: [[Reading]] { model.homophoneGroups() }
-    @State private var info: TablePackage?
     var body: some View {
         ForEach(groups, id: \.first!.id) { rows in
             if let first = rows.first {
                 VStack(alignment: .leading, spacing: 8) {
-                    Button { info = model.table(named: first.language) } label: { LanguageBadge(name: first.language, table: model.table(named: first.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
+                    Button { model.tableDetail = model.table(named: first.language) } label: { LanguageBadge(name: first.language, table: model.table(named: first.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
                     PronunciationView(raw: first.pronunciation, table: model.table(named: first.language)).font(.title3)
                         .contentShape(Rectangle()).simultaneousGesture(LongPressGesture().onEnded { _ in copy(first.pronunciation) })
                     ForEach(rows) { row in
@@ -192,6 +196,6 @@ struct HomophoneResultsView: View {
                     }
                 }
             }
-        }.sheet(item: $info) { TableInfoView(table: $0) }
+        }
     }
 }

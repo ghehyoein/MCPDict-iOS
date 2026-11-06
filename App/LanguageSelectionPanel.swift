@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Dictionary and map share this self-contained menu; downloads use their own tree.
+// All three tabs share the selection controls. Only the map floats its expanded content.
 struct LanguageSelectionPanel: View {
     let tables: [TablePackage]
     @Binding var names: Set<String>
@@ -8,6 +8,7 @@ struct LanguageSelectionPanel: View {
     let entryID: String
     var initialKind: MapSearchKind = .language
     var inspect: ((TablePackage) -> Void)? = nil
+    var floats = false
     var finished: () -> Void = {}
     @Binding var colorScheme: String
     @State private var kind: MapSearchKind = .language
@@ -27,7 +28,21 @@ struct LanguageSelectionPanel: View {
             Button { expanded.toggle() } label: {
                 HStack { Text(ui("已選 \(names.count) 個語言點")); Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down") }
             }.buttonStyle(.borderless).accessibilityIdentifier(entryID)
-            if expanded {
+            if floats {
+                Color.clear.frame(height: 0).overlay(alignment: .top) { if expanded { controls.fixedSize(horizontal: false, vertical: true) } }
+            } else if expanded { controls }
+        }
+        .onAppear { restoreInitial() }
+        .onChange(of: tables) { _, _ in restoreInitial() }
+        .onChange(of: kind) { old, new in
+            guard restored, old != new else { return }
+            cache.defaults.set(new.rawValue, forKey: "selectionMode." + cacheKey)
+            colorScheme = cache.defaults.string(forKey: "palette." + key) ?? "atlas"
+            restoreMode()
+        }
+        .onChange(of: colorScheme) { _, _ in if restored { cache.defaults.set(colorScheme, forKey: "palette." + key) } }
+    }
+    private var controls: some View {
                 VStack(alignment: .leading, spacing: 8) {
                 Picker(ui("檢索選項"), selection: $kind) {
                     ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
@@ -44,17 +59,6 @@ struct LanguageSelectionPanel: View {
                     expanded = false; finished()
                 }.id(key)
                 }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
-            }
-        }
-        .onAppear { restoreInitial() }
-        .onChange(of: tables) { _, _ in restoreInitial() }
-        .onChange(of: kind) { old, new in
-            guard restored, old != new else { return }
-            cache.defaults.set(new.rawValue, forKey: "selectionMode." + cacheKey)
-            colorScheme = cache.defaults.string(forKey: "palette." + key) ?? "atlas"
-            restoreMode()
-        }
-        .onChange(of: colorScheme) { _, _ in if restored { cache.defaults.set(colorScheme, forKey: "palette." + key) } }
     }
     private func flagButton(_ title: String, _ value: Binding<Bool>) -> some View {
         Button { value.wrappedValue.toggle() } label: {
