@@ -29,14 +29,13 @@ struct CharacterResultsView: View {
     let current: String
     @AppStorage("dictionaryPalette") private var palette = "atlas"
     let copy: (String) -> Void
-    @State private var information: TablePackage?
     var body: some View {
         Group {
             let groups = model.characterGroups(current)
             if groups.isEmpty { Text(ui("此字在已下載字表中沒有讀音")).foregroundStyle(.secondary) }
             ForEach(groups) { group in
                 HStack(alignment: .top, spacing: 12) {
-                    Button { information = model.table(named: group.language) } label: { LanguageBadge(name: group.language, table: model.table(named: group.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
+                    Button { model.tableDetail = model.table(named: group.language) } label: { LanguageBadge(name: group.language, table: model.table(named: group.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(group.readings) { reading in
                             VStack(alignment: .leading, spacing: 2) {
@@ -49,6 +48,5 @@ struct CharacterResultsView: View {
                 }.padding(.vertical, 5)
             }
         }
-        .sheet(item: $information) { TableInfoView(table: $0) }
     }
 }

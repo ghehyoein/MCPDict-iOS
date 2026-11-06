@@ -19,12 +19,20 @@ enum TableGrouping: String, CaseIterable, Identifiable {
     }
 }
 
+enum TableDownloadState: String { case downloaded = "已下載", missing = "未下載", update = "可更新" }
+private struct DownloadStateKey: EnvironmentKey { static let defaultValue = [String: TableDownloadState]() }
+extension EnvironmentValues {
+    var tableDownloadStates: [String: TableDownloadState] {
+        get { self[DownloadStateKey.self] }
+        set { self[DownloadStateKey.self] = newValue }
+    }
+}
+
 struct DataView: View {
     @EnvironmentObject var model: AppModel
     @State private var names = Set<String>()
     @State private var expanded = false
     @AppStorage("downloadPalette") private var palette = "atlas"
-    @State private var information: TablePackage?
     private var selection: Set<String> { Set(available.filter { names.contains($0.name) }.map(\.id)) }
     private var available: [TablePackage] { model.availableTables }
     var body: some View {
@@ -32,7 +40,8 @@ struct DataView: View {
             List {
                 Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
                 LanguageSelectionPanel(tables: available, names: $names, cacheKey: "downloads", entryID: "downloadLanguageSelection",
-                                       inspect: { information = $0 }, colorScheme: $palette, expanded: $expanded)
+                                       inspect: { model.tableDetail = $0 }, colorScheme: $palette, expanded: $expanded)
+                    .environment(\.tableDownloadStates, model.downloadStates)
                     .disabled(model.updating)
                 if model.updating {
                     HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
@@ -42,7 +51,6 @@ struct DataView: View {
             .toolbar {
                 Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
             .safeAreaInset(edge: .bottom, spacing: 0) { TableActions(selection: selection) }
-            .sheet(item: $information) { TableInfoView(table: $0) }
         }.task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
     }
 }

@@ -24,7 +24,6 @@ struct DialectMapView: View {
     @State private var variants = [String]()
     @State private var readingsByVariant = [String: [String: String]]()
     @State private var querying = false
-    @State private var selected: TablePackage?
     @State private var fit = 0
     @StateObject private var feedback = CopyFeedback()
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
@@ -50,12 +49,11 @@ struct DialectMapView: View {
                 .toolbar { mapToolbar }
                 .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
                 .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:]; variants = []; readingsByVariant = [:] }
-                .sheet(item: $selected) { TableInfoView(table: $0) }
         }
     }
     private var observedContent: some View {
         VStack(spacing: 8) {
-            menu.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal)
+            menu.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal).zIndex(1)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }
@@ -72,7 +70,7 @@ struct DialectMapView: View {
     }
     private var menu: some View {
         LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region,
-                               finished: { if activeCharacter.isEmpty { fit += 1 } }, colorScheme: $colorScheme, expanded: $menuOpen)
+                               floats: true, colorScheme: $colorScheme, expanded: $menuOpen)
     }
     private var mapContent: some View {
         VStack(spacing: 8) {
@@ -122,7 +120,7 @@ struct DialectMapView: View {
                     Button(ui("更新"), systemImage: "arrow.clockwise") { menuOpen = false; Task { await model.loadCatalog() } }.disabled(model.updating)
                 }
     }
-    private func choose(_ id: String) { selected = tables.first { $0.id == id } }
+    private func choose(_ id: String) { model.tableDetail = tables.first { $0.id == id } }
     @MainActor private func query() async {
         inputFocused = false
         let text = character.trimmingCharacters(in: .whitespacesAndNewlines)
