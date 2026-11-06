@@ -45,6 +45,30 @@ final class DictionaryTests: XCTestCase {
         XCTAssertTrue(injection.isEmpty)
     }
 
+    func testIndexedLanguageRestrictionPreservesExactNamesAndSubstringPriority() async throws {
+        let url = try fixture()
+        let db = try SQLiteConnection(url: url, readOnly: false)
+        let names = ["甲-乙", "甲 乙", "A\"B", "École", "ecole", "☆"]
+        for name in names {
+            _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", ["中", name, "xha", ""])
+            _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", ["中", name, "ha", ""])
+        }
+        let repo = DictionaryRepository(); try await repo.open(url)
+        for name in names {
+            let found = try await repo.search("ha", mode: .pronunciation, language: name)
+            XCTAssertEqual(found.map(\.language), [name, name])
+            XCTAssertEqual(found.map(\.pronunciation), ["ha", "xha"])
+            let stats = try await repo.tableStatistics(name)
+            XCTAssertEqual(stats["字數"], "1")
+            XCTAssertEqual(stats["音節數"], "2")
+        }
+        let multiple = try await repo.search("ha", mode: .pronunciation, language: "", languages: ["甲-乙", "A\"B"])
+        XCTAssertEqual(multiple.count, 4)
+        XCTAssertEqual(Set(multiple.map(\.language)), ["甲-乙", "A\"B"])
+        let empty = try await repo.search("ha", mode: .pronunciation, language: "", languages: [])
+        XCTAssertTrue(empty.isEmpty)
+    }
+
     func testMapUsesDictionarySearchAcrossModes() async throws {
         let repo = DictionaryRepository()
         try await repo.open(fixture())

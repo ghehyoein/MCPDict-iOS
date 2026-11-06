@@ -119,6 +119,15 @@ actor DictionaryRepository {
         return try connection.rows("SELECT DISTINCT 簡稱 FROM info WHERE 簡稱 != '' ORDER BY 簡稱").compactMap { $0["簡稱"] }
     }
 
+    // Use the existing FTS language index to narrow small selections before substring
+    // matching. Keep the exact SQL filter too: FTS normalization is not identity.
+    private func languageCandidates(_ names: [String]) -> String? {
+        guard !names.isEmpty, names.count <= 256,
+              names.allSatisfy({ $0.rangeOfCharacter(from: .alphanumerics) != nil }) else { return nil }
+        let quoted = names.map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
+        return "語言 : (" + quoted.joined(separator: " OR ") + ")"
+    }
+
     func search(_ input: String, mode: SearchMode, language: String, offset: Int = 0, languages: [String]? = nil, limit: Int = 100) throws -> [Reading] {
         guard let connection else { throw DictionaryFailure(message: "請先在「字表」頁下載詞典") }
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -135,6 +144,11 @@ actor DictionaryRepository {
         if mode == .pronunciation {
             sql = "SELECT rowid AS id, 字組, 語言, 讀音, 註釋 FROM langs WHERE instr(讀音, ?) > 0"
             bindings = [text]
+        }
+        if languages?.isEmpty == true { return [] }
+        if mode == .pronunciation, let candidates = languageCandidates(languages ?? (language.isEmpty ? [] : [language])) {
+            sql += " AND langs MATCH ?"
+            bindings.append(candidates)
         }
         if let languages {
             sql += " AND 語言 IN (SELECT value FROM json_each(?))"
@@ -160,7 +174,9 @@ actor DictionaryRepository {
     func tableStatistics(_ language: String) throws -> [String: String] {
         guard let connection else { return [:] }
         if let cached = statisticsCache[language] { return cached }
-        let rows = try connection.rows("SELECT 字組, 讀音, 註釋 FROM langs WHERE 語言 = ?", [language])
+        let candidates = languageCandidates([language])
+        let sql = "SELECT 字組, 讀音, 註釋 FROM langs WHERE 語言 = ?" + (candidates == nil ? "" : " AND langs MATCH ?")
+        let rows = try connection.rows(sql, [language] + (candidates.map { [$0] } ?? []))
         guard !rows.isEmpty else { return [:] }
         var chars = Set<String>(), syllables = Set<String>(), toneless = Set<String>(), boxes = Set<String>()
         for row in rows {
