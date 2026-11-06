@@ -76,4 +76,16 @@ final class RequestedChangesTests: XCTestCase {
         defaults.set([], forKey: FavoritePreferences.defaultsKey)
         XCTAssertTrue(FavoritePreferences.targets(in: archive, defaults: defaults).isEmpty)
     }
+    func testImportRejectsDanglingMembershipAndDuplicateIdentity() throws {
+        var archive = NotebookArchive()
+        let row = Reading(id: 1, characters: "中", language: "甲", pronunciation: "a", note: "")
+        let entry = SavedReading(reading: row, books: [UUID()])
+        XCTAssertThrowsError(try NotebookArchive.decode(JSONEncoder().encode([entry])))
+        archive.entries = [entry]
+        XCTAssertThrowsError(try NotebookArchive.decode(JSONEncoder().encode(archive)))
+        let valid = SavedReading(reading: row, books: [VocabularyBook.original.id])
+        archive.entries = [valid, valid]
+        XCTAssertThrowsError(try NotebookArchive.decode(JSONEncoder().encode(archive)))
+    }
+
 }
