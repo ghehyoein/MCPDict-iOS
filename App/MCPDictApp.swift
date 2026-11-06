@@ -485,7 +485,7 @@ struct SearchView: View {
                                  let top = max(0, geometry.frame(in: .named("dictionaryScroll")).minY)
                                  Color.black.frame(width: geometry.size.width + 32, height: top).offset(x: -16, y: -top)
                                      .preference(key: ResultHeaderPosition.self, value: geometry.frame(in: .named("dictionaryScroll")).minY)
-                             }
+                             }.allowsHitTesting(false)
                          }.zIndex(1)
                     }
                 }
