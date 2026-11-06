@@ -63,5 +63,9 @@ final class NotebookTests: XCTestCase {
         model.assign(row, to: [])
         XCTAssertTrue(model.favorites.isEmpty)
         XCTAssertEqual(model.notebook.books.count, 2)
+        let created = try XCTUnwrap(model.setBookName("星號面板新建", selectNew: false))
+        XCTAssertEqual(model.notebook.selected, chosen)
+        model.assign(row, to: [created])
+        XCTAssertEqual(model.memberships(row), [created])
     }
 }
