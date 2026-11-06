@@ -174,9 +174,9 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         readingButton.accessibilityLabel = point.reading
         readingButton.accessibilityHint = ui("長按複製讀音")
         readingButton.isHidden = point.reading.isEmpty
-        let nameSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
+        let nameButtonSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
         let readingRect = text.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
-        let nameWidth: CGFloat = nameSize.width + 12, nameHeight: CGFloat = max(nameSize.height, CGFloat(nameSize) * 1.4)
+        let nameWidth: CGFloat = nameButtonSize.width + 12, nameHeight: CGFloat = max(nameButtonSize.height, CGFloat(nameSize) * 1.4)
         let readingWidth: CGFloat = min(268, ceil(readingRect.width) + 8)
         let readingHeight: CGFloat = point.reading.isEmpty ? 0 : ceil(readingRect.height) + 8
         let width = max(nameWidth, readingWidth)
