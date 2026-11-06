@@ -31,6 +31,13 @@ struct DialectPoint: Codable, Identifiable, Equatable {
     }
 }
 
+struct MapHandoff: Identifiable {
+    let id = UUID()
+    let character: String
+    let result: MapSearchResult
+    let names: Set<String>
+}
+
 struct MapSearchResult {
     struct Line: Hashable {
         let text: String

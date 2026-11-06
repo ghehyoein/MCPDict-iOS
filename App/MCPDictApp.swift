@@ -20,6 +20,28 @@ struct SavedReading: Identifiable, Codable {
 final class AppModel: ObservableObject {
     let repository: DictionaryRepository
     let tableStore: TableStore
+    @Published var activeTab = 0
+    @Published var mapHandoff: MapHandoff?
+    func openResultOnMap(_ character: String) {
+        let mode: SearchMode = resultMode == .note ? .note : .character
+        var found = MapSearchResult(mode: mode, query: resultQuery)
+        found.choices = resultCharacters
+        // Preserve the submitted dictionary result, even if the draft selection has since changed.
+        let choices = Set(found.choices)
+        var seen = [String: [String: Set<MapSearchResult.Line>]]()
+        for row in results {
+            let line = MapSearchResult.Line(text: row.pronunciation, pronunciation: row.pronunciation, note: mode == .note ? row.note : "")
+            for c in row.characters where !c.isWhitespace {
+                let key = String(c)
+                if choices.contains(key), seen[key, default: [:]][row.language, default: []].insert(line).inserted {
+                    found.groups[key, default: [:]][row.language, default: []].append(line)
+                }
+            }
+        }
+        let names = Set(results.map(\.language))
+        mapHandoff = MapHandoff(character: character, result: found, names: names)
+        activeTab = 2
+    }
     @Published var tableDetail: TablePackage?
     @Published var installed: TableInstallation? { didSet { rebuildTableLookup() } }
     @Published var catalog: TableCatalog? { didSet { rebuildTableLookup() } }
@@ -320,10 +342,9 @@ struct RootView: View {
     @EnvironmentObject var model: AppModel
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
-    @State private var tab = 0
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
     var body: some View {
-        TabView(selection: $tab) {
+        TabView(selection: $model.activeTab) {
             SearchView().tag(0).tabItem { Label(ui("字典"), systemImage: "character.book.closed") }
             FavoritesView().tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
             DialectMapView().tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
@@ -359,6 +380,7 @@ struct SearchView: View {
     @AppStorage("dictionaryPalette") private var palette = "atlas"
     @FocusState private var searchFocused: Bool
     @State private var menuOpen = false
+    @State private var reference: ReferencePage?
     @State private var selectedCharacter = ""
     @StateObject private var feedback = CopyFeedback()
     private func submitQuery() {
@@ -400,6 +422,7 @@ struct SearchView: View {
             .listStyle(.plain)
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
+            .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }
 
         }
     }
@@ -409,6 +432,9 @@ struct SearchView: View {
                     let chars = model.resultCharacters
                     let current = chars.contains(selectedCharacter) ? selectedCharacter : chars.first ?? ""
                     Section {
+                        if hasCharacters, !current.isEmpty {
+                            CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) })
+                        }
                         if hasCharacters { CharacterResultsView(current: current, copy: copy) }
                         else { HomophoneResultsView(copy: copy) }
                     } header: {
