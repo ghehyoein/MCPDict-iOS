@@ -316,6 +316,16 @@ struct SearchView: View {
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
+                resultsSection
+                if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
+            }
+            .listStyle(.plain)
+            .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
+            .navigationTitle(ui("漢字音典"))
+
+        }
+    }
+    @ViewBuilder private var resultsSection: some View {
                 if !model.resultQuery.isEmpty {
                     let hasCharacters = model.resultMode == .character || model.resultMode == .note
                     let chars = model.resultCharacters
@@ -341,14 +351,8 @@ struct SearchView: View {
                          .padding(.vertical, 4).background(Color(uiColor: .systemBackground))
                     }
                 }
-                if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
-            }
-            .listStyle(.plain)
-            .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
-            .navigationTitle(ui("漢字音典"))
-
-        }
     }
+
 }
 
 struct LanguageView: View {
