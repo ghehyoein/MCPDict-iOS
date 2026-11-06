@@ -130,23 +130,29 @@ final class AppModel: ObservableObject {
         searching = true
         defer { if token == generation { searching = false } }
         let request = more ? (lastSearch ?? (query, mode, language, selectedLanguages)) : (query, mode, language, selectedLanguages)
+        let ranks = ResultOrdering.ranks(installed?.tables ?? [], namespace: "dictionary")
         do {
             let found: [Reading]
             let variants = request.1 == .character ? await Task.detached(priority: .userInitiated) { CharacterVariants.expand(request.0) }.value : []
             if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
             else { found = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3) }
             guard token == generation else { return }
-            let ranks = ResultOrdering.ranks(installed?.tables ?? [], namespace: "dictionary")
             let previous = more ? results : []
             let prepared = await Task.detached {
                 let ordered = previous + ResultOrdering.sorted(found, ranks: ranks)
-                return (ordered, CharacterResults.index(ordered))
+                var choices = [String](), seen = Set<String>()
+                if request.1 == .note {
+                    for row in found { for char in row.characters where !char.isWhitespace {
+                        let value = String(char); if seen.insert(value).inserted { choices.append(value) }
+                    } }
+                }
+                return (ordered, request.1 == .pronunciation ? [:] : CharacterResults.index(ordered), choices)
             }.value
             guard token == generation else { return }
             results = prepared.0; characterGroupCache = prepared.1
             lastSearch = request
             resultMode = request.1; resultQuery = request.0
-            resultCharacters = request.1 == .note ? CharacterResults.characters(found.map(\.characters).joined()) : variants
+            resultCharacters = request.1 == .note ? prepared.2 : variants
             hasMore = false
         } catch { self.error = error.localizedDescription }
     }

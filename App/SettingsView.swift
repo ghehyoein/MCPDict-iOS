@@ -68,7 +68,7 @@ struct SettingsView: View {
                         LanguageBadge(name: "通東呂四", table: table).environment(\.mapLabelSize, mapSize)
                     }.buttonStyle(.plain).disabled(table == nil)
                 } else if sample == 1 {
-                    PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable).font(.system(size: readingSize))
+                    PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize)
                 } else { Text(ui("漢字音典")).font(.system(size: fontSize)).textSelection(.enabled) }
             }
             Slider(value: size, in: range) { Text(ui(label)) }.accessibilityIdentifier(identifier)

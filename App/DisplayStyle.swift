@@ -140,18 +140,19 @@ enum ToneDisplay {
 struct PronunciationView: View {
     let raw: String
     let table: TablePackage?
+    var pointSize: Double? = nil
     @AppStorage("toneStyle") private var style = "baSheng"
     @AppStorage("pitchStyle") private var pitch = "curve"
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
         HStack(alignment: .center, spacing: 0) {
             ForEach(ToneDisplay.parts(raw, table: table, style: style, pitchStyle: pitch)) { part in
-                Text(part.base)
+                Text(part.base).font(pointSize.map { .system(size: $0) })
                 if part.stacked {
-                    VStack(spacing: 0) { Text(part.pitch); Text(part.tone) }.font(.caption2)
+                    VStack(spacing: 0) { Text(part.pitch); Text(part.tone) }.font(pointSize.map { .system(size: $0 * 0.6) } ?? .caption2)
                 } else {
-                    Text(part.pitch).font(pitch == "number" ? .caption : .body)
-                    Text(part.tone)
+                    Text(part.pitch).font(pointSize.map { .system(size: $0 * (pitch == "number" ? 0.7 : 1)) } ?? (pitch == "number" ? .caption : .body))
+                    Text(part.tone).font(pointSize.map { .system(size: $0) })
                 }
             }
         }.textSelection(.enabled).lineLimit(1).fixedSize(horizontal: true, vertical: false)
