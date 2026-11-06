@@ -7,6 +7,7 @@ struct SettingsView: View {
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
     @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
+    @AppStorage(AppTypography.readingKey) private var readingSize = 16.0
     var body: some View {
         NavigationStack {
             Form {
@@ -16,8 +17,14 @@ struct SettingsView: View {
                     option("元來是正體ɵɤ̞ɵ(", value: "hant", selection: $uiLanguage)
                 }
                 Section(ui("字體大小")) {
-                    sizeSlider("地圖語言點、分區及讀音", $mapSize, range: 10...32, identifier: "mapSizeSlider")
-                    sizeSlider("其他介面", $fontSize, range: 14...26, identifier: "fontSizeSlider")
+                    sizeSlider("地圖語言點及分區", $mapSize, range: 5...25, identifier: "mapSizeSlider")
+                    sizeSlider("地圖讀音", $readingSize, range: 5...25, identifier: "mapReadingSlider")
+                    sizeSlider("顯示介面", $fontSize, range: 14...26, identifier: "fontSizeSlider")
+                }
+                Section(ui("字體預覽")) {
+                    Text(ui("語言點 · 吳語")).font(.system(size: mapSize))
+                    Text("tɕiɔŋ ①③⑤⑦").font(.system(size: readingSize))
+                    Text(ui("漢字音典")).font(.body)
                 }
                 Section(ui("聲調顯示")) {
                     Picker(ui("調類樣式"), selection: $toneStyle) {
@@ -35,7 +42,7 @@ struct SettingsView: View {
                     option(ui("深色"), value: "dark", selection: $appearance)
                 }
                 MapSettingsSection()
-            }.navigationTitle(ui("設定"))
+            }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
         }
     }
     private func sizeSlider(_ label: String, _ size: Binding<Double>, range: ClosedRange<Double>, identifier: String) -> some View {

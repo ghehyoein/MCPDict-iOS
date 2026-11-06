@@ -3,7 +3,10 @@ import SwiftUI
 struct BookPicker: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.dismiss) private var dismiss
-    @State private var multiple = false
+    var reading: Reading? = nil
+    @State private var draft = Set<UUID>()
+    private var selected: Set<UUID> { reading == nil ? model.notebook.selected : draft }
+    private func select(_ ids: Set<UUID>) { if reading == nil { model.selectBooks(ids) } else { draft = ids } }
     @State private var editing = false
     @State private var editID: UUID?
     @State private var name = ""
@@ -13,39 +16,38 @@ struct BookPicker: View {
         NavigationStack {
             List {
                 Section {
-                    Picker(ui("選擇方式"), selection: $multiple) {
-                        Text(ui("單選")).tag(false); Text(ui("多選")).tag(true)
-                    }.pickerStyle(.segmented)
                     HStack {
-                        Button(ui("全選")) { multiple = true; model.selectBooks(Set(model.notebook.books.map(\.id))) }
+                        Button(ui("全選")) { select(Set(model.notebook.books.map(\.id))) }
                         Spacer()
-                        Button(ui("清空")) { model.selectBooks([]) }
+                        Button(ui("清空")) { select([]) }
                     }.buttonStyle(.borderless)
                 }
                 Section {
                     ForEach(model.notebook.books) { book in
                         HStack {
                             Button { toggle(book.id) } label: {
-                                HStack { Image(systemName: model.notebook.selected.contains(book.id) ? "checkmark.square.fill" : "square"); Text(verbatim: book.title); Spacer() }.contentShape(Rectangle())
-                            }.buttonStyle(.plain).accessibilityValue(model.notebook.selected.contains(book.id) ? ui("已選") : ui("未選"))
+                                HStack { Image(systemName: selected.contains(book.id) ? "checkmark.square.fill" : "square"); Text(verbatim: book.title); Spacer() }.contentShape(Rectangle())
+                            }.buttonStyle(.plain).accessibilityValue(selected.contains(book.id) ? ui("已選") : ui("未選"))
                             Menu {
                                 Button(ui("重新命名")) { editID = book.id; name = book.name; editing = true }
-                                Button(ui("刪除"), role: .destructive) { requestDelete([book.id]) }
                             } label: { Image(systemName: "ellipsis.circle").padding(6) }
                             .accessibilityLabel(ui("管理") + book.title)
                         }
                     }
                     Button(ui("新建生字表"), systemImage: "plus") { editID = nil; name = ""; editing = true }
-                    Button(ui("刪除所選生字表"), role: .destructive) { requestDelete(model.notebook.selected) }
-                        .disabled(model.notebook.selected.isEmpty)
-                } footer: { Text(ui("在字典點星號，會收藏到所有已選的生字表。")) }
+                } footer: { if reading != nil { Text(ui("點「完成」儲存勾選的生字表；不勾選任何表會取消收藏。")) } }
                 if editing { editor }
             }.navigationTitle(ui("生字表")).navigationBarTitleDisplayMode(.inline)
-            .toolbar { Button(ui("完成")) { dismiss() } }
-            .onAppear { multiple = model.notebook.selected.count > 1 }
-            .onChange(of: multiple) { _, value in
-                if !value, model.notebook.selected.count > 1, let first = model.notebook.books.first(where: { model.notebook.selected.contains($0.id) }) { model.selectBooks([first.id]) }
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(ui("刪除"), role: .destructive) { requestDelete(selected) }.disabled(selected.isEmpty)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(ui("完成")) { if let reading { model.assign(reading, to: draft) }; dismiss() }
+                }
             }
+            .onAppear { if let reading { draft = model.memberships(reading) } }
+            .onChange(of: model.notebook.books.map(\.id)) { _, ids in draft.formIntersection(ids) }
             .confirmationDialog(ui("刪除所選生字表？"), isPresented: $confirm, titleVisibility: .visible) {
                 Button(ui("刪除") + "（" + String(deletion.count) + "）", role: .destructive) { model.deleteBooks(deletion) }
                 Button(ui("取消"), role: .cancel) {}
@@ -66,10 +68,9 @@ struct BookPicker: View {
         } header: { Text(ui(editID == nil ? "新建生字表" : "重新命名")) }
     }
     private func toggle(_ id: UUID) {
-        if !multiple { model.selectBooks([id]); return }
-        var selected = model.notebook.selected
+        var selected = self.selected
         if !selected.insert(id).inserted { selected.remove(id) }
-        model.selectBooks(selected)
+        select(selected)
     }
     private func requestDelete(_ ids: Set<UUID>) { deletion = ids; confirm = !ids.isEmpty }
 }

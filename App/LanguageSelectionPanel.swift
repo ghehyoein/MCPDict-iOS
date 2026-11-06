@@ -12,10 +12,11 @@ struct LanguageSelectionPanel: View {
     @Binding var colorScheme: String
     @State private var kind: MapSearchKind = .language
     @Binding var expanded: Bool
+    @State private var flags = LanguageFlags()
     @State private var restored = false
     private let cache = LanguageSelectionCache()
     private var scope: LanguageSelectionScope { kind == .region ? .terminalGroups : (kind == .administrative ? .topGroups : .points) }
-    private var grouping: TableGrouping { kind == .administrative ? .administrative : (colorScheme == "dictionary" ? .dictionary : .atlas) }
+    private var grouping: TableGrouping { kind == .administrative ? .administrative : .atlas }
     private var key: String { cacheKey + "." + kind.rawValue }
     private var available: Set<String> { Set(scope.eligible(tables, grouping: grouping).map(\.name)) }
     private var chosen: Binding<Set<String>> {
@@ -35,10 +36,13 @@ struct LanguageSelectionPanel: View {
                     Text(ui("地圖集二")).tag("atlas")
                     Text(ui("音典分區")).tag("dictionary")
                 }.pickerStyle(.segmented).labelsHidden()
+                HStack {
+                    flagButton("方言島", $flags.island); flagButton("歷史音", $flags.history)
+                }
                 if kind == .custom { Text(ui("自選功能後續待更新，目前與語言模式相同")).font(.caption).foregroundStyle(.secondary) }
-                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key + grouping.rawValue, inspect: inspect, paletteChanged: { colorScheme = $0 }) {
+                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key, inspect: inspect, palette: colorScheme == "dictionary" ? .dictionary : .atlas, flags: flags) {
                     expanded = false; finished()
-                }.id(key + grouping.rawValue)
+                }.id(key)
                 }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
             }
         }
@@ -50,7 +54,12 @@ struct LanguageSelectionPanel: View {
             colorScheme = cache.defaults.string(forKey: "palette." + key) ?? "atlas"
             restoreMode()
         }
-        .onChange(of: colorScheme) { _, _ in if restored { cache.defaults.set(colorScheme, forKey: "palette." + key); if kind == .region { restoreMode() } } }
+        .onChange(of: colorScheme) { _, _ in if restored { cache.defaults.set(colorScheme, forKey: "palette." + key) } }
+    }
+    private func flagButton(_ title: String, _ value: Binding<Bool>) -> some View {
+        Button { value.wrappedValue.toggle() } label: {
+            Label(ui(title), systemImage: value.wrappedValue ? "checkmark.square.fill" : "square")
+        }.buttonStyle(.borderless)
     }
     private func restoreInitial() {
         guard !restored, !tables.isEmpty else { return }
@@ -59,7 +68,7 @@ struct LanguageSelectionPanel: View {
         kind = savedKind
         if let saved = cache.load(cacheKey + "." + savedKind.rawValue) {
             let savedScope: LanguageSelectionScope = savedKind == .region ? .terminalGroups : (savedKind == .administrative ? .topGroups : .points)
-            let savedGrouping: TableGrouping = savedKind == .administrative ? .administrative : (colorScheme == "dictionary" ? .dictionary : .atlas)
+            let savedGrouping: TableGrouping = savedKind == .administrative ? .administrative : .atlas
             names = saved.intersection(Set(savedScope.eligible(tables, grouping: savedGrouping).map(\.name)))
         }
         cache.save(names, for: cacheKey + "." + savedKind.rawValue)
