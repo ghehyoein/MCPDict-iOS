@@ -81,6 +81,7 @@ struct TableActions: View {
 }
 
 struct LanguageGroupList: View {
+    @EnvironmentObject var model: AppModel
     let tables: [TablePackage]
     let grouping: TableGrouping
     let depth: Int
@@ -102,7 +103,7 @@ struct LanguageGroupList: View {
                 }
             }
             ForEach(tables.filter { grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
-                Button { choose([table.name], table.name) } label: { LanguageBadge(name: table.name, table: table, grouping: grouping) }
+                Button { model.tableDetail = table } label: { LanguageBadge(name: table.name, table: table, grouping: grouping) }
             }
         }
     }

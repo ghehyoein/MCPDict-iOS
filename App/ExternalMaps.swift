@@ -95,8 +95,6 @@ struct MapSettingsSection: View {
                     ForEach(applications) { Text(ui($0.title)).tag($0.rawValue) }
                 }
             }
-            Text(ui("其他地圖可透過「分享位置」開啟，取決於該 App 的分享支援。外部地圖會另行開啟，不替換本頁的語言點圖層。"))
-                .font(.caption).foregroundStyle(.secondary)
         }.onAppear { refresh() }.onChange(of: scenePhase) { _, phase in if phase == .active { refresh() } }
     }
     private func refresh() {

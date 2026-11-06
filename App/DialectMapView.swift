@@ -25,7 +25,6 @@ struct DialectMapView: View {
     @State private var generation = 0
     @State private var querying = false
     @State private var fit = 0
-    @StateObject private var feedback = CopyFeedback()
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
     private var colorGrouping: TableGrouping { colorScheme == "dictionary" ? .dictionary : .atlas }
     @State private var points = [DialectPoint]()
@@ -36,7 +35,8 @@ struct DialectMapView: View {
     }
     private func rebuildPoints() {
         let group = result?.groups[activeCharacter] ?? [:]
-        points = (result == nil ? names : submittedNames).sorted().compactMap { name in
+        let ranks = ResultOrdering.ranks(tables, namespace: "map")
+        points = (result == nil ? names : submittedNames).sorted { (ranks[$0] ?? Int.max) < (ranks[$1] ?? Int.max) }.compactMap { name in
             let lines = group[name] ?? []
             guard let table = tableByName[name], result == nil || !lines.isEmpty else { return nil }
             let separator = result?.mode == .note ? "\n" : " / "
@@ -96,15 +96,13 @@ struct DialectMapView: View {
     private var mapContent: some View {
         VStack(spacing: 8) {
             searchBar
+            if mode == .note { NoteVariantPicker(query: $character) { Task { await query() } }.padding(.horizontal) }
             variantBar
             statusLabel
             NativeDialectMap(points: points, fit: fit, fontSize: min(25, max(5, mapSize)), readingSize: readingSize, mapStyle: baseMapStyle,
-                             centerChanged: { center = $0 }, copied: didCopy, choose: choose)
+                             centerChanged: { center = $0 }, choose: choose)
             if querying { ProgressView() }
         }
-    }
-    private func didCopy() {
-        feedback.show()
     }
     private var searchBar: some View {
                 HStack {
@@ -119,15 +117,15 @@ struct DialectMapView: View {
                         HStack {
                             ForEach(variants, id: \.self) { variant in
                                 Button(variant) { activeCharacter = variant }
-                                    .buttonStyle(.bordered).tint(variant == activeCharacter ? .teal : .gray)
+                                    .buttonStyle(.bordered).tint(variant == activeCharacter ? AppAccent.color : .gray)
                             }
                         }.padding(.horizontal)
                     }
                 }
     }
     private var statusLabel: some View {
-                Text(feedback.visible ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (result.map { " ·「" + (activeCharacter.isEmpty ? $0.query : activeCharacter) + "」僅查已下載字表" } ?? "")))
-                    .font(.caption).foregroundStyle(feedback.visible ? Color.orange : Color.secondary).accessibilityIdentifier("mapPointStatus")
+                Text(ui("\(points.count) 個語言點" + (result.map { " ·「" + (activeCharacter.isEmpty ? $0.query : activeCharacter) + "」僅查已下載字表" } ?? "")))
+                    .font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("mapPointStatus")
     }
     @ToolbarContentBuilder private var mapToolbar: some ToolbarContent {
                 ToolbarItemGroup(placement: .topBarTrailing) {

@@ -35,7 +35,7 @@ final class MapTests: XCTestCase {
             XCTAssertEqual(store.double(forKey: AppTypography.interfaceKey), general)
             host.traitOverrides.preferredContentSizeCategory = general > 20 ? .accessibilityExtraExtraExtraLarge : .small
             label.configure(point, fontSize: store.double(forKey: AppTypography.readingKey), labelSize: store.double(forKey: AppTypography.mapKey)) {}
-            let text = try XCTUnwrap(label.readingButton.attributedTitle(for: .normal))
+            let text = try XCTUnwrap(label.readingText.attributedText)
             let font = try XCTUnwrap(text.attribute(.font, at: 0, effectiveRange: nil) as? UIFont)
             XCTAssertEqual(label.nameButton.titleLabel?.font.pointSize, CGFloat(map))
             XCTAssertEqual(font.pointSize, CGFloat(reading))
@@ -79,15 +79,26 @@ final class MapTests: XCTestCase {
         XCTAssertEqual(view.displayPriority, .required)
         XCTAssertEqual(view.centerOffset, .zero)
         let label = try XCTUnwrap(view as? LabelAnnotationView)
-        XCTAssertFalse(label.readingButton.isHidden)
+        XCTAssertFalse(label.readingText.isHidden)
         XCTAssertFalse(label.canShowCallout)
         label.nameButton.sendActions(for: .touchUpInside)
-        label.copyReading()
-        XCTAssertLessThan(label.readingButton.frame.minY, label.nameButton.frame.minY)
+        XCTAssertLessThan(label.readingText.frame.minY, label.nameButton.frame.minY)
         XCTAssertNotNil(label.nameButton.backgroundColor)
-        XCTAssertEqual(UIPasteboard.general.string, "tung1")
         XCTAssertEqual(chosen, "gz")
         coordinator.update(map, points: [], fit: 0)
         XCTAssertTrue(map.annotations.isEmpty, "Clearing map filters must remove stale annotations")
     }
+    @MainActor func testLongNoteKeepsAllTextInScrollableSelectableViewport() {
+        let note = String(repeating: "完整注釋內容\n", count: 200)
+        let point = DialectPoint(id: "long", name: "甲", longitude: 1, latitude: 2, color: "#008080", reading: note)
+        let label = LabelAnnotationView(annotation: nil, reuseIdentifier: nil)
+        label.configure(point, fontSize: 25) {}
+        XCTAssertEqual(label.readingText.text, note)
+        XCTAssertTrue(label.readingText.isSelectable)
+        XCTAssertFalse(label.readingText.isEditable)
+        XCTAssertTrue(label.readingText.isScrollEnabled)
+        XCTAssertLessThanOrEqual(label.readingText.bounds.height, 180)
+        XCTAssertGreaterThan(label.readingText.sizeThatFits(CGSize(width: 260, height: .greatestFiniteMagnitude)).height, label.readingText.bounds.height)
+    }
+
 }

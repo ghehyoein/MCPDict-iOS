@@ -125,10 +125,10 @@ final class AppModel: ObservableObject {
         } catch { self.error = error.localizedDescription }
     }
     func search(more: Bool = false) async {
-        guard !searching else { return }
-        searching = true
-        defer { searching = false }
+        generation += 1
         let token = generation
+        searching = true
+        defer { if token == generation { searching = false } }
         let request = more ? (lastSearch ?? (query, mode, language, selectedLanguages)) : (query, mode, language, selectedLanguages)
         do {
             let found: [Reading]
@@ -136,7 +136,14 @@ final class AppModel: ObservableObject {
             if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
             else { found = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3) }
             guard token == generation else { return }
-            if more { results += found } else { results = found }
+            let ranks = ResultOrdering.ranks(installed?.tables ?? [], namespace: "dictionary")
+            let previous = more ? results : []
+            let prepared = await Task.detached {
+                let ordered = previous + ResultOrdering.sorted(found, ranks: ranks)
+                return (ordered, CharacterResults.index(ordered))
+            }.value
+            guard token == generation else { return }
+            results = prepared.0; characterGroupCache = prepared.1
             lastSearch = request
             resultMode = request.1; resultQuery = request.0
             resultCharacters = request.1 == .note ? CharacterResults.characters(found.map(\.characters).joined()) : variants
@@ -365,7 +372,7 @@ struct RootView: View {
         .id(uiLanguage)
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
         .dynamicTypeSize(AppTypography.size(fontSize))
-        .tint(.teal)
+        .tint(AppAccent.color)
         .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)
         .alert(ui("提示"), isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
             Button(ui("好")) { model.error = nil }
@@ -398,15 +405,9 @@ struct SearchView: View {
     @State private var reference: ReferencePage?
     @State private var selectedCharacter = ""
     @State private var resultHeaderTop = CGFloat.greatestFiniteMagnitude
-    @StateObject private var feedback = CopyFeedback()
     private func submitQuery() {
         searchFocused = false
         Task { await model.search() }
-    }
-    private func copy(_ text: String) {
-        UIPasteboard.general.string = text
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-        feedback.show()
     }
 
     @EnvironmentObject var model: AppModel
@@ -455,24 +456,22 @@ struct SearchView: View {
                     let current = chars.contains(selectedCharacter) ? selectedCharacter : chars.first ?? ""
                     Section {
                         if hasCharacters, !current.isEmpty {
-                            CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) }, copy: copy)
+                            CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) })
                         }
-                        if hasCharacters { CharacterResultsView(current: current, copy: copy) }
-                        else { HomophoneResultsView(copy: copy) }
+                        if hasCharacters { CharacterResultsView(current: current) }
+                        else { HomophoneResultsView() }
                     } header: {
                         VStack(alignment: .leading, spacing: 4) {
+                            if model.resultMode == .note { NoteVariantPicker(query: $model.query, submit: submitQuery) }
                             if hasCharacters && !chars.isEmpty {
                                 ScrollView(.horizontal) {
                                     HStack {
                                         ForEach(chars, id: \.self) { char in
-                                            Button(char) { selectedCharacter = char }.buttonStyle(.bordered).tint(char == current ? .teal : .gray)
+                                            Button(char) { selectedCharacter = char }.buttonStyle(.bordered).tint(char == current ? AppAccent.color : .gray)
                                         }
                                     }
                                 }
                             }
-                            Text(ui(feedback.visible ? "已複製到剪貼板" : "長按發音可複製"))
-                                .font(.caption).foregroundStyle(feedback.visible ? Color.orange : Color.secondary)
-                                .accessibilityIdentifier("dictionaryCopyStatus")
                         }.textCase(nil).frame(maxWidth: .infinity, alignment: .leading)
                          .padding(.vertical, 4).background(Color(uiColor: .systemBackground))
                          .background {
