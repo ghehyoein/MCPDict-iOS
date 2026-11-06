@@ -7,10 +7,13 @@ enum MapSearchKind: String, CaseIterable, Identifiable {
 
 struct DialectMapView: View {
     @EnvironmentObject var model: AppModel
-    @AppStorage("colorScheme") private var colorScheme = "atlas"
+    @AppStorage("mapPalette") private var colorScheme = "atlas"
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
-    @AppStorage("fontSize") private var fontSize = 17.0
+    @AppStorage("mapReadingSize") private var fontSize = 17.0
+    @AppStorage("mapNameSize") private var nameSize = 14.0
+    @State private var menuOpen = false
+    @State private var submittedNames = Set<String>()
     @AppStorage("baseMapStyle") private var baseMapStyle = "standard"
     @State private var center = TableLocation(longitude: 108, latitude: 34)
     @State private var names = Set<String>()
@@ -34,7 +37,7 @@ struct DialectMapView: View {
         rebuildPoints()
     }
     private func rebuildPoints() {
-        points = names.sorted().compactMap { name in
+        points = (activeCharacter.isEmpty ? names : submittedNames).sorted().compactMap { name in
             guard let table = tableByName[name], activeCharacter.isEmpty || readings[name] != nil,
                   var point = DialectPoint.make(table, grouping: colorGrouping, reading: readings[name] ?? "") else { return nil }
             point.toneParts = ToneDisplay.parts(point.reading, table: table, style: toneStyle, pitchStyle: pitchStyle)
@@ -44,7 +47,8 @@ struct DialectMapView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 8) {
-                LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region, finished: { fit += 1 }).padding(.horizontal)
+                LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region, finished: { if activeCharacter.isEmpty { fit += 1 } }, colorScheme: $colorScheme, expanded: $menuOpen).padding(.horizontal)
+                VStack(spacing: 8) {
                 HStack {
                     TextField(ui("請輸入單字"), text: $character).textFieldStyle(.roundedBorder).focused($inputFocused).onSubmit { Task { await query() } }
                     Button(ui("查字")) { Task { await query() } }.disabled(querying || model.updating)
@@ -62,11 +66,12 @@ struct DialectMapView: View {
                 }
                 Text(copied ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
                     .font(.caption).foregroundStyle(copied ? Color.orange : Color.secondary).accessibilityIdentifier("mapPointStatus")
-                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, mapStyle: baseMapStyle, centerChanged: { center = $0 }, copied: {
+                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, nameSize: nameSize, mapStyle: baseMapStyle, centerChanged: { center = $0 }, copied: {
                     copied = true; copyTask?.cancel()
-                    copyTask = Task { try? await Task.sleep(for: .seconds(3)); if !Task.isCancelled { copied = false } }
+                    copyTask = Task { try? await Task.sleep(for: .seconds(1)); if !Task.isCancelled { copied = false } }
                 }, choose: choose)
                 if querying { ProgressView() }
+                }.overlay { if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } } }
             }
             .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -84,6 +89,7 @@ struct DialectMapView: View {
             .onAppear { rebuildMapTables() }
             .onChange(of: tables) { _, _ in rebuildMapTables() }
             .onChange(of: names) { _, _ in rebuildPoints() }
+            .onChange(of: submittedNames) { _, _ in rebuildPoints() }
             .onChange(of: readings) { _, _ in rebuildPoints() }
             .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
             .onChange(of: toneStyle) { _, _ in rebuildPoints() }
@@ -100,12 +106,13 @@ struct DialectMapView: View {
         inputFocused = false
         let text = character.trimmingCharacters(in: .whitespacesAndNewlines)
         guard text.count == 1 else { model.error = "請輸入一個漢字（支援擴展區漢字）"; return }
+        let requestedNames = names
         querying = true
         defer { querying = false }
         do {
             let expanded = await Task.detached(priority: .userInitiated) { CharacterVariants.expand(text) }.value
             let found = try await model.repository.mapReadingsForVariants(expanded)
-            variants = expanded; readingsByVariant = found
+            submittedNames = requestedNames; variants = expanded; readingsByVariant = found
             activeCharacter = text; readings = found[text] ?? [:]; fit += 1
         }
         catch { model.error = error.localizedDescription }

@@ -35,12 +35,12 @@ struct SelectionTree: View {
                             if !expanded.insert(row.id).inserted { expanded.remove(row.id) }
                             refreshRows()
                         } label: {
-                            HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary) }.contentShape(Rectangle())
+                            HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }.contentShape(Rectangle())
                         }.buttonStyle(.plain).accessibilityIdentifier("expand-" + row.node.title)
                             .accessibilityValue(expanded.contains(row.id) ? "expanded" : "collapsed")
                     } else {
                         Button { toggle(row) } label: {
-                            HStack { Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary) }
+                            HStack { Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }
                         }.buttonStyle(.plain)
                     }
                 }.padding(.leading, CGFloat(row.node.depth) * 18).padding(.vertical, 4)
@@ -75,6 +75,7 @@ struct LanguageDropdown: View {
     var scope: LanguageSelectionScope = .points
     var regionCacheKey = ""
     var inspect: ((TablePackage) -> Void)? = nil
+    var paletteChanged: (String) -> Void = { _ in }
     let done: () -> Void
     @State private var grouping: TableGrouping = .atlas
     @State private var filter = ""
@@ -88,7 +89,10 @@ struct LanguageDropdown: View {
         VStack(alignment: .leading) {
             TextField(ui("搜尋語言或分區"), text: $filter).textFieldStyle(.roundedBorder)
             if scope == .points {
-                Picker(ui("分類方式"), selection: $grouping) {
+                Picker(ui("分類方式"), selection: Binding(get: { grouping }, set: { value in
+                    grouping = value
+                    if value != .administrative { paletteChanged(value == .atlas ? "atlas" : "dictionary") }
+                })) {
                     ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
                 }.pickerStyle(.menu)
             }
@@ -130,6 +134,8 @@ struct FavoriteButton: View {
 }
 
 struct HomophoneResultsView: View {
+    @AppStorage("dictionaryPalette") private var palette = "atlas"
+    let copy: (String) -> Void
     @EnvironmentObject var model: AppModel
     private var groups: [[Reading]] { model.homophoneGroups() }
     @State private var info: TablePackage?
@@ -137,8 +143,9 @@ struct HomophoneResultsView: View {
         ForEach(groups, id: \.first!.id) { rows in
             if let first = rows.first {
                 VStack(alignment: .leading, spacing: 8) {
-                    Button { info = model.table(named: first.language) } label: { LanguageBadge(name: first.language, table: model.table(named: first.language)) }.buttonStyle(.plain)
+                    Button { info = model.table(named: first.language) } label: { LanguageBadge(name: first.language, table: model.table(named: first.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
                     PronunciationView(raw: first.pronunciation, table: model.table(named: first.language)).font(.title3)
+                        .onLongPressGesture { copy(first.pronunciation) }
                     ForEach(rows) { row in
                         HStack(alignment: .top) {
                             FavoriteButton(reading: row)

@@ -282,6 +282,17 @@ struct ReadingView: View {
 }
 
 struct SearchView: View {
+    @AppStorage("dictionaryPalette") private var palette = "atlas"
+    @State private var menuOpen = false
+    @State private var selectedCharacter = ""
+    @State private var copied = false
+    @State private var copyTask: Task<Void, Never>?
+    private func copy(_ text: String) {
+        UIPasteboard.general.string = text
+        copied = true; copyTask?.cancel()
+        copyTask = Task { try? await Task.sleep(for: .seconds(1)); if !Task.isCancelled { copied = false } }
+    }
+
     @EnvironmentObject var model: AppModel
     var body: some View {
         NavigationStack {
@@ -296,7 +307,7 @@ struct SearchView: View {
                             .onSubmit { Task { await model.search() } }
                         Button(ui("查詢")) { Task { await model.search() } }.disabled(model.searching)
                     }
-                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection")
+                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection", colorScheme: $palette, expanded: $menuOpen)
                 }
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.updating { ProgressView(ui(model.status)) }
@@ -305,14 +316,35 @@ struct SearchView: View {
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
-                if !model.resultQuery.isEmpty && (model.resultMode == .character || (model.resultMode == .note && !model.results.isEmpty)) {
-                    CharacterResultsView()
-                } else {
-                    HomophoneResultsView()
-
+                if !model.resultQuery.isEmpty {
+                    let hasCharacters = model.resultMode == .character || model.resultMode == .note
+                    let chars = model.resultCharacters
+                    let current = chars.contains(selectedCharacter) ? selectedCharacter : chars.first ?? ""
+                    Section {
+                        if hasCharacters { CharacterResultsView(current: current, copy: copy) }
+                        else { HomophoneResultsView(copy: copy) }
+                    } header: {
+                        VStack(alignment: .leading, spacing: 4) {
+                            if hasCharacters && !chars.isEmpty {
+                                ScrollView(.horizontal) {
+                                    HStack {
+                                        ForEach(chars, id: \.self) { char in
+                                            Button(char) { selectedCharacter = char }.buttonStyle(.bordered).tint(char == current ? .teal : .gray)
+                                        }
+                                    }
+                                }
+                            }
+                            Text(ui(copied ? "已複製到剪貼板" : "長按發音可複製"))
+                                .font(.caption).foregroundStyle(copied ? Color.orange : Color.secondary)
+                                .accessibilityIdentifier("dictionaryCopyStatus")
+                        }.textCase(nil).frame(maxWidth: .infinity, alignment: .leading)
+                         .padding(.vertical, 4).background(Color(uiColor: .systemBackground))
+                    }
                 }
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
             }
+            .listStyle(.plain)
+            .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
 
         }
@@ -337,24 +369,6 @@ struct LanguageView: View {
                 if model.languages.isEmpty { Text(ui("尚未下載字表，請先到「字表」選擇字表。")).padding() }
             }.searchable(text: $filter, prompt: ui("搜尋語言或分區")).navigationTitle(ui("選擇語言"))
                 .toolbar { Button(ui("完成")) { dismiss() } }
-        }
-    }
-}
-
-struct FavoritesView: View {
-    @EnvironmentObject var model: AppModel
-    var body: some View {
-        NavigationStack {
-            List {
-                if model.favorites.isEmpty { Text(ui("點擊查詢結果旁的星號，即可加入生字本。")) }
-                ForEach($model.favorites) { $saved in
-                    VStack(alignment: .leading) {
-                        ReadingView(reading: saved.reading)
-                        TextField(ui("個人筆記"), text: $saved.note, axis: .vertical)
-                            .onChange(of: saved.note) { _, _ in model.persistFavorites() }
-                    }
-                }.onDelete(perform: model.deleteFavorites)
-            }.navigationTitle(ui("生字本")).toolbar { EditButton() }
         }
     }
 }

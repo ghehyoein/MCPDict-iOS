@@ -9,9 +9,9 @@ struct LanguageSelectionPanel: View {
     var initialKind: MapSearchKind = .language
     var inspect: ((TablePackage) -> Void)? = nil
     var finished: () -> Void = {}
-    @AppStorage("colorScheme") private var colorScheme = "atlas"
+    @Binding var colorScheme: String
     @State private var kind: MapSearchKind = .language
-    @State private var expanded = false
+    @Binding var expanded: Bool
     @State private var restored = false
     private let cache = LanguageSelectionCache()
     private var scope: LanguageSelectionScope { kind == .region ? .terminalGroups : (kind == .administrative ? .topGroups : .points) }
@@ -36,7 +36,7 @@ struct LanguageSelectionPanel: View {
                     Text(ui("音典分區")).tag("dictionary")
                 }.pickerStyle(.segmented).labelsHidden()
                 if kind == .custom { Text(ui("自選功能後續待更新，目前與語言模式相同")).font(.caption).foregroundStyle(.secondary) }
-                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key + grouping.rawValue, inspect: inspect) {
+                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key + grouping.rawValue, inspect: inspect, paletteChanged: { colorScheme = $0 }) {
                     expanded = false; finished()
                 }.id(key + grouping.rawValue)
                 }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
@@ -47,9 +47,10 @@ struct LanguageSelectionPanel: View {
         .onChange(of: kind) { old, new in
             guard restored, old != new else { return }
             cache.defaults.set(new.rawValue, forKey: "selectionMode." + cacheKey)
+            colorScheme = cache.defaults.string(forKey: "palette." + key) ?? "atlas"
             restoreMode()
         }
-        .onChange(of: colorScheme) { _, _ in if restored && kind == .region { restoreMode() } }
+        .onChange(of: colorScheme) { _, _ in if restored { cache.defaults.set(colorScheme, forKey: "palette." + key); if kind == .region { restoreMode() } } }
     }
     private func restoreInitial() {
         guard !restored, !tables.isEmpty else { return }
@@ -66,8 +67,6 @@ struct LanguageSelectionPanel: View {
         restored = true
     }
     private func restoreMode() {
-        names = []
         names = (cache.load(key) ?? []).intersection(available)
-        finished()
     }
 }

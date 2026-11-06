@@ -101,6 +101,14 @@ final class NavigationTests: XCTestCase {
         let restored = app.staticTexts.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
         XCTAssertTrue(restored.waitForExistence(timeout: 10), app.staticTexts["mapPointStatus"].debugDescription)
 
+        app.buttons["mapLanguageSelection"].tap()
+        app.segmentedControls.buttons["自選"].tap()
+        XCTAssertTrue(app.buttons["finishLanguages"].exists)
+        // Dismiss from the input area without submitting a new lookup.
+        input.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertFalse(app.buttons["finishLanguages"].exists)
+        XCTAssertTrue(reading.exists, "Switching draft selections must retain the submitted map result")
+
     }
 
     @MainActor func testIndependentRootLevelsAndExclusiveRegions() throws {
