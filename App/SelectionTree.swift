@@ -4,6 +4,8 @@ struct SelectionTree: View {
     @Environment(\.mapLabelSize) private var mapLabelSize
     let tables: [TablePackage]
     let grouping: TableGrouping
+    var roles: Set<PersonRole> = Set(PersonRole.allCases)
+    var badgeGrouping: TableGrouping? = nil
     var scope: LanguageSelectionScope = .points
     var selectedRegion: Binding<String?> = .constant(nil)
     var filterQuery = ""
@@ -28,7 +30,7 @@ struct SelectionTree: View {
                         .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
                     if let table = row.node.table {
                         Button { if let inspect { inspect(table) } else { toggle(row) } } label: {
-                            LanguageBadge(name: table.name, table: table, grouping: grouping).frame(minHeight: 44).contentShape(Rectangle())
+                            LanguageBadge(name: table.name, table: table, grouping: badgeGrouping ?? grouping).frame(minHeight: 44).contentShape(Rectangle())
                         }.buttonStyle(.plain)
                         Spacer()
                     } else if row.expandable {
@@ -49,10 +51,11 @@ struct SelectionTree: View {
         }.onAppear { rebuild() }
             .onChange(of: tables) { _, _ in rebuild() }
             .onChange(of: grouping) { _, _ in expanded = []; rebuild() }
+            .onChange(of: roles) { _, _ in expanded = []; rebuild() }
             .onChange(of: filterQuery) { _, _ in matching = index.matches(filterQuery); refreshRows() }
     }
     private func rebuild() {
-        index = SelectionIndex(tables: tables, grouping: grouping)
+        index = SelectionIndex(tables: tables, grouping: grouping, roles: roles)
         matching = index.matches(filterQuery)
         refreshRows()
     }
@@ -76,12 +79,26 @@ struct LanguageDropdown: View {
     var scope: LanguageSelectionScope = .points
     var regionCacheKey = ""
     var inspect: ((TablePackage) -> Void)? = nil
-    var paletteChanged: (String) -> Void = { _ in }
+    var palette: TableGrouping = .atlas
+    var flags = LanguageFlags()
     let done: () -> Void
     @State private var grouping: TableGrouping = .atlas
     @State private var filter = ""
     @State private var selectedRegion: String?
-    private var eligible: [TablePackage] { scope.eligible(tables, grouping: grouping) }
+    @State private var wheel = false
+    @State private var roles = Set(PersonRole.allCases)
+    @State private var eligible = [TablePackage]()
+    private var choices: [TableGrouping] { TableGrouping.allCases.filter { scope == .points || $0 != .name } }
+    private func refresh(prune: Bool) {
+        eligible = scope.eligible(tables.filter(flags.matches), grouping: grouping, roles: roles)
+        let ids = Set(eligible.map(\.name))
+        if prune { names = names.intersection(ids) }
+        if scope == .terminalGroups {
+            let saved = UserDefaults.standard.string(forKey: "regionNode." + regionCacheKey + grouping.rawValue)
+            selectedRegion = RegionSelection.restore(tables: eligible, grouping: grouping, names: names, saved: saved, roles: roles)
+            if selectedRegion == nil { names = [] }
+        }
+    }
     private var selection: Binding<Set<String>> {
         Binding(get: { Set(tables.filter { names.contains($0.name) }.map(\.id)) },
                 set: { ids in names = Set(tables.filter { ids.contains($0.id) }.map(\.name)) })
@@ -89,19 +106,28 @@ struct LanguageDropdown: View {
     var body: some View {
         VStack(alignment: .leading) {
             TextField(ui("搜尋語言或分區"), text: $filter).textFieldStyle(.roundedBorder)
-            if scope == .points {
-                Picker(ui("分類方式"), selection: Binding(get: { grouping }, set: { value in
-                    grouping = value
-                    if value != .administrative { paletteChanged(value == .atlas ? "atlas" : "dictionary") }
-                })) {
-                    ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
-                }.pickerStyle(.menu)
+            if scope != .topGroups {
+                HStack {
+                    Button { wheel.toggle() } label: { Text(ui("分類方式") + " · " + ui(grouping.rawValue)) }
+                    if grouping == .person {
+                        ForEach(PersonRole.allCases, id: \.self) { role in
+                            Button { if !roles.insert(role).inserted { roles.remove(role) } } label: {
+                                Label(ui(role.rawValue), systemImage: roles.contains(role) ? "checkmark.square.fill" : "square")
+                            }
+                        }
+                    }
+                }.font(.subheadline).buttonStyle(.borderless)
+                if wheel {
+                    Picker(ui("分類方式"), selection: $grouping) {
+                        ForEach(choices) { Text(ui($0.rawValue)).tag($0) }
+                    }.pickerStyle(.wheel).frame(height: 88).clipped()
+                }
             }
             ScrollView {
                 VStack(alignment: .leading) {
-                    SelectionTree(tables: eligible, grouping: grouping, scope: scope, selectedRegion: $selectedRegion, filterQuery: filter, selection: selection, inspect: inspect)
+                    SelectionTree(tables: eligible, grouping: grouping, roles: roles, badgeGrouping: palette, scope: scope, selectedRegion: $selectedRegion, filterQuery: filter, selection: selection, inspect: inspect)
                 }.frame(maxWidth: .infinity).id(grouping.rawValue)
-            }.frame(height: 240).accessibilityIdentifier("languageTreeScroll")
+            }.frame(height: wheel ? 130 : 200).accessibilityIdentifier("languageTreeScroll")
             HStack {
                 if scope != .terminalGroups {
                     Button(ui("全選")) { names = Set(eligible.map(\.name)) }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
@@ -113,24 +139,31 @@ struct LanguageDropdown: View {
             }.buttonStyle(.borderless)
         }
             .onAppear {
-                grouping = initialGrouping
-                if scope == .terminalGroups {
-                    let saved = UserDefaults.standard.string(forKey: "regionNode." + regionCacheKey)
-                    selectedRegion = RegionSelection.restore(tables: eligible, grouping: grouping, names: names, saved: saved)
-                    if selectedRegion == nil { names = [] }
-                }
+                if let stored = UserDefaults.standard.stringArray(forKey: "roles." + regionCacheKey) { roles = Set(stored.compactMap(PersonRole.init(rawValue:))) }
+                let persisted = UserDefaults.standard.string(forKey: "grouping." + regionCacheKey).flatMap(TableGrouping.init(rawValue:))
+                grouping = scope == .topGroups ? .administrative : (persisted.flatMap { choices.contains($0) ? $0 : nil } ?? initialGrouping)
+                refresh(prune: flags.island || flags.history)
             }
-            .onChange(of: selectedRegion) { _, value in UserDefaults.standard.set(value, forKey: "regionNode." + regionCacheKey) }
+            .onChange(of: tables) { _, _ in refresh(prune: true) }
+            .onChange(of: grouping) { _, new in
+                UserDefaults.standard.set(new.rawValue, forKey: "grouping." + regionCacheKey)
+                refresh(prune: true)
+            }
+            .onChange(of: flags) { _, _ in refresh(prune: true) }
+            .onChange(of: roles) { _, value in UserDefaults.standard.set(value.map(\.rawValue), forKey: "roles." + regionCacheKey); refresh(prune: true) }
+            .onChange(of: selectedRegion) { _, value in UserDefaults.standard.set(value, forKey: "regionNode." + regionCacheKey + grouping.rawValue) }
     }
 }
 
 struct FavoriteButton: View {
     @EnvironmentObject var model: AppModel
     let reading: Reading
-    private var saved: Bool { model.isSaved(reading) }
+    @State private var choosing = false
+    private var saved: Bool { !model.memberships(reading).isEmpty }
     var body: some View {
-        Button { model.save(reading) } label: { Image(systemName: saved ? "star.fill" : "star") }
+        Button { choosing = true } label: { Image(systemName: saved ? "star.fill" : "star") }
             .buttonStyle(.borderless).tint(.orange).accessibilityLabel(ui(saved ? "已收藏" : "加入生字本"))
+            .sheet(isPresented: $choosing) { BookPicker(reading: reading) }
     }
 }
 

@@ -10,6 +10,7 @@ extension EnvironmentValues {
 
 enum AppTypography {
     static let interfaceKey = "fontSize"
+    static let readingKey = "mapPronunciationSize"
     static let mapKey = "mapTextSize"
     static func size(_ value: Double) -> DynamicTypeSize {
         switch value {

@@ -248,6 +248,15 @@ final class AppModel: ObservableObject {
             return true
         } catch { self.error = "收藏儲存失敗：\(error.localizedDescription)"; return false }
     }
+    func memberships(_ reading: Reading) -> Set<UUID> { savedMemberships[ReadingContentKey(reading)] ?? [] }
+    func assign(_ reading: Reading, to ids: Set<UUID>) {
+        let targets = ids.intersection(notebook.books.map(\.id))
+        changeNotebook { next in
+            if let i = next.entries.firstIndex(where: { ReadingContentKey($0.reading) == ReadingContentKey(reading) }) {
+                if targets.isEmpty { next.entries.remove(at: i) } else { next.entries[i].books = targets }
+            } else if !targets.isEmpty { next.entries.append(SavedReading(reading: reading, books: targets)) }
+        }
+    }
     func save(_ reading: Reading, to targets: Set<UUID>? = nil) {
         let targets = (targets ?? notebook.selected).intersection(notebook.books.map(\.id))
         guard !targets.isEmpty else { error = "請先在生字本選擇或新建生字表"; return }
@@ -341,6 +350,7 @@ struct SearchView: View {
     @StateObject private var feedback = CopyFeedback()
     private func copy(_ text: String) {
         UIPasteboard.general.string = text
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
         feedback.show()
     }
 

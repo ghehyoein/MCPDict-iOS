@@ -49,4 +49,19 @@ final class NotebookTests: XCTestCase {
         XCTAssertTrue(model.notebook.books.isEmpty)
         XCTAssertTrue(model.favorites.isEmpty)
     }
+    @MainActor func testStarAssignmentIsIndependentOfBookFilter() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = AppModel(favoritesURL: root.appendingPathComponent("favorites.json"))
+        model.setBookName("甲")
+        let chosen = model.notebook.selected
+        let all = Set(model.notebook.books.map(\.id))
+        let row = Reading(id: 1, characters: "中", language: "甲", pronunciation: "a1", note: "")
+        model.assign(row, to: all)
+        XCTAssertEqual(model.memberships(row), all)
+        XCTAssertEqual(model.notebook.selected, chosen)
+        model.assign(row, to: [])
+        XCTAssertTrue(model.favorites.isEmpty)
+        XCTAssertEqual(model.notebook.books.count, 2)
+    }
 }

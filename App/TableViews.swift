@@ -1,43 +1,39 @@
 import SwiftUI
 
 enum TableGrouping: String, CaseIterable, Identifiable {
-    case atlas = "地圖集二分區", dictionary = "音典分區", administrative = "行政區劃", name = "語言點"
+    case atlas = "地圖集二分區", dictionary = "音典分區", administrative = "行政區劃", name = "語言點", person = "維護人"
     var id: String { rawValue }
     func path(_ table: TablePackage) -> [String] {
         switch self {
         case .atlas: return table.atlas
         case .dictionary: return table.dictionary
         case .administrative: return table.administrative
-        case .name: return []
+        case .name, .person: return []
         }
     }
 }
 
 struct DataView: View {
     @EnvironmentObject var model: AppModel
-    @State private var grouping: TableGrouping = .atlas
-    @State private var selection = Set<String>()
-    @State private var filter = ""
+    @State private var names = Set<String>()
+    @State private var expanded = false
+    @AppStorage("downloadPalette") private var palette = "atlas"
     @State private var information: TablePackage?
+    private var selection: Set<String> { Set(available.filter { names.contains($0.name) }.map(\.id)) }
     private var available: [TablePackage] { model.availableTables }
     var body: some View {
         NavigationStack {
             List {
-                Picker(ui("分類方式"), selection: $grouping) {
-                    ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
-                }
                 Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
-                SelectionTree(tables: available, grouping: grouping, filterQuery: filter, selection: $selection, inspect: { information = $0 })
-                    .id(grouping.rawValue).disabled(model.updating)
+                LanguageSelectionPanel(tables: available, names: $names, cacheKey: "downloads", entryID: "downloadLanguageSelection",
+                                       inspect: { information = $0 }, colorScheme: $palette, expanded: $expanded)
+                    .disabled(model.updating)
                 if model.updating {
                     HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
                 }
             }
             .navigationTitle(ui("字表")).navigationBarTitleDisplayMode(.large)
-            .searchable(text: $filter, placement: .navigationBarDrawer(displayMode: .automatic), prompt: ui("搜尋語言點或地區"))
             .toolbar {
-                Button(ui("全選")) { selection = Set(available.map(\.id)) }.disabled(model.updating).accessibilityIdentifier("selectAllTables")
-                Button(ui("清空")) { selection = [] }.disabled(model.updating)
                 Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
             .safeAreaInset(edge: .bottom, spacing: 0) { TableActions(selection: selection) }
             .sheet(item: $information) { TableInfoView(table: $0) }

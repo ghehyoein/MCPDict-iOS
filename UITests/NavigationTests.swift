@@ -15,14 +15,14 @@ final class NavigationTests: XCTestCase {
         app.buttons["finishLanguages"].tap()
         XCTAssertTrue(ipa.exists)
         let star = app.buttons["加入生字本"].firstMatch
-        if star.exists { star.tap() }
+        if star.exists { star.tap(); app.buttons["全選"].tap(); app.buttons["完成"].tap() }
         app.tabBars.buttons["生字本"].tap()
         app.buttons["語言"].tap(); app.buttons["發音"].tap(); app.buttons["單字"].tap()
         app.buttons["多選"].tap(); app.buttons["全選"].tap()
         XCTAssertTrue(app.staticTexts["已選 1"].exists)
         XCTAssertTrue(app.staticTexts["發音 · tɕiɔŋ1"].exists)
     }
-    @MainActor func testOnlyTwoIndependentFontSliders() throws {
+    @MainActor func testThreeIndependentFontSliders() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.tabBars.buttons["設定"].tap()
@@ -30,12 +30,18 @@ final class NavigationTests: XCTestCase {
         let other = app.sliders["fontSizeSlider"]
         XCTAssertTrue(map.waitForExistence(timeout: 5))
         XCTAssertTrue(other.exists)
-        XCTAssertEqual(app.sliders.count, 2)
-        defer { other.adjust(toNormalizedSliderPosition: 0.25); map.adjust(toNormalizedSliderPosition: 6.0 / 22.0) }
+        let reading = app.sliders["mapReadingSlider"]
+        XCTAssertTrue(reading.exists)
+        XCTAssertEqual(app.sliders.count, 3)
+        defer { other.adjust(toNormalizedSliderPosition: 0.25); map.adjust(toNormalizedSliderPosition: 0.55); reading.adjust(toNormalizedSliderPosition: 0.55) }
+        let oldReading = reading.value as? String
         let oldOther = other.value as? String
         map.adjust(toNormalizedSliderPosition: 0.8)
         XCTAssertEqual(other.value as? String, oldOther)
+        XCTAssertEqual(reading.value as? String, oldReading)
         let mapValue = map.value as? String
+        reading.adjust(toNormalizedSliderPosition: 0.35)
+        XCTAssertEqual(map.value as? String, mapValue)
         other.adjust(toNormalizedSliderPosition: 0.6)
         XCTAssertEqual(map.value as? String, mapValue)
     }
@@ -45,8 +51,8 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         XCTAssertEqual(app.textFields.firstMatch.value as? String, "漢字、U+4E2D 或原始讀音")
         app.tabBars.buttons["字表"].tap()
-        XCTAssertFalse(app.buttons["downloadLanguageSelection"].exists)
-        app.buttons["selectAllTables"].tap()
+        app.buttons["downloadLanguageSelection"].tap()
+        app.buttons["selectAllLanguages"].tap()
         XCTAssertTrue(app.buttons["downloadTables"].isEnabled)
         for key in ["漢語", "官話", "北京"] {
             let expand = app.buttons["expand-" + key]
@@ -58,7 +64,7 @@ final class NavigationTests: XCTestCase {
         app.buttons["check-示例語言點"].tap()
         XCTAssertEqual(app.buttons["check-示例語言點"].value as? String, "unchecked")
         XCTAssertFalse(app.buttons["downloadTables"].isEnabled)
-        XCTAssertFalse(app.buttons["finishLanguages"].exists)
+        XCTAssertTrue(app.buttons["finishLanguages"].exists)
         app.buttons.matching(identifier: "示例語言點").firstMatch.tap()
         XCTAssertTrue(app.navigationBars.buttons["完成"].waitForExistence(timeout: 5))
         app.navigationBars.buttons["完成"].tap()

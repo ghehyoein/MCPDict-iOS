@@ -20,6 +20,26 @@ final class LanguageSelectionTests: XCTestCase {
         XCTAssertEqual(LanguageSelectionScope.points.eligible(tables, grouping: .atlas).count, 5)
         XCTAssertEqual(LanguageSelectionScope.topGroups.eligible(tables, grouping: .atlas).count, 4)
     }
+    func testPersonUnionBlankBucketAndFlagIntersection() throws {
+        func table(_ name: String, _ atlas: String, _ metadata: [String:String]) throws -> TablePackage {
+            var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(UITestFixtures.catalog.tables[0])) as? [String:Any])
+            json["name"] = name; json["id"] = name; json["atlas"] = [atlas]; json["metadata"] = metadata
+            return try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: json))
+        }
+        let a = try table("甲", "歷史音", ["錄入人":"A,B","維護人":"B","方言島":"true","歷史音":"0"])
+        let b = try table("乙", "吳語", ["錄入人":"B", "維護人":"", "方言島":"true"])
+        let c = try table("丙", "吳語", ["維護人":"A", "歷史音":"1"])
+        let tables = [a,b,c]
+        let index = SelectionIndex(tables: tables, grouping: .person)
+        XCTAssertEqual(index.nodes[index.roots[0]]?.title, "(無)")
+        XCTAssertEqual(index.nodes["g:B"]?.ids, ["甲","乙"])
+        XCTAssertEqual(index.nodes["g:(無)"]?.ids, ["乙","丙"])
+        XCTAssertEqual(index.nodes["g:B"]?.children.count, 2)
+        XCTAssertTrue(SelectionIndex(tables: tables, grouping: .person, roles: []).roots.isEmpty)
+        XCTAssertEqual(SelectionIndex(tables: tables, grouping: .person, roles: [.maintainer]).nodes["g:B"]?.ids, ["甲"])
+        XCTAssertEqual(tables.filter(LanguageFlags(island: true, history: true).matches).map(\.name), ["甲"])
+        XCTAssertEqual(tables.filter(LanguageFlags(history: true).matches).map(\.name), ["甲","丙"])
+    }
     @MainActor func testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection() throws {
         let suite = UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))

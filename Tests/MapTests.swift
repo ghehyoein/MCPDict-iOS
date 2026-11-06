@@ -23,7 +23,7 @@ final class MapTests: XCTestCase {
         XCTAssertEqual(result["點134"], "zhong1")
         do { _ = try await repo.mapReadings("中國"); XCTFail("Must reject multiple characters") } catch { }
     }
-    @MainActor func testMapNamesAndReadingsShareOnlyTheMapFont() throws {
+    @MainActor func testMapNamesReadingsAndInterfaceUseIndependentSizes() throws {
         let suite = "map-font-test-" + UUID().uuidString
         let store = try XCTUnwrap(UserDefaults(suiteName: suite))
         defer { store.removePersistentDomain(forName: suite) }
@@ -31,22 +31,25 @@ final class MapTests: XCTestCase {
         let host = UIView()
         let label = LabelAnnotationView(annotation: nil, reuseIdentifier: nil)
         host.addSubview(label)
-        func check(_ general: Double, _ map: Double) throws {
+        func check(_ general: Double, _ map: Double, _ reading: Double) throws {
             XCTAssertEqual(store.double(forKey: AppTypography.interfaceKey), general)
             host.traitOverrides.preferredContentSizeCategory = general > 20 ? .accessibilityExtraExtraExtraLarge : .small
-            label.configure(point, fontSize: store.double(forKey: AppTypography.mapKey)) {}
+            label.configure(point, fontSize: store.double(forKey: AppTypography.readingKey), labelSize: store.double(forKey: AppTypography.mapKey)) {}
             let text = try XCTUnwrap(label.readingButton.attributedTitle(for: .normal))
             let font = try XCTUnwrap(text.attribute(.font, at: 0, effectiveRange: nil) as? UIFont)
             XCTAssertEqual(label.nameButton.titleLabel?.font.pointSize, CGFloat(map))
-            XCTAssertEqual(font.pointSize, CGFloat(map))
+            XCTAssertEqual(font.pointSize, CGFloat(reading))
         }
         store.set(14, forKey: AppTypography.interfaceKey)
         store.set(16, forKey: AppTypography.mapKey)
-        try check(14, 16)
+        store.set(5, forKey: AppTypography.readingKey)
+        try check(14, 16, 5)
         store.set(26, forKey: AppTypography.interfaceKey)
-        try check(26, 16)
-        store.set(28, forKey: AppTypography.mapKey)
-        try check(26, 28)
+        try check(26, 16, 5)
+        store.set(25, forKey: AppTypography.mapKey)
+        try check(26, 25, 5)
+        store.set(19, forKey: AppTypography.readingKey)
+        try check(26, 25, 19)
     }
     @MainActor func testCopyHintExpiresOneSecondAfterLastCopy() async throws {
         let hint = CopyFeedback()

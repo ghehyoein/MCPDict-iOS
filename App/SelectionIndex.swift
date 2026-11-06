@@ -21,10 +21,14 @@ struct SelectionIndex {
     private(set) var roots = [String]()
     private var searchText = [String: String]()
     private(set) var membershipInsertions = 0
-    init(tables: [TablePackage] = [], grouping: TableGrouping = .atlas) {
+    init(tables: [TablePackage] = [], grouping: TableGrouping = .atlas, roles: Set<PersonRole> = Set(PersonRole.allCases)) {
         for table in tables.sorted(by: { $0.name < $1.name }) {
-            let path = grouping.path(table)
-            searchText[table.id] = ([table.name] + table.atlas + table.dictionary + table.administrative).joined(separator: "\n")
+            let paths = grouping.paths(table, roles: roles)
+            var terms = [table.name]
+            for path in [table.atlas, table.dictionary, table.administrative] { terms.append(contentsOf: path) }
+            if grouping == .person { terms.append(contentsOf: paths.flatMap { $0 }) }
+            searchText[table.id] = terms.joined(separator: "\n")
+            for path in paths {
             var parent: String?
             for depth in path.indices {
                 let region = path.prefix(depth + 1).joined(separator: "\u{0}")
@@ -37,14 +41,18 @@ struct SelectionIndex {
                 membershipInsertions += 1
                 parent = key
             }
-            let leaf = "t:" + table.id
+            let leaf = "t:" + (grouping == .person ? (parent ?? "") + ":" : "") + table.id
             nodes[leaf] = Node(id: leaf, title: table.name, depth: path.count, region: nil, table: table, ids: [table.id])
             if let parent { nodes[parent]!.children.append(leaf) } else { roots.append(leaf) }
+            }
         }
         func ordered(_ ids: [String]) -> [String] {
             ids.sorted {
                 let a = nodes[$0]!, b = nodes[$1]!
                 if (a.table == nil) != (b.table == nil) { return a.table == nil }
+                if grouping == .person, a.title != b.title {
+                    if a.title == "(無)" { return true }; if b.title == "(無)" { return false }
+                }
                 return a.title < b.title
             }
         }
