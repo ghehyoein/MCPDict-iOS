@@ -399,18 +399,13 @@ struct ReadingView: View {
     }
 }
 
-private struct ResultHeaderPosition: PreferenceKey {
-    static var defaultValue = CGFloat.greatestFiniteMagnitude
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = min(value, nextValue()) }
-}
-
 struct SearchView: View {
     @AppStorage("dictionaryPalette") private var palette = "atlas"
     @FocusState private var searchFocused: Bool
     @State private var menuOpen = false
     @State private var reference: ReferencePage?
     @State private var selectedCharacter = ""
-    @State private var resultHeaderTop = CGFloat.greatestFiniteMagnitude
+    @State private var resultHeaderPinned = false
     private func submitQuery() {
         searchFocused = false
         Task { await model.search() }
@@ -419,6 +414,7 @@ struct SearchView: View {
     @EnvironmentObject var model: AppModel
     var body: some View {
         NavigationStack {
+            GeometryReader { viewport in
             List {
                 Section {
                     Picker(ui("查詢方式"), selection: $model.mode) {
@@ -439,21 +435,21 @@ struct SearchView: View {
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
-                resultsSection
+                resultsSection(viewportTop: viewport.frame(in: .global).minY)
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
             }
             .listStyle(.plain)
-            .coordinateSpace(name: "dictionaryScroll")
-            .toolbarBackground(resultHeaderTop <= 16 ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
-            .toolbarBackground(resultHeaderTop <= 16 ? .visible : .automatic, for: .navigationBar)
-            .toolbarColorScheme(resultHeaderTop <= 16 ? .dark : nil, for: .navigationBar)
+            .toolbarBackground(resultHeaderPinned ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
+            .toolbarBackground(resultHeaderPinned ? .visible : .automatic, for: .navigationBar)
+            .toolbarColorScheme(resultHeaderPinned ? .dark : nil, for: .navigationBar)
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
             .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }
+            }
 
         }
     }
-    @ViewBuilder private var resultsSection: some View {
+    @ViewBuilder private func resultsSection(viewportTop: CGFloat) -> some View {
                 if !model.resultQuery.isEmpty || (model.mode == .note && !model.query.isEmpty) {
                     let hasCharacters = model.resultMode == .character || model.resultMode == .note
                     let chars = model.resultCharacters
@@ -482,11 +478,16 @@ struct SearchView: View {
                          .padding(.vertical, 4).background(Color(uiColor: .systemBackground))
                          .background {
                              GeometryReader { geometry in
-                                 let top = max(0, geometry.frame(in: .named("dictionaryScroll")).minY)
-                                 Color.clear.preference(key: ResultHeaderPosition.self, value: geometry.frame(in: .named("dictionaryScroll")).minY)
+                                 let top = max(0, geometry.frame(in: .global).minY - viewportTop)
                                  if top <= 16 { Color.black.frame(width: geometry.size.width + 32, height: top).offset(x: -16, y: -top) }
                              }.allowsHitTesting(false)
-                         }.onPreferenceChange(ResultHeaderPosition.self) { resultHeaderTop = $0 }.zIndex(1)
+                         }
+                         // List hosts its pinned headers separately; use screen coordinates across those hosts.
+                         .onGeometryChange(for: Bool.self) { geometry in
+                             geometry.frame(in: .global).minY <= viewportTop + 16
+                         } action: { resultHeaderPinned = $0 }
+                         .onDisappear { resultHeaderPinned = false }
+                         .zIndex(1)
                     }
                 }
     }
