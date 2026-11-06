@@ -28,7 +28,7 @@ extension TableGrouping {
     }
 }
 enum LanguageSelectionScope {
-    case points, terminalGroups, topGroups
+    case points, terminalGroups, administrativeGroups, topGroups
 
     func eligible(_ tables: [TablePackage], grouping: TableGrouping, roles: Set<PersonRole> = Set(PersonRole.allCases)) -> [TablePackage] {
         if grouping == .person { return roles.isEmpty ? [] : tables }

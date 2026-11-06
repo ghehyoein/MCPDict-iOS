@@ -40,6 +40,22 @@ final class LanguageSelectionTests: XCTestCase {
         XCTAssertEqual(tables.filter(LanguageFlags(island: true, history: true).matches).map(\.name), ["甲"])
         XCTAssertEqual(tables.filter(LanguageFlags(history: true).matches).map(\.name), ["甲","丙"])
     }
+    func testAdministrativeGroupsSkipEmptyLevelsAndHideMixedLeaves() throws {
+        func table(_ name: String, _ path: [String]) throws -> TablePackage {
+            var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(UITestFixtures.catalog.tables[0])) as? [String: Any])
+            json["id"] = name; json["name"] = name; json["administrative"] = path
+            return try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: json))
+        }
+        let shallow = try table("直屬點", ["北京", "", "東城"])
+        let deep = try table("街道點", ["北京", "／", "東城", "示例街道"])
+        let index = SelectionIndex(tables: [deep,shallow], grouping: .administrative)
+        let rows = index.rows(expanded: Set(index.nodes.keys), matching: nil, scope: .administrativeGroups)
+        XCTAssertEqual(rows.map(\.node.title), ["北京","東城","示例街道"])
+        XCTAssertEqual(rows[1].ids, [deep.id,shallow.id])
+        XCTAssertTrue(rows[1].expandable)
+        XCTAssertFalse(rows[2].expandable)
+        XCTAssertTrue(rows.allSatisfy { $0.node.table == nil })
+    }
     @MainActor func testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection() throws {
         let suite = UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))

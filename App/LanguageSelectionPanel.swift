@@ -15,7 +15,7 @@ struct LanguageSelectionPanel: View {
     @State private var flags = LanguageFlags()
     @State private var restored = false
     private let cache = LanguageSelectionCache()
-    private var scope: LanguageSelectionScope { kind == .region ? .terminalGroups : .points }
+    private var scope: LanguageSelectionScope { kind == .region ? .terminalGroups : (kind == .administrative ? .administrativeGroups : .points) }
     private var grouping: TableGrouping { kind == .administrative ? .administrative : .atlas }
     private var key: String { cacheKey + "." + kind.rawValue }
     private var available: Set<String> { Set(scope.eligible(tables, grouping: grouping).map(\.name)) }
@@ -67,7 +67,7 @@ struct LanguageSelectionPanel: View {
         // Initialize the mode before enabling mode-change persistence.
         kind = savedKind
         if let saved = cache.load(cacheKey + "." + savedKind.rawValue) {
-            let savedScope: LanguageSelectionScope = savedKind == .region ? .terminalGroups : .points
+            let savedScope: LanguageSelectionScope = savedKind == .region ? .terminalGroups : (savedKind == .administrative ? .administrativeGroups : .points)
             let savedGrouping: TableGrouping = savedKind == .administrative ? .administrative : .atlas
             names = saved.intersection(Set(savedScope.eligible(tables, grouping: savedGrouping).map(\.name)))
         }

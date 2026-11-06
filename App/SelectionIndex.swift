@@ -72,7 +72,7 @@ struct SelectionIndex {
             guard let node = nodes[key] else { return }
             if node.table != nil && scope != .points { return }
             if let matching, node.ids.isDisjoint(with: matching) { return }
-            let ids = scope == .terminalGroups ? node.ids : matching.map { node.ids.intersection($0) } ?? node.ids
+            let ids = (scope == .terminalGroups || scope == .administrativeGroups) ? node.ids : matching.map { node.ids.intersection($0) } ?? node.ids
             let expandable = scope != .topGroups && node.children.contains { scope == .points || nodes[$0]?.table == nil }
             result.append(Row(node: node, ids: ids, expandable: expandable))
             if expandable && expanded.contains(key) { for child in node.children { visit(child) } }

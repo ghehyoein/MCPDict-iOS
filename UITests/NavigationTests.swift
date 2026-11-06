@@ -110,11 +110,13 @@ final class NavigationTests: XCTestCase {
         app.segmentedControls.buttons["行政區"].tap()
         XCTAssertTrue(app.buttons["finishLanguages"].exists)
         XCTAssertTrue(app.buttons["check-北京"].exists)
-        for group in ["北京", "東城", "示例街道"] {
+        for group in ["北京", "東城"] {
             let expand = app.buttons["expand-" + group]
             XCTAssertTrue(expand.waitForExistence(timeout: 5)); expand.tap()
         }
-        XCTAssertTrue(app.buttons["check-示例語言點"].exists)
+        XCTAssertTrue(app.buttons["check-示例街道"].exists)
+        XCTAssertFalse(app.buttons["expand-示例街道"].exists)
+        XCTAssertFalse(app.buttons["check-示例語言點"].exists)
         app.segmentedControls.buttons["語言"].tap()
         XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
         app.buttons["finishLanguages"].tap()
@@ -154,11 +156,13 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["自選功能後續待更新，目前與語言模式相同"].exists)
         app.segmentedControls.buttons["行政區"].tap()
         XCTAssertTrue(app.buttons["check-北京"].exists)
-        for group in ["北京", "東城", "示例街道"] {
+        for group in ["北京", "東城"] {
             let expand = app.buttons["expand-" + group]
             XCTAssertTrue(expand.waitForExistence(timeout: 5)); expand.tap()
         }
-        XCTAssertTrue(app.buttons["check-示例語言點"].exists)
+        XCTAssertTrue(app.buttons["check-示例街道"].exists)
+        XCTAssertFalse(app.buttons["expand-示例街道"].exists)
+        XCTAssertFalse(app.buttons["check-示例語言點"].exists)
         app.segmentedControls.buttons["分區"].tap()
         XCTAssertTrue(app.buttons["mapLanguageSelection"].label.contains("已選 1"))
         app.segmentedControls.buttons["語言"].tap()
