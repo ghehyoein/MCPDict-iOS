@@ -48,3 +48,11 @@ jobs:
           path: |
             TestResults.xcresult
             TestAttachments
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simulator-screenshots
+          path: |
+            TestAttachments/**/*.png
+            TestAttachments/**/*.jpg
+            TestAttachments/**/*.json

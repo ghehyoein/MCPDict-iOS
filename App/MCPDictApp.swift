@@ -455,7 +455,7 @@ struct SearchView: View {
         }
     }
     @ViewBuilder private var resultsSection: some View {
-                if !model.resultQuery.isEmpty {
+                if !model.resultQuery.isEmpty || (model.mode == .note && !model.query.isEmpty) {
                     let hasCharacters = model.resultMode == .character || model.resultMode == .note
                     let chars = model.resultCharacters
                     let current = chars.contains(selectedCharacter) ? selectedCharacter : chars.first ?? ""
@@ -467,7 +467,7 @@ struct SearchView: View {
                         else { HomophoneResultsView() }
                     } header: {
                         VStack(alignment: .leading, spacing: 4) {
-                            if model.resultMode == .note { NoteVariantPicker(query: $model.query, submit: submitQuery) }
+                            if model.mode == .note { NoteVariantPicker(query: $model.query, submit: submitQuery) }
                             if hasCharacters && !chars.isEmpty {
                                 ScrollView(.horizontal) {
                                     HStack {
