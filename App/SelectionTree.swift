@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SelectionTree: View {
+    @Environment(\.mapLabelSize) private var mapLabelSize
     let tables: [TablePackage]
     let grouping: TableGrouping
     var scope: LanguageSelectionScope = .points
@@ -35,12 +36,12 @@ struct SelectionTree: View {
                             if !expanded.insert(row.id).inserted { expanded.remove(row.id) }
                             refreshRows()
                         } label: {
-                            HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }.contentShape(Rectangle())
+                            HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)).font(mapLabelSize.map { Font.system(size: $0) }); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }.contentShape(Rectangle())
                         }.buttonStyle(.plain).accessibilityIdentifier("expand-" + row.node.title)
                             .accessibilityValue(expanded.contains(row.id) ? "expanded" : "collapsed")
                     } else {
                         Button { toggle(row) } label: {
-                            HStack { Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }
+                            HStack { Text(ui(row.node.title)).font(mapLabelSize.map { Font.system(size: $0) }); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }
                         }.buttonStyle(.plain)
                     }
                 }.padding(.leading, CGFloat(row.node.depth) * 18).padding(.vertical, 4)

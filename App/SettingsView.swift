@@ -6,8 +6,7 @@ struct SettingsView: View {
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
-    @AppStorage(AppTypography.mapNameKey) private var mapNameSize = 14.0
-    @AppStorage(AppTypography.mapReadingKey) private var mapReadingSize = 17.0
+    @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
     var body: some View {
         NavigationStack {
             Form {
@@ -17,8 +16,8 @@ struct SettingsView: View {
                     option("元來是正體ɵɤ̞ɵ(", value: "hant", selection: $uiLanguage)
                 }
                 Section(ui("字體大小")) {
-                    Slider(value: $fontSize, in: 14...26, step: 1) { Text(ui("字體大小")) }.accessibilityIdentifier("fontSizeSlider")
-                    Text(ui("字體預覽") + " · 漢字音典 tɕiɔŋ ①③⑤⑦").font(.body)
+                    sizeSlider("地圖語言點、分區及讀音", $mapSize, range: 10...32, identifier: "mapSizeSlider")
+                    sizeSlider("其他介面", $fontSize, range: 14...26, identifier: "fontSizeSlider")
                 }
                 Section(ui("聲調顯示")) {
                     Picker(ui("調類樣式"), selection: $toneStyle) {
@@ -30,10 +29,6 @@ struct SettingsView: View {
                         Text(ui("隱藏")).tag("hidden")
                     }.pickerStyle(.segmented)
                 }
-                Section(ui("地圖字體大小")) {
-                    mapSlider("語言點名稱", $mapNameSize)
-                    mapSlider("讀音", $mapReadingSize)
-                }
                 Section(ui("界面外觀")) {
                     option(ui("跟隨系統"), value: "system", selection: $appearance)
                     option(ui("淺色"), value: "light", selection: $appearance)
@@ -43,10 +38,10 @@ struct SettingsView: View {
             }.navigationTitle(ui("設定"))
         }
     }
-    private func mapSlider(_ label: String, _ size: Binding<Double>) -> some View {
+    private func sizeSlider(_ label: String, _ size: Binding<Double>, range: ClosedRange<Double>, identifier: String) -> some View {
         VStack(alignment: .leading) {
             Text(ui(label) + " · " + String(Int(size.wrappedValue))).font(.system(size: size.wrappedValue))
-            Slider(value: size, in: 10...32, step: 1) { Text(ui(label)) }
+            Slider(value: size, in: range, step: 1) { Text(ui(label)) }.accessibilityIdentifier(identifier)
         }
     }
     private func option(_ title: String, value: String, selection: Binding<String>) -> some View {
