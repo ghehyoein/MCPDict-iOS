@@ -7,7 +7,10 @@ enum TableGrouping: String, CaseIterable, Identifiable {
         switch self {
         case .atlas: return table.atlas
         case .dictionary: return table.dictionary
-        case .administrative: return table.administrative
+        case .administrative:
+            let missing: Set<String> = ["", "/", "／", "-", "—", "null"]
+            let parts = table.administrative.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !missing.contains($0.lowercased()) }
+            return parts.isEmpty ? ["未標註行政區"] : parts
         case .name, .person: return []
         }
     }
