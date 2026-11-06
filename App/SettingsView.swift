@@ -6,7 +6,8 @@ struct SettingsView: View {
     @AppStorage("fontSize") private var fontSize = 17.0
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
-    @AppStorage("colorScheme") private var colorScheme = "atlas"
+    @AppStorage("mapNameSize") private var mapNameSize = 14.0
+    @AppStorage("mapReadingSize") private var mapReadingSize = 17.0
     var body: some View {
         NavigationStack {
             Form {
@@ -29,11 +30,9 @@ struct SettingsView: View {
                         Text(ui("隱藏")).tag("hidden")
                     }.pickerStyle(.segmented)
                 }
-                Section(ui("分區顏色")) {
-                    Picker(ui("配色方案"), selection: $colorScheme) {
-                        Text(ui("地圖集二分區")).tag("atlas")
-                        Text(ui("音典分區")).tag("dictionary")
-                    }
+                Section(ui("地圖字體大小")) {
+                    mapSlider("語言點名稱", $mapNameSize)
+                    mapSlider("讀音", $mapReadingSize)
                 }
                 Section(ui("界面外觀")) {
                     option(ui("跟隨系統"), value: "system", selection: $appearance)
@@ -42,6 +41,12 @@ struct SettingsView: View {
                 }
                 MapSettingsSection()
             }.navigationTitle(ui("設定"))
+        }
+    }
+    private func mapSlider(_ label: String, _ size: Binding<Double>) -> some View {
+        VStack(alignment: .leading) {
+            Text(ui(label) + " · " + String(Int(size.wrappedValue))).font(.system(size: size.wrappedValue))
+            Slider(value: size, in: 10...32, step: 1) { Text(ui(label)) }
         }
     }
     private func option(_ title: String, value: String, selection: Binding<String>) -> some View {

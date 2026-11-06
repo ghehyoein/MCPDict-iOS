@@ -26,39 +26,24 @@ enum CharacterResults {
 
 struct CharacterResultsView: View {
     @EnvironmentObject var model: AppModel
-    @State private var selectedCharacter = ""
+    let current: String
+    @AppStorage("dictionaryPalette") private var palette = "atlas"
+    let copy: (String) -> Void
     @State private var information: TablePackage?
-    private var characters: [String] { model.resultCharacters.isEmpty ? CharacterResults.characters(model.resultQuery) : model.resultCharacters }
-    private var current: String { characters.contains(selectedCharacter) ? selectedCharacter : characters.first ?? "" }
     var body: some View {
-        Section {
-            if characters.count > 1 {
-                ScrollView(.horizontal) {
-                    HStack {
-                        ForEach(characters, id: \.self) { character in
-                            Button(character) { selectedCharacter = character }
-                                .buttonStyle(.bordered).tint(character == current ? .teal : .gray)
-                        }
-                    }
-                }
-            }
-            HStack(alignment: .center, spacing: 16) {
-                Text(current).font(.system(size: 58)).frame(width: 84, height: 84).background(.quaternary, in: RoundedRectangle(cornerRadius: 8))
-                Text(current.unicodeScalars.map { String(format: "U+%04X", $0.value) }.joined(separator: " ")).foregroundStyle(.secondary)
-            }
+        Group {
             let groups = model.characterGroups(current)
             if groups.isEmpty { Text(ui("此字在已下載字表中沒有讀音")).foregroundStyle(.secondary) }
             ForEach(groups) { group in
                 HStack(alignment: .top, spacing: 12) {
-                    Button { information = model.table(named: group.language) } label: { LanguageBadge(name: group.language, table: model.table(named: group.language)) }.buttonStyle(.plain)
+                    Button { information = model.table(named: group.language) } label: { LanguageBadge(name: group.language, table: model.table(named: group.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(group.readings) { reading in
                             VStack(alignment: .leading, spacing: 2) {
-                                HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3) }
+                                HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).onLongPressGesture { copy(reading.pronunciation) } }
                                 if !reading.note.isEmpty { Text(reading.note).font(.subheadline).foregroundStyle(.secondary) }
                             }
-                                .textSelection(.enabled)
-                                .contextMenu { Button(ui("加入生字本"), systemImage: "star") { model.save(reading) } }
+
                         }
                     }.frame(maxWidth: .infinity, alignment: .leading)
                 }.padding(.vertical, 5)
