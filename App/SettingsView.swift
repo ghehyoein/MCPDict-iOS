@@ -31,7 +31,7 @@ struct SettingsView: View {
                     sizeSlider("顯示介面", $fontSize, range: 14...26, identifier: "fontSizeSlider", sample: 2)
                 }
                 Section(ui("聲調顯示")) {
-                    HStack { Text(ui("聲調預覽：")); Spacer(); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable) }
+                    HStack { Text(ui("聲調預覽：")); Spacer(); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) }
                     Picker("", selection: $toneStyle) {
                         ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
                     }.pickerStyle(.inline).labelsHidden()
@@ -68,7 +68,7 @@ struct SettingsView: View {
                         LanguageBadge(name: "通東呂四", table: table).environment(\.mapLabelSize, mapSize)
                     }.buttonStyle(.plain).disabled(table == nil)
                 } else if sample == 1 {
-                    PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize)
+                    PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false)
                 } else { Text(ui("漢字音典")).font(.system(size: fontSize)).textSelection(.enabled) }
             }
             Slider(value: size, in: range) { Text(ui(label)) }.accessibilityIdentifier(identifier)

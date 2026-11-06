@@ -80,6 +80,7 @@ struct DialectMapView: View {
         }
         .overlay(alignment: .top) { VStack(spacing: 8) { Picker(ui("查詢方式"), selection: $mode) { ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) } }.pickerStyle(.segmented).hidden().accessibilityHidden(true); menu }.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal) }
         .onAppear { rebuildMapTables(); receiveHandoff() }
+        .onChange(of: menuOpen) { _, open in if open { inputFocused = false } }
         .onChange(of: model.mapHandoff?.id) { _, _ in receiveHandoff() }
         .onChange(of: tables) { _, _ in rebuildMapTables() }
         .onChange(of: names) { _, _ in if result == nil { rebuildPoints() } }
