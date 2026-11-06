@@ -60,7 +60,7 @@ final class NavigationTests: XCTestCase {
         let map = app.sliders["mapSizeSlider"]
         let other = app.sliders["fontSizeSlider"]
         for _ in 0..<3 { if map.isHittable && other.isHittable { break }; app.swipeUp() }
-        XCTAssertTrue(map.waitForExistence(timeout: 5))
+        XCTAssertTrue(map.waitForExistence(timeout: 5), app.debugDescription)
         XCTAssertTrue(other.exists)
         let reading = app.sliders["mapReadingSlider"]
         XCTAssertTrue(reading.exists)
@@ -115,7 +115,7 @@ final class NavigationTests: XCTestCase {
         app.buttons["selectAllLanguages"].tap()
         XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
         app.buttons["dictionaryLanguageSelection"].tap()
-        XCTAssertFalse(app.buttons["finishLanguages"].exists)
+        XCTAssertFalse(app.buttons["finishLanguages"].exists, app.debugDescription)
         XCTAssertFalse(app.segmentedControls.buttons["自選"].exists)
         app.buttons["dictionaryLanguageSelection"].tap()
         XCTAssertTrue(app.buttons["finishLanguages"].exists)
@@ -130,7 +130,7 @@ final class NavigationTests: XCTestCase {
         app.segmentedControls.buttons["語言"].tap()
         XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
         app.buttons["finishLanguages"].tap()
-        XCTAssertFalse(app.buttons["finishLanguages"].exists)
+        XCTAssertFalse(app.buttons["finishLanguages"].exists, app.debugDescription)
         XCTAssertTrue(app.buttons["dictionaryLanguageSelection"].label.contains("已選 1"))
         app.terminate(); app.launchArguments = ["--ui-fixture"]; app.launch()
         XCTAssertTrue(app.buttons["dictionaryLanguageSelection"].waitForExistence(timeout: 5))
@@ -198,7 +198,7 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.buttons["finishLanguages"].exists)
         // The floating menu covers the search bar. Tap the map below the menu.
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.83)).tap()
-        XCTAssertFalse(app.buttons["finishLanguages"].exists)
+        XCTAssertFalse(app.buttons["finishLanguages"].exists, app.debugDescription)
         XCTAssertTrue(reading.exists, "Switching draft selections must retain the submitted map result")
 
     }
@@ -317,12 +317,13 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["字頭資料顯示"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.switches["Unicode 碼"].exists)
         app.switches["Unicode 碼"].tap()
+        XCTAssertEqual(app.switches["Unicode 碼"].value as? String, "0", app.debugDescription)
         app.navigationBars.buttons["完成"].tap()
         app.tabBars.buttons["字典"].tap()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
         app.buttons["查詢"].tap()
         XCTAssertTrue(app.staticTexts["dictionaryHeadword"].waitForExistence(timeout: 8))
-        XCTAssertFalse(app.staticTexts["characterUnicode"].exists)
+        XCTAssertFalse(app.staticTexts["characterUnicode"].exists, app.debugDescription)
     }
 
 }

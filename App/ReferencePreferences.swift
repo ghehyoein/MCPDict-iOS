@@ -30,7 +30,10 @@ struct ReferencePreferences: Codable {
 struct ReferenceSettingsView: View {
     @AppStorage(ReferencePreferences.key) private var raw = ""
     @Environment(\.dismiss) private var dismiss
-    @State private var settings = ReferencePreferences()
+    private var settings: ReferencePreferences {
+        get { .load(raw) }
+        nonmutating set { raw = newValue.encoded }
+    }
     var body: some View {
         NavigationStack {
             List {
@@ -52,8 +55,6 @@ struct ReferenceSettingsView: View {
             .environment(\.editMode, .constant(.active))
             .navigationTitle(ui("字頭資料顯示")).navigationBarTitleDisplayMode(.inline)
             .toolbar { Button(ui("完成")) { dismiss() } }
-            .onAppear { settings = .load(raw) }
-            .onChange(of: settings.encoded) { _, value in raw = value }
         }
     }
 }

@@ -33,8 +33,18 @@ jobs:
         run: |
           device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for runtime,devices in d["devices"].items() if "iOS" in runtime for x in devices if x["isAvailable"] and "iPhone" in x["name"]))')
           xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults CODE_SIGNING_ALLOWED=NO test
+      - name: Export test diagnostics and screenshots
+        if: always()
+        run: |
+          if [ -d TestResults.xcresult ]; then
+            mkdir -p TestAttachments
+            xcrun xcresulttool get test-results tests --path TestResults.xcresult > TestAttachments/tests.json
+            xcrun xcresulttool export attachments --path TestResults.xcresult --output-path TestAttachments
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: simulator-test-results
-          path: TestResults.xcresult
+          path: |
+            TestResults.xcresult
+            TestAttachments
