@@ -46,14 +46,57 @@ struct DialectMapView: View {
     }
     var body: some View {
         NavigationStack {
-            VStack(spacing: 8) {
-                LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region, finished: { if activeCharacter.isEmpty { fit += 1 } }, colorScheme: $colorScheme, expanded: $menuOpen).padding(.horizontal)
-                VStack(spacing: 8) {
+            observedContent
+                .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
+                .toolbar { mapToolbar }
+                .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
+                .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:]; variants = []; readingsByVariant = [:] }
+                .sheet(item: $selected) { TableInfoView(table: $0) }
+        }
+    }
+    private var observedContent: some View {
+        VStack(spacing: 8) {
+            menu.padding(.horizontal)
+            mapContent.overlay {
+                if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
+            }
+        }
+        .onAppear { rebuildMapTables() }
+        .onChange(of: tables) { _, _ in rebuildMapTables() }
+        .onChange(of: names) { _, _ in if activeCharacter.isEmpty { rebuildPoints() } }
+        .onChange(of: submittedNames) { _, _ in rebuildPoints() }
+        .onChange(of: readings) { _, _ in rebuildPoints() }
+        .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
+        .onChange(of: toneStyle) { _, _ in rebuildPoints() }
+        .onChange(of: pitchStyle) { _, _ in rebuildPoints() }
+        .onChange(of: colorScheme) { _, _ in rebuildPoints() }
+    }
+    private var menu: some View {
+        LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region,
+                               finished: { if activeCharacter.isEmpty { fit += 1 } }, colorScheme: $colorScheme, expanded: $menuOpen)
+    }
+    private var mapContent: some View {
+        VStack(spacing: 8) {
+            searchBar
+            variantBar
+            statusLabel
+            NativeDialectMap(points: points, fit: fit, fontSize: fontSize, nameSize: nameSize, mapStyle: baseMapStyle,
+                             centerChanged: { center = $0 }, copied: didCopy, choose: choose)
+            if querying { ProgressView() }
+        }
+    }
+    private func didCopy() {
+        copied = true; copyTask?.cancel()
+        copyTask = Task { try? await Task.sleep(for: .seconds(1)); if !Task.isCancelled { copied = false } }
+    }
+    private var searchBar: some View {
                 HStack {
                     TextField(ui("請輸入單字"), text: $character).textFieldStyle(.roundedBorder).focused($inputFocused).onSubmit { Task { await query() } }
                     Button(ui("查字")) { Task { await query() } }.disabled(querying || model.updating)
                     Button(ui("清除")) { activeCharacter = ""; readings = [:]; character = ""; variants = []; readingsByVariant = [:] }
                 }.padding(.horizontal)
+    }
+    @ViewBuilder private var variantBar: some View {
                 if variants.count > 1 {
                     ScrollView(.horizontal) {
                         HStack {
@@ -64,17 +107,12 @@ struct DialectMapView: View {
                         }.padding(.horizontal)
                     }
                 }
+    }
+    private var statusLabel: some View {
                 Text(copied ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
                     .font(.caption).foregroundStyle(copied ? Color.orange : Color.secondary).accessibilityIdentifier("mapPointStatus")
-                NativeDialectMap(points: points, fit: fit, fontSize: fontSize, nameSize: nameSize, mapStyle: baseMapStyle, centerChanged: { center = $0 }, copied: {
-                    copied = true; copyTask?.cancel()
-                    copyTask = Task { try? await Task.sleep(for: .seconds(1)); if !Task.isCancelled { copied = false } }
-                }, choose: choose)
-                if querying { ProgressView() }
-                }.overlay { if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } } }
-            }
-            .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
-            .toolbar {
+    }
+    @ToolbarContentBuilder private var mapToolbar: some ToolbarContent {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     Menu {
                         Picker(ui("底圖"), selection: $baseMapStyle) {
@@ -85,21 +123,6 @@ struct DialectMapView: View {
                     Button(ui("全覽"), systemImage: "arrow.up.left.and.arrow.down.right") { menuOpen = false; fit += 1 }
                     Button(ui("更新"), systemImage: "arrow.clockwise") { menuOpen = false; Task { await model.loadCatalog() } }.disabled(model.updating)
                 }
-            }
-            .onAppear { rebuildMapTables() }
-            .onChange(of: tables) { _, _ in rebuildMapTables() }
-            .onChange(of: names) { _, _ in rebuildPoints() }
-            .onChange(of: submittedNames) { _, _ in rebuildPoints() }
-            .onChange(of: readings) { _, _ in rebuildPoints() }
-            .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
-            .onChange(of: toneStyle) { _, _ in rebuildPoints() }
-            .onChange(of: pitchStyle) { _, _ in rebuildPoints() }
-            .onChange(of: colorScheme) { _, _ in rebuildPoints() }
-            .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
-            .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:]; variants = []; readingsByVariant = [:] }
-            .sheet(item: $selected) { TableInfoView(table: $0) }
-
-        }
     }
     private func choose(_ id: String) { selected = tables.first { $0.id == id } }
     @MainActor private func query() async {
