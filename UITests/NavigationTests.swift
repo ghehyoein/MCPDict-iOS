@@ -174,7 +174,7 @@ final class NavigationTests: XCTestCase {
         app.segmentedControls.buttons["語言"].tap()
         XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
         app.buttons["finishLanguages"].tap()
-        let input = app.textFields["請輸入單字"]
+        let input = app.textFields["請輸入漢字"]
         input.tap(); input.typeText("中")
         app.buttons["查字"].tap()
         let reading = app.buttons["map-reading-" + String(repeating: "a", count: 24)]
@@ -197,6 +197,36 @@ final class NavigationTests: XCTestCase {
         XCTAssertFalse(app.buttons["finishLanguages"].exists)
         XCTAssertTrue(reading.exists, "Switching draft selections must retain the submitted map result")
 
+    }
+
+    @MainActor func testMapSearchModeControlsAndVariantResults() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]; app.launch()
+        app.tabBars.buttons["地圖"].tap()
+        let menu = app.buttons["mapLanguageSelection"]
+        menu.tap(); app.segmentedControls.buttons["語言"].tap()
+        app.buttons["selectAllLanguages"].tap(); app.buttons["finishLanguages"].tap()
+        func query(_ hint: String, _ value: String) {
+            let field = app.textFields[hint]
+            field.tap(); field.typeText(value); app.buttons["查字"].tap()
+        }
+        let mark = app.buttons["map-reading-" + String(repeating: "a", count: 24)]
+        query("請輸入漢字", "中输")
+        XCTAssertTrue(app.buttons["輸"].waitForExistence(timeout: 8))
+        app.buttons["輸"].tap()
+        XCTAssertEqual(mark.label, "su1")
+        menu.tap(); app.segmentedControls.buttons["讀音"].tap(); app.buttons["finishLanguages"].tap()
+        XCTAssertEqual(mark.label, "su1")
+        app.buttons["清除"].tap()
+        query("請輸入讀音", "u1")
+        XCTAssertTrue(mark.waitForExistence(timeout: 8))
+        XCTAssertTrue(mark.label.contains("输") && mark.label.contains("輸"))
+        menu.tap(); app.segmentedControls.buttons["註釋"].tap(); app.buttons["finishLanguages"].tap()
+        app.buttons["清除"].tap()
+        query("請輸入註釋", "運送貨物的完整註釋")
+        XCTAssertTrue(app.buttons["輸"].waitForExistence(timeout: 8))
+        app.buttons["輸"].tap()
+        XCTAssertEqual(mark.label, "su1  運送貨物的完整註釋")
     }
 
     @MainActor func testIndependentRootLevelsAndExclusiveRegions() throws {

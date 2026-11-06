@@ -20,6 +20,7 @@ struct DialectPoint: Codable, Identifiable, Equatable {
     let latitude: Double
     let color: String
     let reading: String
+    var copyText: String? = nil
     var toneParts: [ToneDisplay.Part]? = nil
     static func make(_ table: TablePackage, grouping: TableGrouping, reading: String = "") -> DialectPoint? {
         guard let location = table.location, location.valid else { return nil }
@@ -27,6 +28,42 @@ struct DialectPoint: Codable, Identifiable, Equatable {
         let values = TableColors.hexes(rawColor)
         let color = values.isEmpty ? "#008080" : values.joined(separator: ",")
         return DialectPoint(id: table.id, name: table.name, longitude: location.longitude, latitude: location.latitude, color: color, reading: reading)
+    }
+}
+
+struct MapSearchResult {
+    struct Line: Hashable {
+        let text: String
+        let pronunciation: String
+        let note: String
+        var fullText: String { note.isEmpty ? text : text + "  " + note }
+    }
+    let mode: SearchMode
+    let query: String
+    var choices = [String]()
+    var groups = [String: [String: [Line]]]()
+}
+
+extension DictionaryRepository {
+    func mapSearch(_ query: String, mode: SearchMode, names: Set<String>) throws -> MapSearchResult {
+        var result = MapSearchResult(mode: mode, query: query)
+        if mode == .character { result.choices = CharacterVariants.expand(query) }
+        guard !names.isEmpty else { return result }
+        let rows = try searchAll(mode == .character ? result.choices.joined() : query, mode: mode, language: "", languages: Array(names))
+        var known = Set(result.choices)
+        var seen = [String: [String: Set<MapSearchResult.Line>]]()
+        for row in rows {
+            for char in row.characters.filter({ !$0.isWhitespace }).map(String.init) {
+                let key = mode == .pronunciation ? "" : char
+                if mode == .note, known.insert(char).inserted { result.choices.append(char) }
+                let line = MapSearchResult.Line(text: mode == .pronunciation ? char : row.pronunciation,
+                                                pronunciation: row.pronunciation, note: mode == .note ? row.note : "")
+                if seen[key, default: [:]][row.language, default: []].insert(line).inserted {
+                    result.groups[key, default: [:]][row.language, default: []].append(line)
+                }
+            }
+        }
+        return result
     }
 }
 

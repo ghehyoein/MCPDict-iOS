@@ -1,6 +1,17 @@
 import SwiftUI
 
 // All three tabs share the selection controls. Only the map floats its expanded content.
+struct SelectionMenuButton: View {
+    let count: Int
+    let entryID: String
+    @Binding var expanded: Bool
+    var body: some View {
+        Button { expanded.toggle() } label: {
+            HStack { Text(ui("已選 \(count) 個語言點")); Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down") }
+        }.buttonStyle(.borderless).accessibilityIdentifier(entryID)
+    }
+}
+
 struct LanguageSelectionPanel: View {
     let tables: [TablePackage]
     @Binding var names: Set<String>
@@ -8,7 +19,7 @@ struct LanguageSelectionPanel: View {
     let entryID: String
     var initialKind: MapSearchKind = .language
     var inspect: ((TablePackage) -> Void)? = nil
-    var floats = false
+    var searchMode: Binding<SearchMode>? = nil
     var finished: () -> Void = {}
     @Binding var colorScheme: String
     @State private var kind: MapSearchKind = .language
@@ -25,12 +36,8 @@ struct LanguageSelectionPanel: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button { expanded.toggle() } label: {
-                HStack { Text(ui("已選 \(names.count) 個語言點")); Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down") }
-            }.buttonStyle(.borderless).accessibilityIdentifier(entryID)
-            if floats {
-                Color.clear.frame(height: 0).overlay(alignment: .top) { if expanded { controls.fixedSize(horizontal: false, vertical: true) } }
-            } else if expanded { controls }
+            SelectionMenuButton(count: names.count, entryID: entryID, expanded: $expanded)
+            if expanded { controls }
         }
         .onAppear { restoreInitial() }
         .onChange(of: tables) { _, _ in restoreInitial() }
@@ -44,6 +51,11 @@ struct LanguageSelectionPanel: View {
     }
     private var controls: some View {
                 VStack(alignment: .leading, spacing: 8) {
+                if let searchMode {
+                    Picker(ui("查詢方式"), selection: searchMode) {
+                        ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
+                    }.pickerStyle(.segmented).labelsHidden()
+                }
                 Picker(ui("檢索選項"), selection: $kind) {
                     ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
                 }.pickerStyle(.segmented).labelsHidden()

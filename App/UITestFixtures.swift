@@ -8,6 +8,9 @@ enum UITestFixtures {
         _ = try db.rows("CREATE VIRTUAL TABLE IF NOT EXISTS langs USING fts5(字組, 語言, 讀音, 註釋)")
         _ = try db.rows("DELETE FROM langs")
         _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", ["中", "示例語言點", "tɕiɔŋ1", ""])
+        if ProcessInfo.processInfo.arguments.contains("--map-search-fixture") {
+            _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", ["输 輸", "示例語言點", "su1", "運送貨物的完整註釋"])
+        }
         return url
     }
     static var catalog: TableCatalog {

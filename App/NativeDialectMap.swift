@@ -108,6 +108,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         insertSubview(blur, at: 0)
         readingButton.layer.cornerRadius = 3
         readingButton.titleLabel?.numberOfLines = 0
+        readingButton.titleLabel?.lineBreakMode = .byCharWrapping
         addSubview(nameButton); addSubview(readingButton)
         nameButton.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
         isUserInteractionEnabled = true
@@ -151,7 +152,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
-        self.choose = choose; rawReading = point.reading
+        self.choose = choose; rawReading = point.copyText ?? point.reading
         nameButton.setTitle(point.name, for: .normal)
         nameButton.accessibilityLabel = point.name
         nameButton.titleLabel?.font = .systemFont(ofSize: labelSize)
