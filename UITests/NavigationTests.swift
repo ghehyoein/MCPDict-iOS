@@ -43,6 +43,13 @@ final class NavigationTests: XCTestCase {
         XCTAssertFalse(blank.exists)
         // Reset this persisted classification for other independent fixture launches.
         app.buttons["personRole-錄入人"].tap(); app.buttons["personRole-維護人"].tap()
+        toggle.tap(); app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "行政區劃")
+        toggle.tap()
+        app.buttons["expand-北京"].tap()
+        XCTAssertTrue(app.buttons["check-東城"].exists)
+        XCTAssertFalse(app.buttons["expand-東城"].exists)
+        XCTAssertFalse(app.buttons["check-示例街道"].exists)
+        XCTAssertFalse(app.buttons["check-示例語言點"].exists)
         toggle.tap(); app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "地圖集二分區")
     }
 
