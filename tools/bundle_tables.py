@@ -4,6 +4,35 @@ from pathlib import Path
 import regex
 from urllib.parse import quote
 
+def build_references(checkout, output):
+    """Build a separate read-only index from the same normalized sources as Android DB.getUnicode."""
+    from collections import defaultdict
+    import re
+    books = "說文 集韻 康熙 匯纂 漢大".split()
+    fields = "異體字 字形變體 字形描述 部件檢索 兩分 總筆畫數 部首餘筆 五筆畫 五筆86 五筆98 五筆06 倉頡三代 倉頡五代 倉頡六代 山人".split()
+    with sqlite3.connect(output/'references.db') as db:
+        db.executescript("CREATE TABLE entries(hz TEXT, field TEXT, value TEXT, PRIMARY KEY(hz,field)) WITHOUT ROWID; CREATE TABLE ranges(lo INTEGER, hi INTEGER, label TEXT);")
+        # Use HanZi.getUnicodeExt ranges from the pinned Android version, including supplementary planes.
+        java = (checkout/'app/src/main/java/com/osfans/mcpdict/Orth/HanZi.java').read_text('utf-8')
+        ranges = re.findall(r'if \(unicode (?:>= (0x\w+) && unicode <= (0x\w+)|== (0x\w+))\) ext = "([^"]+)"', java)
+        if not ranges: raise ValueError("Android Unicode ranges unavailable")
+        db.executemany("INSERT INTO ranges VALUES(?,?,?)", ((int(a or c,16),int(b or c,16),v) for a,b,c,v in ranges))
+        for field in books + fields:
+            entries = defaultdict(list)
+            with (checkout/'tools/tables/output'/(field+'.tsv')).open(encoding='utf-8') as f:
+                for line in f:
+                    if line.startswith('#') or not line.strip(): continue
+                    hz, value = line.rstrip('\r\n').split('\t', 1)
+                    value = value.rstrip('\t').replace('\t','\n')
+                    if field in ('字形描述','部件檢索'):
+                        value = value.replace('UCS2003','2003').translate(str.maketrans('GHMTJKPVUSB','陸港澳臺日韓朝越統大英')).replace('2003','UCS2003').replace(' ','')
+                    if field not in books: value = value.replace(',',' ')
+                    if value and value not in entries[hz]: entries[hz].append(value)
+            sep = '\n\n' if field in books else ' '
+            db.executemany("INSERT INTO entries VALUES(?,?,?)", ((hz,field,sep.join(values)) for hz,values in entries.items()))
+        assert db.execute("SELECT count(*) FROM entries WHERE hz='一'").fetchone()[0] == len(books+fields)
+        assert db.execute("PRAGMA quick_check").fetchone()[0] == 'ok'
+
 def build(checkout, output):
     checkout, output = Path(checkout).resolve(), Path(output)
     def git(*args):
@@ -13,6 +42,7 @@ def build(checkout, output):
     details = json.loads((source/'_詳情.json').read_text(encoding='utf-8'))
     output.mkdir(parents=True, exist_ok=True)
     entries, total = [], 0
+    build_references(checkout, output)
     db = sqlite3.connect(output/'bundled.db')
     db.executescript("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋, tokenize='unicode61 remove_diacritics 0'); CREATE VIRTUAL TABLE info USING fts5(簡稱, 語言); CREATE VIRTUAL TABLE mcpdict USING fts5(漢字);")
     for file in sorted(source.glob('*.tsv')):

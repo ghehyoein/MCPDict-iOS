@@ -76,7 +76,8 @@ struct DialectMapView: View {
             }
         }
         .overlay(alignment: .top) { menu.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal) }
-        .onAppear { rebuildMapTables() }
+        .onAppear { rebuildMapTables(); receiveHandoff() }
+        .onChange(of: model.mapHandoff?.id) { _, _ in receiveHandoff() }
         .onChange(of: tables) { _, _ in rebuildMapTables() }
         .onChange(of: names) { _, _ in if result == nil { rebuildPoints() } }
         .onChange(of: submittedNames) { _, _ in rebuildPoints() }
@@ -138,6 +139,14 @@ struct DialectMapView: View {
                 }
     }
     private func choose(_ id: String) { model.tableDetail = tables.first { $0.id == id } }
+    private func receiveHandoff() {
+        guard let handoff = model.mapHandoff else { return }
+        model.mapHandoff = nil
+        generation += 1; querying = false; menuOpen = false
+        character = handoff.result.query; mode = handoff.result.mode
+        submittedNames = handoff.names; result = handoff.result; activeCharacter = handoff.character
+        rebuildPoints(); fit += 1
+    }
     private func resetResults() {
         generation += 1; querying = false; result = nil; activeCharacter = ""; rebuildPoints()
     }

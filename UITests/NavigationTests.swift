@@ -199,6 +199,27 @@ final class NavigationTests: XCTestCase {
 
     }
 
+    @MainActor func testUnicodeReferenceAndMapHandoff() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
+        app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("一中")
+        app.buttons["查詢"].tap()
+        let unicode = app.buttons["characterUnicode"]
+        XCTAssertTrue(unicode.waitForExistence(timeout: 8))
+        unicode.tap()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "基本 1.1")).firstMatch.waitForExistence(timeout: 5))
+        app.navigationBars.buttons["完成"].tap()
+        app.buttons["說文"].tap()
+        XCTAssertTrue(app.navigationBars["說文"].waitForExistence(timeout: 5))
+        app.navigationBars.buttons["完成"].tap()
+        app.buttons["中"].tap()
+        app.buttons["characterMap"].tap()
+        XCTAssertTrue(app.tabBars.buttons["地圖"].isSelected)
+        let mark = app.buttons["map-reading-" + String(repeating: "a", count: 24)]
+        XCTAssertTrue(mark.waitForExistence(timeout: 8))
+        XCTAssertEqual(mark.label, "tɕiɔŋ1")
+    }
+
     @MainActor func testMapSearchModeControlsAndVariantResults() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]; app.launch()

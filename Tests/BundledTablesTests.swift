@@ -62,6 +62,18 @@ final class BundledTablesTests: XCTestCase {
         let state = try await reopened.restore()
         XCTAssertEqual(state?.tables.first?.sha256, updated.sha256)
     }
+    func testReferenceIndexMatchesAndroidUnicodePopup() async throws {
+        let one = try await CharacterReferenceIndex.shared.lookup("一")
+        XCTAssertEqual(one.code, "U+4E00")
+        XCTAssertEqual(one.block, "基本 1.1")
+        XCTAssertEqual(one.values["兩分"], "heng 丿")
+        XCTAssertEqual(one.values["字形描述"], "一(陸港臺日韓朝越)")
+        XCTAssertEqual(one.values["總筆畫數"], "1")
+        XCTAssertEqual(one.values["五筆86"], "ggll")
+        XCTAssertTrue(CharacterReference.books.allSatisfy { one.values[$0]?.isEmpty == false })
+        let rare = try await CharacterReferenceIndex.shared.lookup("𠀀")
+        XCTAssertEqual(rare.block, "擴展B 3.1")
+    }
     func testPackagedCatalogContainsEveryBundledTable() throws {
         let root = try XCTUnwrap(Bundle.main.resourceURL).appendingPathComponent("BundledTables")
         let catalog = try JSONDecoder().decode(TableCatalog.self, from: Data(contentsOf: root.appendingPathComponent("catalog.json")))
