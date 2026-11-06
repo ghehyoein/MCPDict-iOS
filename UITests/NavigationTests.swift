@@ -114,9 +114,7 @@ final class NavigationTests: XCTestCase {
         let reading = app.buttons["map-reading-" + String(repeating: "a", count: 24)]
         XCTAssertTrue(reading.waitForExistence(timeout: 10))
         reading.press(forDuration: 0.8)
-        let status = app.staticTexts["mapPointStatus"]
-        expectation(for: NSPredicate(format: "label == %@", "已複製到剪貼版"), evaluatedWith: status)
-        waitForExpectations(timeout: 2)
+        XCTAssertEqual(reading.value as? String, "tɕiɔŋ1", "The native long press must write the actual reading to the pasteboard")
         // Resolve a fresh accessibility element after the label changes. The simulator
         // can retain the toast snapshot while querying a cached XCUIElement.
         let restored = app.staticTexts.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch

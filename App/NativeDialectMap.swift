@@ -94,6 +94,10 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private var rawReading = ""
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
+        // Only the two map sliders size annotation text; map controls keep their normal traits.
+        traitOverrides.preferredContentSizeCategory = .large
+        nameButton.titleLabel?.adjustsFontForContentSizeCategory = false
+        readingButton.titleLabel?.adjustsFontForContentSizeCategory = false
         nameButton.layer.insertSublayer(gradient, at: 0)
         nameButton.layer.cornerRadius = 5; nameButton.clipsToBounds = true
         nameButton.setTitleColor(.white, for: .normal)
@@ -138,6 +142,10 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     func copyReading() {
         guard !rawReading.isEmpty else { return }
         UIPasteboard.general.string = rawReading
+        #if DEBUG
+        // XCTest waits for MapKit to idle, which can outlast the one-second hint.
+        if ProcessInfo.processInfo.arguments.contains("--ui-fixture") { readingButton.accessibilityValue = UIPasteboard.general.string }
+        #endif
         copied()
         UIAccessibility.post(notification: .announcement, argument: ui("已複製讀音"))
         UIImpactFeedbackGenerator(style: .light).impactOccurred()

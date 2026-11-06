@@ -10,8 +10,8 @@ struct DialectMapView: View {
     @AppStorage("mapPalette") private var colorScheme = "atlas"
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
-    @AppStorage("mapReadingSize") private var fontSize = 17.0
-    @AppStorage("mapNameSize") private var nameSize = 14.0
+    @AppStorage(AppTypography.mapReadingKey) private var fontSize = 17.0
+    @AppStorage(AppTypography.mapNameKey) private var nameSize = 14.0
     @State private var menuOpen = false
     @State private var submittedNames = Set<String>()
     @AppStorage("baseMapStyle") private var baseMapStyle = "standard"
@@ -26,8 +26,7 @@ struct DialectMapView: View {
     @State private var querying = false
     @State private var selected: TablePackage?
     @State private var fit = 0
-    @State private var copied = false
-    @State private var copyTask: Task<Void, Never>?
+    @StateObject private var feedback = CopyFeedback()
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
     private var colorGrouping: TableGrouping { colorScheme == "dictionary" ? .dictionary : .atlas }
     @State private var points = [DialectPoint]()
@@ -86,8 +85,7 @@ struct DialectMapView: View {
         }
     }
     private func didCopy() {
-        copied = true; copyTask?.cancel()
-        copyTask = Task { try? await Task.sleep(for: .seconds(1)); if !Task.isCancelled { copied = false } }
+        feedback.show()
     }
     private var searchBar: some View {
                 HStack {
@@ -109,8 +107,8 @@ struct DialectMapView: View {
                 }
     }
     private var statusLabel: some View {
-                Text(copied ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
-                    .font(.caption).foregroundStyle(copied ? Color.orange : Color.secondary).accessibilityIdentifier("mapPointStatus")
+                Text(feedback.visible ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
+                    .font(.caption).foregroundStyle(feedback.visible ? Color.orange : Color.secondary).accessibilityIdentifier("mapPointStatus")
     }
     @ToolbarContentBuilder private var mapToolbar: some ToolbarContent {
                 ToolbarItemGroup(placement: .topBarTrailing) {
