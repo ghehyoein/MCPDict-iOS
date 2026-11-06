@@ -69,6 +69,7 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(reading.exists)
         XCTAssertEqual(app.sliders.count, 3)
         defer { other.adjust(toNormalizedSliderPosition: 0.25); map.adjust(toNormalizedSliderPosition: 0.55); reading.adjust(toNormalizedSliderPosition: 0.55) }
+        let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "字體大小內置預覽"; picture.lifetime = .keepAlways; add(picture)
         let oldReading = reading.value as? String
         let oldOther = other.value as? String
         map.adjust(toNormalizedSliderPosition: 0.8)
@@ -146,7 +147,7 @@ final class NavigationTests: XCTestCase {
         for _ in 0..<3 { if app.sliders["fontSizeSlider"].isHittable { break }; app.swipeUp() }
         XCTAssertTrue(app.sliders["fontSizeSlider"].exists)
     }
-    @MainActor func testMapModesRefreshOpenDropdownAndLongPressCopies() throws {
+    @MainActor func testMapModesRefreshOpenDropdownAndSelectableText() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.tabBars.buttons["地圖"].tap()
@@ -188,8 +189,6 @@ final class NavigationTests: XCTestCase {
         let reading = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
         XCTAssertTrue(reading.waitForExistence(timeout: 10))
         XCTAssertTrue(reading.isHittable)
-        // Resolve a fresh accessibility element after the label changes. The simulator
-        // can retain the toast snapshot while querying a cached XCUIElement.
         let restored = app.staticTexts.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
         XCTAssertTrue(restored.waitForExistence(timeout: 10), app.staticTexts["mapPointStatus"].debugDescription)
 
@@ -308,6 +307,16 @@ final class NavigationTests: XCTestCase {
         app.buttons["selectAllLanguages"].tap(); app.buttons["finishLanguages"].tap()
         XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
     }
+    @MainActor func testNoteInputVariantsAreAvailableBeforeQuery() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
+        app.segmentedControls.buttons["註釋"].tap()
+        app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("输")
+        XCTAssertTrue(app.scrollViews["noteInputVariants"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["輸"].waitForExistence(timeout: 5))
+        let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "注釋輸入異體字"; picture.lifetime = .keepAlways; add(picture)
+    }
+
     @MainActor func testDownloadsPushAndReferenceOptionsSheet() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
