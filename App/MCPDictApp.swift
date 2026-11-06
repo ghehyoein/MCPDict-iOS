@@ -267,15 +267,20 @@ final class AppModel: ObservableObject {
             } else { next.entries.append(SavedReading(reading: reading, books: targets)) }
         }
     }
-    func setBookName(_ raw: String, id: UUID? = nil) {
+    @discardableResult func setBookName(_ raw: String, id: UUID? = nil, selectNew: Bool = true) -> UUID? {
         let name = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, !notebook.books.contains(where: { $0.id != id && $0.name == name }) else {
-            error = "請輸入非空且未使用的生字表名稱"; return
+            error = "請輸入非空且未使用的生字表名稱"; return nil
         }
-        changeNotebook { next in
-            if let id, let i = next.books.firstIndex(where: { $0.id == id }) { next.books[i].name = name }
-            else if id == nil { let book = VocabularyBook(id: UUID(), name: name); next.books.append(book); next.selected = [book.id] }
+        let target = id ?? UUID()
+        let saved = changeNotebook { next in
+            if let i = next.books.firstIndex(where: { $0.id == target }) { next.books[i].name = name }
+            else if id == nil {
+                next.books.append(VocabularyBook(id: target, name: name))
+                if selectNew { next.selected = [target] }
+            }
         }
+        return saved ? target : nil
     }
     func selectBooks(_ ids: Set<UUID>) { changeNotebook { $0.selected = ids.intersection($0.books.map(\.id)) } }
     func deleteBooks(_ ids: Set<UUID>) { changeNotebook { $0.remove(ids) } }
@@ -345,9 +350,14 @@ struct ReadingView: View {
 
 struct SearchView: View {
     @AppStorage("dictionaryPalette") private var palette = "atlas"
+    @FocusState private var searchFocused: Bool
     @State private var menuOpen = false
     @State private var selectedCharacter = ""
     @StateObject private var feedback = CopyFeedback()
+    private func submitQuery() {
+        searchFocused = false
+        Task { await model.search() }
+    }
     private func copy(_ text: String) {
         UIPasteboard.general.string = text
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -365,8 +375,8 @@ struct SearchView: View {
                     HStack {
                         TextField(ui("漢字、U+4E2D 或原始讀音"), text: $model.query)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
-                            .onSubmit { Task { await model.search() } }
-                        Button(ui("查詢")) { Task { await model.search() } }.disabled(model.searching)
+                            .focused($searchFocused).onSubmit { submitQuery() }
+                        Button(ui("查詢")) { submitQuery() }.disabled(model.searching)
                     }
                     LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection", colorScheme: $palette, expanded: $menuOpen)
                 }

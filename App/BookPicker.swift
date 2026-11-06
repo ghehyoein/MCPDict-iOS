@@ -61,7 +61,12 @@ struct BookPicker: View {
             TextField(ui("生字表名稱"), text: $name)
             if duplicate { Text(ui("名稱已被使用")).foregroundStyle(.secondary) }
             HStack {
-                Button(ui("儲存")) { model.setBookName(name, id: editID); editing = false }.disabled(trimmed.isEmpty || duplicate)
+                Button(ui("儲存")) {
+                    if let id = model.setBookName(name, id: editID, selectNew: reading == nil) {
+                        if reading != nil && editID == nil { draft.insert(id) }
+                        editing = false
+                    }
+                }.disabled(trimmed.isEmpty || duplicate)
                 Spacer()
                 Button(ui("取消")) { editing = false }
             }.buttonStyle(.borderless)
