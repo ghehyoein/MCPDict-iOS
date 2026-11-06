@@ -463,8 +463,10 @@ struct SearchView: View {
                         if hasCharacters, !current.isEmpty {
                             CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) })
                         }
-                        if hasCharacters { CharacterResultsView(current: current) }
-                        else { HomophoneResultsView() }
+                        if !model.resultQuery.isEmpty {
+                            if hasCharacters { CharacterResultsView(current: current) }
+                            else { HomophoneResultsView() }
+                        }
                     } header: {
                         VStack(alignment: .leading, spacing: 4) {
                             if model.mode == .note { NoteVariantPicker(query: $model.query, submit: submitQuery) }

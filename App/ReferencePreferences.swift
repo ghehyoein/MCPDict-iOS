@@ -39,7 +39,12 @@ struct ReferenceSettingsView: View {
             List {
                 Section(ui("字頭入口 · 拖動調整順序")) {
                     ForEach(settings.order, id: \.self) { item in
-                        Toggle(ui(item == "Unicode" ? "Unicode 碼" : item), isOn: Binding(get: { !settings.hidden.contains(item) }, set: { if $0 { settings.hidden.remove(item) } else { settings.hidden.insert(item) } }))
+                        HStack {
+                            Text(ui(item == "Unicode" ? "Unicode 碼" : item))
+                            Spacer()
+                            Toggle(ui(item == "Unicode" ? "Unicode 碼" : item), isOn: Binding(get: { !settings.hidden.contains(item) }, set: { if $0 { settings.hidden.remove(item) } else { settings.hidden.insert(item) } }))
+                                .labelsHidden().fixedSize()
+                        }
                     }.onMove { settings.order.move(fromOffsets: $0, toOffset: $1) }
                 }
                 Section(ui("字形資料 · 拖動調整順序")) {

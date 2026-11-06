@@ -141,10 +141,18 @@ struct PronunciationView: View {
     let raw: String
     let table: TablePackage?
     var pointSize: Double? = nil
+    var scrollable = true
     @AppStorage("toneStyle") private var style = "baSheng"
     @AppStorage("pitchStyle") private var pitch = "curve"
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
+        Group {
+            if scrollable {
+                ScrollView(.horizontal, showsIndicators: false) { content }.fixedSize(horizontal: false, vertical: true)
+            } else { content }
+        }.accessibilityElement(children: .ignore)
+            .accessibilityLabel(ToneDisplay.text(raw, table: table, style: style, pitch: pitch))
+    }
+    private var content: some View {
         HStack(alignment: .center, spacing: 0) {
             ForEach(ToneDisplay.parts(raw, table: table, style: style, pitchStyle: pitch)) { part in
                 Text(part.base).font(pointSize.map { .system(size: $0) })
@@ -156,8 +164,5 @@ struct PronunciationView: View {
                 }
             }
         }.textSelection(.enabled).lineLimit(1).fixedSize(horizontal: true, vertical: false)
-        }.fixedSize(horizontal: false, vertical: true)
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(ToneDisplay.text(raw, table: table, style: style, pitch: pitch))
     }
 }

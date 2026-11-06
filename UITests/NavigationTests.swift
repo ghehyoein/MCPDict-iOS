@@ -304,6 +304,8 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.segmentedControls.buttons["註釋"].isHittable)
         app.textFields["請輸入漢字"].tap(); app.textFields["請輸入漢字"].typeText("中")
         app.buttons["mapLanguageSelection"].tap(); app.segmentedControls.buttons["語言"].tap()
+        XCTAssertTrue(app.buttons["selectAllLanguages"].isHittable)
+        XCTAssertTrue(app.buttons["finishLanguages"].isHittable)
         app.buttons["selectAllLanguages"].tap(); app.buttons["finishLanguages"].tap()
         XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
     }
