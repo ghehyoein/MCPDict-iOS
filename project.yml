@@ -28,7 +28,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: 汉字音典
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        MARKETING_VERSION: "0.7.1"
+        MARKETING_VERSION: "0.7.2"
         CURRENT_PROJECT_VERSION: 1
     dependencies:
       - sdk: libsqlite3.tbd
