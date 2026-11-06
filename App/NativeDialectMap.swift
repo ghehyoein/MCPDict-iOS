@@ -4,8 +4,7 @@ import MapKit
 struct NativeDialectMap: UIViewRepresentable {
     let points: [DialectPoint]
     let fit: Int
-    var fontSize: Double = 17
-    var nameSize: Double = 14
+    var fontSize: Double = 16
     var mapStyle: String = "standard"
     var centerChanged: (TableLocation) -> Void = { _ in }
     var copied: () -> Void = {}
@@ -24,7 +23,7 @@ struct NativeDialectMap: UIViewRepresentable {
         context.coordinator.centerChanged = centerChanged
         let type = (BaseMapStyle(rawValue: mapStyle) ?? .standard).type
         if map.mapType != type { map.mapType = type }
-        context.coordinator.update(map, points: points, fit: fit, fontSize: fontSize, nameSize: nameSize)
+        context.coordinator.update(map, points: points, fit: fit, fontSize: fontSize)
     }
     final class PointAnnotation: NSObject, MKAnnotation {
         let point: DialectPoint
@@ -36,8 +35,7 @@ struct NativeDialectMap: UIViewRepresentable {
     final class Coordinator: NSObject, MKMapViewDelegate {
         var points = [DialectPoint]()
         var fit = 0
-        var fontSize = 17.0
-        var nameSize = 14.0
+        var fontSize = 16.0
         var centerChanged: (TableLocation) -> Void = { _ in }
         var copied: () -> Void = {}
         var choose: (String) -> Void
@@ -46,10 +44,9 @@ struct NativeDialectMap: UIViewRepresentable {
             let center = TableLocation(longitude: mapView.centerCoordinate.longitude, latitude: mapView.centerCoordinate.latitude)
             DispatchQueue.main.async { [weak self] in self?.centerChanged(center) }
         }
-        func update(_ map: MKMapView, points: [DialectPoint], fit: Int, fontSize: Double = 17, nameSize: Double = 14) {
-            let fontChanged = self.fontSize != fontSize || self.nameSize != nameSize
+        func update(_ map: MKMapView, points: [DialectPoint], fit: Int, fontSize: Double = 16) {
+            let fontChanged = self.fontSize != fontSize
             if self.points != points || fontChanged {
-                self.nameSize = nameSize
                 self.fontSize = fontSize
                 self.points = points
                 let wanted = Dictionary(uniqueKeysWithValues: points.map { ($0.id, $0) })
@@ -76,7 +73,7 @@ struct NativeDialectMap: UIViewRepresentable {
             view.centerOffset = .zero
             view.canShowCallout = false
             view.copied = copied
-            view.configure(point.point, fontSize: fontSize, nameSize: nameSize) { [weak self] in self?.choose(point.point.id) }
+            view.configure(point.point, fontSize: fontSize) { [weak self] in self?.choose(point.point.id) }
             return view
         }
 
@@ -94,7 +91,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private var rawReading = ""
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        // Only the two map sliders size annotation text; map controls keep their normal traits.
+        // Only the map slider sizes annotation text; map controls keep their normal traits.
         traitOverrides.preferredContentSizeCategory = .large
         nameButton.titleLabel?.adjustsFontForContentSizeCategory = false
         readingButton.titleLabel?.adjustsFontForContentSizeCategory = false
@@ -150,11 +147,11 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         UIAccessibility.post(notification: .announcement, argument: ui("已複製讀音"))
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
-    func configure(_ point: DialectPoint, fontSize: Double, nameSize: Double = 14, choose: @escaping () -> Void) {
+    func configure(_ point: DialectPoint, fontSize: Double, choose: @escaping () -> Void) {
         self.choose = choose; rawReading = point.reading
         nameButton.setTitle(point.name, for: .normal)
         nameButton.accessibilityLabel = point.name
-        nameButton.titleLabel?.font = .systemFont(ofSize: nameSize)
+        nameButton.titleLabel?.font = .systemFont(ofSize: fontSize)
         let colors = TableColors.hexes(point.color)
         nameButton.backgroundColor = TableColors.uiColor(colors.first ?? "#008080")
         gradient.colors = (colors.count == 1 ? colors + colors : colors).map { TableColors.uiColor($0).cgColor }
@@ -184,7 +181,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         readingButton.isHidden = point.reading.isEmpty
         let nameButtonSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
         let readingRect = text.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
-        let nameWidth: CGFloat = nameButtonSize.width + 12, nameHeight: CGFloat = max(nameButtonSize.height, CGFloat(nameSize) * 1.4)
+        let nameWidth: CGFloat = nameButtonSize.width + 12, nameHeight: CGFloat = max(nameButtonSize.height, CGFloat(fontSize) * 1.4)
         let readingWidth: CGFloat = min(268, ceil(readingRect.width) + 8)
         let readingHeight: CGFloat = point.reading.isEmpty ? 0 : ceil(readingRect.height) + 8
         let width = max(nameWidth, readingWidth)

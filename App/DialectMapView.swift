@@ -10,8 +10,7 @@ struct DialectMapView: View {
     @AppStorage("mapPalette") private var colorScheme = "atlas"
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
-    @AppStorage(AppTypography.mapReadingKey) private var fontSize = 17.0
-    @AppStorage(AppTypography.mapNameKey) private var nameSize = 14.0
+    @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
     @State private var menuOpen = false
     @State private var submittedNames = Set<String>()
     @AppStorage("baseMapStyle") private var baseMapStyle = "standard"
@@ -55,7 +54,7 @@ struct DialectMapView: View {
     }
     private var observedContent: some View {
         VStack(spacing: 8) {
-            menu.padding(.horizontal)
+            menu.environment(\.mapLabelSize, mapSize).padding(.horizontal)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }
@@ -79,7 +78,7 @@ struct DialectMapView: View {
             searchBar
             variantBar
             statusLabel
-            NativeDialectMap(points: points, fit: fit, fontSize: fontSize, nameSize: nameSize, mapStyle: baseMapStyle,
+            NativeDialectMap(points: points, fit: fit, fontSize: mapSize, mapStyle: baseMapStyle,
                              centerChanged: { center = $0 }, copied: didCopy, choose: choose)
             if querying { ProgressView() }
         }

@@ -22,6 +22,24 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["已選 1"].exists)
         XCTAssertTrue(app.staticTexts["發音 · tɕiɔŋ1"].exists)
     }
+    @MainActor func testOnlyTwoIndependentFontSliders() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
+        app.tabBars.buttons["設定"].tap()
+        let map = app.sliders["mapSizeSlider"]
+        let other = app.sliders["fontSizeSlider"]
+        XCTAssertTrue(map.waitForExistence(timeout: 5))
+        XCTAssertTrue(other.exists)
+        XCTAssertEqual(app.sliders.count, 2)
+        defer { other.adjust(toNormalizedSliderPosition: 0.25); map.adjust(toNormalizedSliderPosition: 6.0 / 22.0) }
+        let oldOther = other.value as? String
+        map.adjust(toNormalizedSliderPosition: 0.8)
+        XCTAssertEqual(other.value as? String, oldOther)
+        let mapValue = map.value as? String
+        other.adjust(toNormalizedSliderPosition: 0.6)
+        XCTAssertEqual(map.value as? String, mapValue)
+    }
+
     @MainActor func testTreeSelectionBlankStartAndSettings() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()

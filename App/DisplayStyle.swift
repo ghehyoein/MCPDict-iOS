@@ -1,9 +1,16 @@
 import SwiftUI
 
+private struct MapLabelSizeKey: EnvironmentKey { static let defaultValue: Double? = nil }
+extension EnvironmentValues {
+    var mapLabelSize: Double? {
+        get { self[MapLabelSizeKey.self] }
+        set { self[MapLabelSizeKey.self] = newValue }
+    }
+}
+
 enum AppTypography {
     static let interfaceKey = "fontSize"
-    static let mapNameKey = "mapNameSize"
-    static let mapReadingKey = "mapReadingSize"
+    static let mapKey = "mapTextSize"
     static func size(_ value: Double) -> DynamicTypeSize {
         switch value {
         case ..<15: return .xSmall
@@ -37,6 +44,7 @@ enum TableColors {
 }
 
 struct LanguageBadge: View {
+    @Environment(\.mapLabelSize) private var mapSize
     let name: String
     let table: TablePackage?
     var grouping: TableGrouping? = nil
@@ -44,7 +52,7 @@ struct LanguageBadge: View {
     var body: some View {
         let scheme = grouping == .atlas || grouping == .dictionary ? grouping! : (colorScheme == "dictionary" ? .dictionary : .atlas)
         let colors = table.map { TableColors.hexes(TableColors.raw($0, scheme)) } ?? []
-        Text(name).font(.subheadline).foregroundStyle(.white)
+        Text(name).font(mapSize.map { Font.system(size: $0) } ?? .subheadline).foregroundStyle(.white)
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(TableColors.gradient(colors), in: RoundedRectangle(cornerRadius: 5))
             .fixedSize(horizontal: false, vertical: true)
