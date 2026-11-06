@@ -435,7 +435,7 @@ struct SearchView: View {
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
-                resultsSection(viewportTop: viewport.frame(in: .global).minY)
+                resultsSection(viewport: viewport.frame(in: .global))
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
             }
             .listStyle(.plain)
@@ -449,7 +449,7 @@ struct SearchView: View {
 
         }
     }
-    @ViewBuilder private func resultsSection(viewportTop: CGFloat) -> some View {
+    @ViewBuilder private func resultsSection(viewport: CGRect) -> some View {
                 if !model.resultQuery.isEmpty || (model.mode == .note && !model.query.isEmpty) {
                     let hasCharacters = model.resultMode == .character || model.resultMode == .note
                     let chars = model.resultCharacters
@@ -478,13 +478,13 @@ struct SearchView: View {
                          .padding(.vertical, 4).background(Color(uiColor: .systemBackground))
                          .background {
                              GeometryReader { geometry in
-                                 let top = max(0, geometry.frame(in: .global).minY - viewportTop)
-                                 if top <= 16 { Color.black.frame(width: geometry.size.width + 32, height: top).offset(x: -16, y: -top) }
+                                 let top = max(0, geometry.frame(in: .global).minY - viewport.minY)
+                                 if top <= 16 { Color.black.frame(width: viewport.width, height: top).offset(x: viewport.minX - geometry.frame(in: .global).minX, y: -top) }
                              }.allowsHitTesting(false)
                          }
                          // List hosts its pinned headers separately; use screen coordinates across those hosts.
                          .onGeometryChange(for: Bool.self) { geometry in
-                             geometry.frame(in: .global).minY <= viewportTop + 16
+                             geometry.frame(in: .global).minY <= viewport.minY + 16
                          } action: { resultHeaderPinned = $0 }
                          .onDisappear { resultHeaderPinned = false }
                          .zIndex(1)
