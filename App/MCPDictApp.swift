@@ -300,7 +300,7 @@ struct RootView: View {
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
     @State private var tab = 0
-    @AppStorage("fontSize") private var fontSize = 17.0
+    @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
     var body: some View {
         TabView(selection: $tab) {
             SearchView().tag(0).tabItem { Label(ui("字典"), systemImage: "character.book.closed") }
@@ -338,12 +338,10 @@ struct SearchView: View {
     @AppStorage("dictionaryPalette") private var palette = "atlas"
     @State private var menuOpen = false
     @State private var selectedCharacter = ""
-    @State private var copied = false
-    @State private var copyTask: Task<Void, Never>?
+    @StateObject private var feedback = CopyFeedback()
     private func copy(_ text: String) {
         UIPasteboard.general.string = text
-        copied = true; copyTask?.cancel()
-        copyTask = Task { try? await Task.sleep(for: .seconds(1)); if !Task.isCancelled { copied = false } }
+        feedback.show()
     }
 
     @EnvironmentObject var model: AppModel
@@ -397,8 +395,8 @@ struct SearchView: View {
                                     }
                                 }
                             }
-                            Text(ui(copied ? "已複製到剪貼板" : "長按發音可複製"))
-                                .font(.caption).foregroundStyle(copied ? Color.orange : Color.secondary)
+                            Text(ui(feedback.visible ? "已複製到剪貼板" : "長按發音可複製"))
+                                .font(.caption).foregroundStyle(feedback.visible ? Color.orange : Color.secondary)
                                 .accessibilityIdentifier("dictionaryCopyStatus")
                         }.textCase(nil).frame(maxWidth: .infinity, alignment: .leading)
                          .padding(.vertical, 4).background(Color(uiColor: .systemBackground))

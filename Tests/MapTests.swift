@@ -23,6 +23,45 @@ final class MapTests: XCTestCase {
         XCTAssertEqual(result["點134"], "zhong1")
         do { _ = try await repo.mapReadings("中國"); XCTFail("Must reject multiple characters") } catch { }
     }
+    @MainActor func testThreeIndependentFontControlsRenderAtTheirOwnSizes() throws {
+        let suite = "map-font-test-" + UUID().uuidString
+        let store = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { store.removePersistentDomain(forName: suite) }
+        let point = DialectPoint(id: "a", name: "甲", longitude: 1, latitude: 2, color: "#008080", reading: "a1")
+        let host = UIView()
+        let label = LabelAnnotationView(annotation: nil, reuseIdentifier: nil)
+        host.addSubview(label)
+        func check(_ general: Double, _ name: Double, _ reading: Double) throws {
+            XCTAssertEqual(store.double(forKey: AppTypography.interfaceKey), general)
+            host.traitOverrides.preferredContentSizeCategory = general > 20 ? .accessibilityExtraExtraExtraLarge : .small
+            label.configure(point, fontSize: store.double(forKey: AppTypography.mapReadingKey), nameSize: store.double(forKey: AppTypography.mapNameKey)) {}
+            let text = try XCTUnwrap(label.readingButton.attributedTitle(for: .normal))
+            let font = try XCTUnwrap(text.attribute(.font, at: 0, effectiveRange: nil) as? UIFont)
+            XCTAssertEqual(label.nameButton.titleLabel?.font.pointSize, CGFloat(name))
+            XCTAssertEqual(font.pointSize, CGFloat(reading))
+        }
+        store.set(14, forKey: AppTypography.interfaceKey)
+        store.set(12, forKey: AppTypography.mapNameKey)
+        store.set(17, forKey: AppTypography.mapReadingKey)
+        try check(14, 12, 17)
+        store.set(26, forKey: AppTypography.interfaceKey)
+        try check(26, 12, 17)
+        store.set(24, forKey: AppTypography.mapNameKey)
+        try check(26, 24, 17)
+        store.set(31, forKey: AppTypography.mapReadingKey)
+        try check(26, 24, 31)
+    }
+    @MainActor func testCopyHintExpiresOneSecondAfterLastCopy() async throws {
+        let hint = CopyFeedback()
+        hint.show()
+        XCTAssertTrue(hint.visible)
+        try await Task.sleep(for: .milliseconds(400))
+        hint.show()
+        try await Task.sleep(for: .milliseconds(700))
+        XCTAssertTrue(hint.visible)
+        try await Task.sleep(for: .milliseconds(450))
+        XCTAssertFalse(hint.visible)
+    }
     @MainActor func testSystemMapUpdatesCoordinatesReadingsAndSelection() throws {
         var chosen: String?
         let coordinator = NativeDialectMap.Coordinator { chosen = $0 }

@@ -3,11 +3,11 @@ import SwiftUI
 struct SettingsView: View {
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
-    @AppStorage("fontSize") private var fontSize = 17.0
+    @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
-    @AppStorage("mapNameSize") private var mapNameSize = 14.0
-    @AppStorage("mapReadingSize") private var mapReadingSize = 17.0
+    @AppStorage(AppTypography.mapNameKey) private var mapNameSize = 14.0
+    @AppStorage(AppTypography.mapReadingKey) private var mapReadingSize = 17.0
     var body: some View {
         NavigationStack {
             Form {

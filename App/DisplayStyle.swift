@@ -1,6 +1,9 @@
 import SwiftUI
 
 enum AppTypography {
+    static let interfaceKey = "fontSize"
+    static let mapNameKey = "mapNameSize"
+    static let mapReadingKey = "mapReadingSize"
     static func size(_ value: Double) -> DynamicTypeSize {
         switch value {
         case ..<15: return .xSmall
