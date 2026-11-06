@@ -117,7 +117,22 @@ struct LanguageDropdown: View {
             TextField(ui("搜尋語言或分區"), text: $filter).textFieldStyle(.roundedBorder)
             if !fixedAdministrative {
                 HStack {
-                    Button { wheel.toggle() } label: { Text(ui("分類方式") + " · " + ui(grouping.rawValue)) }.accessibilityIdentifier("classificationPickerToggle")
+                    // Use the original native menu appearance; the tap still opens the wheel.
+                    Picker(ui("分類方式"), selection: .constant(grouping)) {
+                        ForEach(choices) { Text(ui($0.rawValue)).tag($0) }
+                    }
+                    .pickerStyle(.menu)
+                    .font(.body)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .overlay {
+                        Button { wheel.toggle() } label: {
+                            Color.clear.contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(ui("分類方式") + " · " + ui(grouping.rawValue))
+                        .accessibilityIdentifier("classificationPickerToggle")
+                    }
                     if grouping == .person {
                         ForEach(PersonRole.allCases, id: \.self) { role in
                             Button { if !roles.insert(role).inserted { roles.remove(role) } } label: {

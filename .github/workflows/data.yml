@@ -1,6 +1,11 @@
 name: Build dictionary from GitHub source
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: Update release diagnostics after user approval
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -51,7 +56,7 @@ jobs:
           cp data-build/upstream/LICENSE dist/UPSTREAM-LICENSE.txt
           cp data-build/upstream/tools/warnings.txt dist/upstream-warnings.txt
       - name: Update diagnostics in the current app release
-        if: steps.source.outputs.skip != 'true'
+        if: github.event_name == 'workflow_dispatch' && inputs.publish && steps.source.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -64,4 +69,3 @@ jobs:
           Path("dist/diagnostics.json").write_text(json.dumps({"sourceCommit":source,"diagnosticsProfile":"upstream-c-v1","diagnosticsURL":url}))
           PY
           gh release upload "$RELEASE_TAG" dist/upstream-warnings.txt dist/diagnostics.json --clobber
-

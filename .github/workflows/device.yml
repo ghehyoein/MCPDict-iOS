@@ -74,7 +74,7 @@ jobs:
           echo "Simulator checks did not complete; keeping the previous release."
           exit 1
       - name: Publish downloadable development IPA
-        if: (github.event_name == 'workflow_dispatch' && inputs.publish) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-bundled]'))
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
