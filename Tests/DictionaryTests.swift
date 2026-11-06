@@ -45,6 +45,26 @@ final class DictionaryTests: XCTestCase {
         XCTAssertTrue(injection.isEmpty)
     }
 
+    func testMapUsesDictionarySearchAcrossModes() async throws {
+        let repo = DictionaryRepository()
+        try await repo.open(fixture())
+        let names: Set<String> = ["普通話"]
+        let chars = try await repo.mapSearch("中输", mode: .character, names: names)
+        XCTAssertEqual(Array(chars.choices.prefix(2)), ["中", "输"])
+        XCTAssertTrue(chars.choices.contains("輸"))
+        XCTAssertEqual(chars.groups["中"]?["普通話"]?.map(\.text), ["zhong1", "zhong4"])
+        XCTAssertNil(chars.groups["中"]?["測試方言"])
+        let ipa = try await repo.mapSearch("hong", mode: .pronunciation, names: names)
+        XCTAssertTrue(ipa.choices.isEmpty)
+        XCTAssertEqual(Set(ipa.groups[""]?["普通話"]?.map(\.text) ?? []), ["中", "仲", "忠"])
+        let note = try await repo.mapSearch("中心", mode: .note, names: names)
+        XCTAssertEqual(note.choices, ["中", "忠"])
+        XCTAssertEqual(note.groups["忠"]?["普通話"]?.first?.fullText, "zhong1  中心")
+        XCTAssertNil(note.groups["仲"])
+        let miss = try await repo.mapSearch("無此注釋", mode: .note, names: names)
+        XCTAssertTrue(miss.choices.isEmpty && miss.groups.isEmpty)
+    }
+
     func testFailedActivationKeepsOldConnection() async throws {
         let repo = DictionaryRepository()
         let url = try fixture()

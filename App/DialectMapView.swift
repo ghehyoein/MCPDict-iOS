@@ -20,9 +20,9 @@ struct DialectMapView: View {
     @State private var character = ""
     @FocusState private var inputFocused: Bool
     @State private var activeCharacter = ""
-    @State private var readings = [String: String]()
-    @State private var variants = [String]()
-    @State private var readingsByVariant = [String: [String: String]]()
+    @State private var mode: SearchMode = .character
+    @State private var result: MapSearchResult?
+    @State private var generation = 0
     @State private var querying = false
     @State private var fit = 0
     @StateObject private var feedback = CopyFeedback()
@@ -35,10 +35,27 @@ struct DialectMapView: View {
         rebuildPoints()
     }
     private func rebuildPoints() {
-        points = (activeCharacter.isEmpty ? names : submittedNames).sorted().compactMap { name in
-            guard let table = tableByName[name], activeCharacter.isEmpty || readings[name] != nil,
-                  var point = DialectPoint.make(table, grouping: colorGrouping, reading: readings[name] ?? "") else { return nil }
-            point.toneParts = ToneDisplay.parts(point.reading, table: table, style: toneStyle, pitchStyle: pitchStyle)
+        let group = result?.groups[activeCharacter] ?? [:]
+        points = (result == nil ? names : submittedNames).sorted().compactMap { name in
+            let lines = group[name] ?? []
+            guard let table = tableByName[name], result == nil || !lines.isEmpty else { return nil }
+            let separator = result?.mode == .note ? "\n" : " / "
+            var shown = Set<String>()
+            let text = lines.map(\.fullText).filter { shown.insert($0).inserted }.joined(separator: separator)
+            guard var point = DialectPoint.make(table, grouping: colorGrouping, reading: text) else { return nil }
+            var raw = Set<String>()
+            point.copyText = lines.map(\.pronunciation).filter { raw.insert($0).inserted }.joined(separator: " / ")
+            if result?.mode == .character {
+                point.toneParts = ToneDisplay.parts(text, table: table, style: toneStyle, pitchStyle: pitchStyle)
+            } else if result?.mode == .note {
+                var parts = [ToneDisplay.Part]()
+                for line in lines {
+                    if !parts.isEmpty { parts.append(.init(id: parts.count, base: "\n", pitch: "", tone: "", stacked: false)) }
+                    parts += ToneDisplay.parts(line.pronunciation, table: table, style: toneStyle, pitchStyle: pitchStyle)
+                    parts.append(.init(id: parts.count, base: "  " + line.note, pitch: "", tone: "", stacked: false))
+                }
+                point.toneParts = parts
+            }
             return point
         }
     }
@@ -48,21 +65,21 @@ struct DialectMapView: View {
                 .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
                 .toolbar { mapToolbar }
                 .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
-                .onChange(of: model.installed?.databaseFile) { _, _ in activeCharacter = ""; readings = [:]; variants = []; readingsByVariant = [:] }
+                .onChange(of: model.installed?.databaseFile) { _, _ in resetResults() }
         }
     }
     private var observedContent: some View {
         VStack(spacing: 8) {
-            menu.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal).zIndex(1)
+            SelectionMenuButton(count: names.count, entryID: "", expanded: $menuOpen).hidden().accessibilityHidden(true).padding(.horizontal)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }
         }
+        .overlay(alignment: .top) { menu.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal) }
         .onAppear { rebuildMapTables() }
         .onChange(of: tables) { _, _ in rebuildMapTables() }
-        .onChange(of: names) { _, _ in if activeCharacter.isEmpty { rebuildPoints() } }
+        .onChange(of: names) { _, _ in if result == nil { rebuildPoints() } }
         .onChange(of: submittedNames) { _, _ in rebuildPoints() }
-        .onChange(of: readings) { _, _ in rebuildPoints() }
         .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
         .onChange(of: toneStyle) { _, _ in rebuildPoints() }
         .onChange(of: pitchStyle) { _, _ in rebuildPoints() }
@@ -70,7 +87,7 @@ struct DialectMapView: View {
     }
     private var menu: some View {
         LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region,
-                               floats: true, colorScheme: $colorScheme, expanded: $menuOpen)
+                               searchMode: $mode, colorScheme: $colorScheme, expanded: $menuOpen)
     }
     private var mapContent: some View {
         VStack(spacing: 8) {
@@ -87,17 +104,17 @@ struct DialectMapView: View {
     }
     private var searchBar: some View {
                 HStack {
-                    TextField(ui("請輸入單字"), text: $character).textFieldStyle(.roundedBorder).focused($inputFocused).onSubmit { Task { await query() } }
+                    TextField(ui(mode == .character ? "請輸入漢字" : mode == .pronunciation ? "請輸入讀音" : "請輸入註釋"), text: $character).textFieldStyle(.roundedBorder).focused($inputFocused).onSubmit { Task { await query() } }
                     Button(ui("查字")) { Task { await query() } }.disabled(querying || model.updating)
-                    Button(ui("清除")) { activeCharacter = ""; readings = [:]; character = ""; variants = []; readingsByVariant = [:] }
+                    Button(ui("清除")) { character = ""; resetResults() }
                 }.padding(.horizontal)
     }
     @ViewBuilder private var variantBar: some View {
-                if variants.count > 1 {
+                if let variants = result?.choices, !variants.isEmpty {
                     ScrollView(.horizontal) {
                         HStack {
                             ForEach(variants, id: \.self) { variant in
-                                Button(variant) { activeCharacter = variant; readings = readingsByVariant[variant] ?? [:] }
+                                Button(variant) { activeCharacter = variant }
                                     .buttonStyle(.bordered).tint(variant == activeCharacter ? .teal : .gray)
                             }
                         }.padding(.horizontal)
@@ -105,7 +122,7 @@ struct DialectMapView: View {
                 }
     }
     private var statusLabel: some View {
-                Text(feedback.visible ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (activeCharacter.isEmpty ? "" : " ·「\(activeCharacter)」僅查已下載字表")))
+                Text(feedback.visible ? ui("已複製到剪貼版") : ui("\(points.count) 個語言點" + (result.map { " ·「" + (activeCharacter.isEmpty ? $0.query : activeCharacter) + "」僅查已下載字表" } ?? "")))
                     .font(.caption).foregroundStyle(feedback.visible ? Color.orange : Color.secondary).accessibilityIdentifier("mapPointStatus")
     }
     @ToolbarContentBuilder private var mapToolbar: some ToolbarContent {
@@ -121,19 +138,23 @@ struct DialectMapView: View {
                 }
     }
     private func choose(_ id: String) { model.tableDetail = tables.first { $0.id == id } }
+    private func resetResults() {
+        generation += 1; querying = false; result = nil; activeCharacter = ""; rebuildPoints()
+    }
     @MainActor private func query() async {
         inputFocused = false
         let text = character.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard text.count == 1 else { model.error = "請輸入一個漢字（支援擴展區漢字）"; return }
-        let requestedNames = names
+        guard !text.isEmpty, !querying else { return }
+        let requestedNames = names, requestedMode = mode
+        generation += 1
+        let token = generation
         querying = true
-        defer { querying = false }
+        defer { if token == generation { querying = false } }
         do {
-            let expanded = await Task.detached(priority: .userInitiated) { CharacterVariants.expand(text) }.value
-            let found = try await model.repository.mapReadingsForVariants(expanded)
-            submittedNames = requestedNames; variants = expanded; readingsByVariant = found
-            activeCharacter = text; readings = found[text] ?? [:]; fit += 1
-        }
-        catch { model.error = error.localizedDescription }
+            let found = try await model.repository.mapSearch(text, mode: requestedMode, names: requestedNames)
+            guard token == generation else { return }
+            submittedNames = requestedNames; result = found; activeCharacter = found.choices.first ?? ""
+            rebuildPoints(); fit += 1
+        } catch { if token == generation { model.error = error.localizedDescription } }
     }
 }
