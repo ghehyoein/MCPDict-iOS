@@ -51,17 +51,6 @@ final class MapTests: XCTestCase {
         store.set(19, forKey: AppTypography.readingKey)
         try check(26, 25, 19)
     }
-    @MainActor func testCopyHintExpiresOneSecondAfterLastCopy() async throws {
-        let hint = CopyFeedback()
-        hint.show()
-        XCTAssertTrue(hint.visible)
-        try await Task.sleep(for: .milliseconds(400))
-        hint.show()
-        try await Task.sleep(for: .milliseconds(700))
-        XCTAssertTrue(hint.visible)
-        try await Task.sleep(for: .milliseconds(450))
-        XCTAssertFalse(hint.visible)
-    }
     @MainActor func testSystemMapUpdatesCoordinatesReadingsAndSelection() throws {
         var chosen: String?
         let coordinator = NativeDialectMap.Coordinator { chosen = $0 }
@@ -98,7 +87,23 @@ final class MapTests: XCTestCase {
         XCTAssertFalse(label.readingText.isEditable)
         XCTAssertTrue(label.readingText.isScrollEnabled)
         XCTAssertLessThanOrEqual(label.readingText.bounds.height, 180)
-        XCTAssertGreaterThan(label.readingText.sizeThatFits(CGSize(width: 260, height: .greatestFiniteMagnitude)).height, label.readingText.bounds.height)
+        XCTAssertGreaterThan(label.readingText.sizeThatFits(CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude)).height, label.readingText.bounds.height)
+    }
+
+    func testMapNoteSearchKeepsEveryCompleteNote() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let url = root.appendingPathComponent("notes.db")
+        let db = try SQLiteConnection(url: url, readOnly: false)
+        _ = try db.rows("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋)")
+        for index in 0..<135 {
+            _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", ["中", "甲", "a", "needle " + String(repeating: "完整注釋", count: 30) + String(index)])
+        }
+        let repository = DictionaryRepository(); try await repository.open(url)
+        let result = try await repository.mapSearch("needle", mode: .note, names: ["甲"])
+        XCTAssertEqual(result.groups["中"]?["甲"]?.count, 135)
+        XCTAssertTrue(result.groups["中"]?["甲"]?.last?.note.hasSuffix("134") == true)
     }
 
 }

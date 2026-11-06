@@ -104,4 +104,20 @@ final class RequestedChangesTests: XCTestCase {
         XCTAssertEqual(part.first?.pitch, "51")
     }
 
+    func testLargeResultIndexMatchesExistingGrouping() {
+        let characters = (0..<60).compactMap { UnicodeScalar(0x4E00 + $0).map(String.init) }
+        let rows = (0..<6000).map { i in Reading(id: Int64(i), characters: characters[i % characters.count], language: "點\(i % 100)", pronunciation: "a\(i % 8)", note: "較長的注釋內容") }
+        let start = Date()
+        let old = Dictionary(uniqueKeysWithValues: characters.map { ($0, CharacterResults.groups(rows, character: $0)) })
+        let oldDuration = Date().timeIntervalSince(start)
+        let indexedStart = Date()
+        let indexed = CharacterResults.index(rows)
+        let indexedDuration = Date().timeIntervalSince(indexedStart)
+        for character in characters {
+            XCTAssertEqual(indexed[character]?.map(\.id), old[character]?.map(\.id))
+            XCTAssertEqual(indexed[character]?.flatMap { $0.readings.map(\.id) }, old[character]?.flatMap { $0.readings.map(\.id) })
+        }
+        print("RESULT_INDEX_BENCHMARK old=\(oldDuration)s indexed=\(indexedDuration)s rows=6000 characters=60")
+    }
+
 }
