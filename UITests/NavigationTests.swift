@@ -325,8 +325,9 @@ final class NavigationTests: XCTestCase {
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "滾動後固定選字區及頂部遮罩"; picture.lifetime = .keepAlways; add(picture)
         let image = app.screenshot().image
         let source = try XCTUnwrap(image.cgImage)
+        let pixelScale = CGFloat(source.width) / app.frame.width
         for point in [CGPoint(x: 20, y: 40), CGPoint(x: 20, y: app.navigationBars.firstMatch.frame.midY)] {
-            let pixel = try XCTUnwrap(source.cropping(to: CGRect(x: point.x * image.scale, y: point.y * image.scale, width: 1, height: 1)))
+            let pixel = try XCTUnwrap(source.cropping(to: CGRect(x: point.x * pixelScale, y: point.y * pixelScale, width: 1, height: 1)))
             var rgba = [UInt8](repeating: 0, count: 4)
             try rgba.withUnsafeMutableBytes { bytes in
                 let context = try XCTUnwrap(CGContext(data: bytes.baseAddress, width: 1, height: 1, bitsPerComponent: 8, bytesPerRow: 4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue))
