@@ -22,6 +22,30 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["已選 1"].exists)
         XCTAssertTrue(app.staticTexts["發音 · tɕiɔŋ1"].exists)
     }
+    @MainActor func testContributorGroupingDoesNotFollowColorTabs() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
+        app.tabBars.buttons["字表"].tap()
+        app.buttons["downloadLanguageSelection"].tap()
+        let toggle = app.buttons["classificationPickerToggle"]
+        toggle.tap()
+        app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "維護人")
+        toggle.tap()
+        let blank = app.buttons["check-(無)"]
+        let person = app.buttons["check-測試維護人"]
+        XCTAssertTrue(blank.exists); XCTAssertTrue(person.exists)
+        person.tap()
+        app.segmentedControls.buttons["音典分區"].tap()
+        XCTAssertEqual(person.value as? String, "checked")
+        app.buttons["personRole-維護人"].tap()
+        XCTAssertFalse(person.exists); XCTAssertTrue(blank.exists)
+        app.buttons["personRole-錄入人"].tap()
+        XCTAssertFalse(blank.exists)
+        // Reset this persisted classification for other independent fixture launches.
+        app.buttons["personRole-錄入人"].tap(); app.buttons["personRole-維護人"].tap()
+        toggle.tap(); app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "地圖集二分區")
+    }
+
     @MainActor func testThreeIndependentFontSliders() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
@@ -86,7 +110,11 @@ final class NavigationTests: XCTestCase {
         app.segmentedControls.buttons["行政區"].tap()
         XCTAssertTrue(app.buttons["finishLanguages"].exists)
         XCTAssertTrue(app.buttons["check-北京"].exists)
-        XCTAssertFalse(app.buttons["expand-北京"].exists)
+        for group in ["北京", "東城", "示例街道"] {
+            let expand = app.buttons["expand-" + group]
+            XCTAssertTrue(expand.waitForExistence(timeout: 5)); expand.tap()
+        }
+        XCTAssertTrue(app.buttons["check-示例語言點"].exists)
         app.segmentedControls.buttons["語言"].tap()
         XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
         app.buttons["finishLanguages"].tap()
@@ -126,7 +154,11 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["自選功能後續待更新，目前與語言模式相同"].exists)
         app.segmentedControls.buttons["行政區"].tap()
         XCTAssertTrue(app.buttons["check-北京"].exists)
-        XCTAssertFalse(app.buttons["expand-北京"].exists)
+        for group in ["北京", "東城", "示例街道"] {
+            let expand = app.buttons["expand-" + group]
+            XCTAssertTrue(expand.waitForExistence(timeout: 5)); expand.tap()
+        }
+        XCTAssertTrue(app.buttons["check-示例語言點"].exists)
         app.segmentedControls.buttons["分區"].tap()
         XCTAssertTrue(app.buttons["mapLanguageSelection"].label.contains("已選 1"))
         app.segmentedControls.buttons["語言"].tap()

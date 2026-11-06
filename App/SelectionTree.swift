@@ -81,6 +81,7 @@ struct LanguageDropdown: View {
     var inspect: ((TablePackage) -> Void)? = nil
     var palette: TableGrouping = .atlas
     var flags = LanguageFlags()
+    var fixedAdministrative = false
     let done: () -> Void
     @State private var grouping: TableGrouping = .atlas
     @State private var filter = ""
@@ -106,14 +107,14 @@ struct LanguageDropdown: View {
     var body: some View {
         VStack(alignment: .leading) {
             TextField(ui("搜尋語言或分區"), text: $filter).textFieldStyle(.roundedBorder)
-            if scope != .topGroups {
+            if !fixedAdministrative {
                 HStack {
-                    Button { wheel.toggle() } label: { Text(ui("分類方式") + " · " + ui(grouping.rawValue)) }
+                    Button { wheel.toggle() } label: { Text(ui("分類方式") + " · " + ui(grouping.rawValue)) }.accessibilityIdentifier("classificationPickerToggle")
                     if grouping == .person {
                         ForEach(PersonRole.allCases, id: \.self) { role in
                             Button { if !roles.insert(role).inserted { roles.remove(role) } } label: {
                                 Label(ui(role.rawValue), systemImage: roles.contains(role) ? "checkmark.square.fill" : "square")
-                            }
+                            }.accessibilityIdentifier("personRole-" + role.rawValue)
                         }
                     }
                 }.font(.subheadline).buttonStyle(.borderless)
@@ -141,7 +142,7 @@ struct LanguageDropdown: View {
             .onAppear {
                 if let stored = UserDefaults.standard.stringArray(forKey: "roles." + regionCacheKey) { roles = Set(stored.compactMap(PersonRole.init(rawValue:))) }
                 let persisted = UserDefaults.standard.string(forKey: "grouping." + regionCacheKey).flatMap(TableGrouping.init(rawValue:))
-                grouping = scope == .topGroups ? .administrative : (persisted.flatMap { choices.contains($0) ? $0 : nil } ?? initialGrouping)
+                grouping = fixedAdministrative ? .administrative : (persisted.flatMap { choices.contains($0) ? $0 : nil } ?? initialGrouping)
                 refresh(prune: flags.island || flags.history)
             }
             .onChange(of: tables) { _, _ in refresh(prune: true) }
