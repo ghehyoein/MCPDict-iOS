@@ -100,8 +100,9 @@ final class RequestedChangesTests: XCTestCase {
     func testTonePreviewUsesYinShangAnd51() {
         let part = ToneDisplay.parts("hæ3", table: ToneDisplay.previewTable, style: "hanzi", pitchStyle: "number")
         XCTAssertEqual(part.first?.base, "hæ")
-        XCTAssertEqual(part.first?.tone, "上")
+        XCTAssertEqual(part.first?.tone, "陰上")
         XCTAssertEqual(part.first?.pitch, "51")
+        XCTAssertEqual(ToneDisplay.parts("hæ3", table: ToneDisplay.previewTable, style: "baSheng", pitchStyle: "number").first?.tone, "③")
     }
 
     func testLargeResultIndexMatchesExistingGrouping() {
