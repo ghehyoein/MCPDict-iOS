@@ -444,10 +444,9 @@ struct SearchView: View {
             }
             .listStyle(.plain)
             .coordinateSpace(name: "dictionaryScroll")
-            .onPreferenceChange(ResultHeaderPosition.self) { resultHeaderTop = $0 }
-            .toolbarBackground(resultHeaderTop <= 1 ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
-            .toolbarBackground(resultHeaderTop <= 1 ? .visible : .automatic, for: .navigationBar)
-            .toolbarColorScheme(resultHeaderTop <= 1 ? .dark : nil, for: .navigationBar)
+            .toolbarBackground(resultHeaderTop <= 16 ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
+            .toolbarBackground(resultHeaderTop <= 16 ? .visible : .automatic, for: .navigationBar)
+            .toolbarColorScheme(resultHeaderTop <= 16 ? .dark : nil, for: .navigationBar)
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
             .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }
@@ -487,7 +486,7 @@ struct SearchView: View {
                                  Color.clear.preference(key: ResultHeaderPosition.self, value: geometry.frame(in: .named("dictionaryScroll")).minY)
                                  if top <= 16 { Color.black.frame(width: geometry.size.width + 32, height: top).offset(x: -16, y: -top) }
                              }.allowsHitTesting(false)
-                         }.zIndex(1)
+                         }.onPreferenceChange(ResultHeaderPosition.self) { resultHeaderTop = $0 }.zIndex(1)
                     }
                 }
     }
