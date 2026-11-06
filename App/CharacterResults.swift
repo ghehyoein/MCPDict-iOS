@@ -50,7 +50,7 @@ struct CharacterResultsView: View {
             ForEach(groups) { group in
                 HStack(alignment: .top, spacing: 12) {
                     Button { model.tableDetail = model.table(named: group.language) } label: { LanguageBadge(name: group.language, table: model.table(named: group.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
-                    VStack(alignment: .leading, spacing: 8) {
+                    LazyVStack(alignment: .leading, spacing: 8) {
                         ForEach(group.readings) { reading in
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).contentShape(Rectangle()).textSelection(.enabled).accessibilityIdentifier("dictionary-reading-" + reading.language) }

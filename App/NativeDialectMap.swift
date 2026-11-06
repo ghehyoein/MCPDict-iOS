@@ -37,7 +37,7 @@ struct NativeDialectMap: UIViewRepresentable {
         var fontSize = 16.0
         var readingSize = 16.0
         var centerChanged: (TableLocation) -> Void = { _ in }
-            var choose: (String) -> Void
+        var choose: (String) -> Void
         init(choose: @escaping (String) -> Void) { self.choose = choose }
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             let center = TableLocation(longitude: mapView.centerCoordinate.longitude, latitude: mapView.centerCoordinate.latitude)
@@ -91,7 +91,6 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
     private let gradient = CAGradientLayer()
     private var choose: (() -> Void)?
-    private var rawReading = ""
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         // Only the map slider sizes annotation text; map controls keep their normal traits.
@@ -131,7 +130,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     }
     @objc private func openDetails() { choose?() }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
-        self.choose = choose; rawReading = point.copyText ?? point.reading
+        self.choose = choose
         nameButton.setTitle(point.name, for: .normal)
         nameButton.accessibilityLabel = point.name
         nameButton.titleLabel?.font = .systemFont(ofSize: labelSize)
@@ -157,8 +156,9 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
                 text.append(NSAttributedString(attachment: attachment))
             } else { text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: UIColor.label])) }
         }
+        let contentChanged = readingText.attributedText?.string != text.string
         readingText.attributedText = text
-        readingText.setContentOffset(.zero, animated: false)
+        if contentChanged { readingText.setContentOffset(.zero, animated: false) }
         readingText.accessibilityIdentifier = "map-reading-" + point.id
         readingText.accessibilityLabel = point.reading
         readingText.isHidden = point.reading.isEmpty

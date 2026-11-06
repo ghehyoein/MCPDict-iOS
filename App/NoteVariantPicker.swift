@@ -5,6 +5,7 @@ struct NoteVariantPicker: View {
     let submit: () -> Void
     @State private var choices = [[String]]()
     var body: some View {
+        let inputCharacters = Array(query)
         ScrollView(.horizontal) {
             HStack {
                 ForEach(Array(choices.enumerated()), id: \.offset) { index, variants in
@@ -15,7 +16,7 @@ struct NoteVariantPicker: View {
                             characters[index] = variant
                             query = characters.joined(); submit()
                         }.buttonStyle(.bordered)
-                            .tint(Array(query).indices.contains(index) && String(Array(query)[index]) == variant ? AppAccent.color : .gray)
+                            .tint(inputCharacters.indices.contains(index) && String(inputCharacters[index]) == variant ? AppAccent.color : .gray)
                     }
                     if index + 1 < choices.count { Divider() }
                 }
