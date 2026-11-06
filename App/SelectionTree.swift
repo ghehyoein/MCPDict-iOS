@@ -22,10 +22,10 @@ struct SelectionTree: View {
         LazyVStack(alignment: .leading, spacing: 8) {
             ForEach(rows) { row in
                 let checked = scope == .terminalGroups ? selectedRegion.wrappedValue == row.node.region : selected.isSuperset(of: row.ids)
-                let mixed = scope != .terminalGroups && !selected.isDisjoint(with: row.ids)
+                let mixed = scope == .terminalGroups ? RegionSelection.isAncestor(row.node.region, of: selectedRegion.wrappedValue) : !selected.isDisjoint(with: row.ids)
                 HStack {
                     Button { toggle(row) } label: {
-                        Image(systemName: checked ? "checkmark.square.fill" : (mixed ? "minus.square.fill" : "square")).font(.title3)
+                        Image(systemName: checked ? "checkmark.square.fill" : (mixed ? "minus.square.fill" : "square")).contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }.font(.title3)
                             .frame(width: 44, height: 44).contentShape(Rectangle())
                     }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + row.node.title).accessibilityIdentifier("check-" + row.node.title)
                         .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
@@ -136,7 +136,7 @@ struct LanguageDropdown: View {
                     if grouping == .person {
                         ForEach(PersonRole.allCases, id: \.self) { role in
                             Button { if !roles.insert(role).inserted { roles.remove(role) } } label: {
-                                Label(ui(role.rawValue), systemImage: roles.contains(role) ? "checkmark.square.fill" : "square")
+                                Label(ui(role.rawValue), systemImage: roles.contains(role) ? "checkmark.square.fill" : "square").contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
                             }.accessibilityIdentifier("personRole-" + role.rawValue)
                         }
                     }
@@ -185,7 +185,13 @@ struct FavoriteButton: View {
     @State private var choosing = false
     private var saved: Bool { !model.memberships(reading).isEmpty }
     var body: some View {
-        Button { choosing = true } label: { Image(systemName: saved ? "star.fill" : "star") }
+        Button {
+            if UserDefaults.standard.string(forKey: "favoriteAction") == "direct" {
+                let ids = FavoritePreferences.targets(in: model.notebook)
+                guard !ids.isEmpty else { model.error = "請先在設定中選擇預設生字表"; return }
+                model.save(reading, to: ids)
+            } else { choosing = true }
+        } label: { Image(systemName: saved ? "star.fill" : "star") }
             .buttonStyle(.borderless).tint(.orange).accessibilityLabel(ui(saved ? "已收藏" : "加入生字本"))
             .sheet(isPresented: $choosing) { BookPicker(reading: reading) }
     }

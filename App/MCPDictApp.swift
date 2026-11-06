@@ -52,6 +52,8 @@ final class AppModel: ObservableObject {
     @Published var resultCharacters = [String]()
     @Published var downloading = false
     @Published var downloadedCount = 0
+    @Published var tableProgress = 0.0
+    @Published var removing = false
     @Published private(set) var notebook = NotebookArchive() {
         didSet { savedMemberships = notebook.entries.reduce(into: [:]) { $0[ReadingContentKey($1.reading)] = $1.membership } }
     }
@@ -93,6 +95,7 @@ final class AppModel: ObservableObject {
             installed = TableInstallation(catalogVersion: "ui-test", tables: UITestFixtures.catalog.tables, databaseFile: nil)
             languages = UITestFixtures.catalog.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
+                for key in ["favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key] { UserDefaults.standard.removeObject(forKey: key) }
                 for namespace in ["dictionary", "map", "downloads"] {
                     selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace)
                     selectionCache.defaults.removeObject(forKey: "selectionMode." + namespace)
@@ -152,18 +155,19 @@ final class AppModel: ObservableObject {
     }
     func downloadTables(_ selection: Set<String>) {
         guard !updating, !selection.isEmpty, let catalog else { return }
-        updating = true; downloading = true; downloadedCount = 0
+        updating = true; downloading = true; downloadedCount = 0; tableProgress = 0
         status = "正在下載字表…"
         updateTask = Task {
             defer { updating = false; downloading = false; updateTask = nil }
             do {
                 let result = try await tableStore.download(catalog, selected: selection, completedCount: { count in
-                    await MainActor.run { self.downloadedCount = count }
+                    await MainActor.run { self.downloadedCount = count; self.tableProgress = 0.9 * Double(count) / Double(max(1, selection.count)) }
                 }) { message in
                     await MainActor.run { self.status = message }
                 }
                 installed = result.installation
                 try await refreshAfterTables()
+                tableProgress = result.cancelled || result.failure != nil ? tableProgress : 1
                 if let failure = result.failure { status = "已保留完成的字表"; error = failure }
                 else { status = result.cancelled ? "已取消，已保留完成的字表" : "下載完成" }
             } catch { status = "操作未完成，原有字表仍可使用"; self.error = error.localizedDescription }
@@ -172,11 +176,14 @@ final class AppModel: ObservableObject {
     func removeTables(_ selection: Set<String>) {
         guard !updating, !selection.isEmpty else { return }
         updating = true
+        removing = true; tableProgress = 0
         status = "正在移除字表…"
         updateTask = Task {
-            defer { updating = false; updateTask = nil }
+            defer { updating = false; removing = false; updateTask = nil }
             do {
-                installed = try await tableStore.remove(selected: selection)
+                installed = try await tableStore.remove(selected: selection) { fraction in
+                    await MainActor.run { self.tableProgress = fraction }
+                }
                 try await refreshAfterTables()
                 status = "移除完成"
             } catch { self.error = error.localizedDescription }
@@ -311,6 +318,10 @@ final class AppModel: ObservableObject {
         }
         return saved ? target : nil
     }
+    func importNotebook(_ data: Data) throws {
+        let incoming = try NotebookArchive.decode(data)
+        guard changeNotebook({ $0.merge(incoming) }) else { throw DictionaryFailure(message: "生字表匯入儲存失敗") }
+    }
     func selectBooks(_ ids: Set<UUID>) { changeNotebook { $0.selected = ids.intersection($0.books.map(\.id)) } }
     func deleteBooks(_ ids: Set<UUID>) { changeNotebook { $0.remove(ids) } }
     func addFavorites(_ ids: Set<UUID>, to book: UUID) {
@@ -348,7 +359,6 @@ struct RootView: View {
             SearchView().tag(0).tabItem { Label(ui("字典"), systemImage: "character.book.closed") }
             FavoritesView().tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
             DialectMapView().tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
-            DataView().tag(3).tabItem { Label(ui("字表"), systemImage: "arrow.down.circle") }
             SettingsView().tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
         .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
@@ -407,12 +417,13 @@ struct SearchView: View {
                             .focused($searchFocused).onSubmit { submitQuery() }
                         Button(ui("查詢")) { submitQuery() }.disabled(model.searching)
                     }
-                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection", colorScheme: $palette, expanded: $menuOpen)
+                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } }, colorScheme: $palette, expanded: $menuOpen)
                 }
+                .background(Color(uiColor: .systemBackground)).zIndex(3)
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.updating { ProgressView(ui(model.status)) }
                 else if model.installed?.tables.isEmpty != false {
-                    ContentUnavailableView(ui("先選擇字表"), systemImage: "arrow.down.circle", description: Text(ui("前往「字表」恢復所需字表，或手動檢查上游更新。")))
+                    ContentUnavailableView(ui("先選擇字表"), systemImage: "arrow.down.circle", description: Text(ui("前往「設定 → 字表下載」恢復所需字表，或手動檢查上游更新。")))
                 } else if model.results.isEmpty && !model.searching {
                     Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
@@ -420,6 +431,7 @@ struct SearchView: View {
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
             }
             .listStyle(.plain)
+            .coordinateSpace(name: "dictionaryScroll")
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
             .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }
@@ -433,7 +445,7 @@ struct SearchView: View {
                     let current = chars.contains(selectedCharacter) ? selectedCharacter : chars.first ?? ""
                     Section {
                         if hasCharacters, !current.isEmpty {
-                            CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) })
+                            CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) }, copy: copy)
                         }
                         if hasCharacters { CharacterResultsView(current: current, copy: copy) }
                         else { HomophoneResultsView(copy: copy) }
@@ -453,6 +465,12 @@ struct SearchView: View {
                                 .accessibilityIdentifier("dictionaryCopyStatus")
                         }.textCase(nil).frame(maxWidth: .infinity, alignment: .leading)
                          .padding(.vertical, 4).background(Color(uiColor: .systemBackground))
+                         .background {
+                             GeometryReader { geometry in
+                                 let top = max(0, geometry.frame(in: .named("dictionaryScroll")).minY)
+                                 Color.black.frame(height: top).offset(y: -top)
+                             }
+                         }.zIndex(1)
                     }
                 }
     }

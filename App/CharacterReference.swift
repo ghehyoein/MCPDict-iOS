@@ -37,23 +37,53 @@ struct CharacterReferenceHeader: View {
     let character: String
     let show: (ReferencePage) -> Void
     let map: () -> Void
+    let copy: (String) -> Void
     @State private var loaded: CharacterReference?
+    @State private var moreInformation = false
+    @AppStorage(ReferencePreferences.key) private var raw = ""
     @EnvironmentObject var model: AppModel
     var body: some View {
         let data = loaded?.character == character ? loaded : nil
-        HStack {
-            Text(character).font(.system(size: 46, design: .serif)).accessibilityIdentifier("dictionaryHeadword")
-            ScrollView(.horizontal) {
-                HStack(spacing: 12) {
-                    Button((data ?? CharacterReference(character: character)).code) {
-                        if let data { show(.init(data: data, book: nil)) }
-                    }.disabled(data == nil).accessibilityIdentifier("characterUnicode")
-                    ForEach(CharacterReference.books, id: \.self) { book in
-                        if let data, data.values[book] != nil {
-                            Button(ui(book)) { show(.init(data: data, book: book)) }
+        let settings = ReferencePreferences.load(raw)
+        VStack(alignment: .leading, spacing: 6) {
+            if let data {
+                let expanded = settings.fieldOrder.filter { settings.mode($0) == "expanded" && settings.value($0, data: data) != nil }
+                let collapsed = settings.fieldOrder.filter { settings.mode($0) == "collapsed" && settings.value($0, data: data) != nil }
+                ScrollView(.horizontal) {
+                    HStack {
+                        ForEach(expanded, id: \.self) { field in Text(settings.value(field, data: data) ?? "").textSelection(.enabled) }
+                        if !collapsed.isEmpty {
+                            Button { moreInformation = true } label: { Image(systemName: "ellipsis") }
+                                .accessibilityLabel(ui("更多字形資料"))
+                                .popover(isPresented: $moreInformation) {
+                                    ScrollView {
+                                        VStack(alignment: .leading, spacing: 10) {
+                                            ForEach(collapsed, id: \.self) { field in Text(settings.value(field, data: data) ?? "").textSelection(.enabled) }
+                                        }.padding()
+                                    }.frame(minWidth: 260, idealHeight: 280).presentationCompactAdaptation(.popover)
+                                }
+                        }
+                    }.font(.caption)
+                }
+            }
+            HStack {
+                Text(character).font(.system(size: 46, design: .serif)).accessibilityIdentifier("dictionaryHeadword")
+                ScrollView(.horizontal) {
+                    HStack(spacing: 12) {
+                        ForEach(settings.order.filter { !settings.hidden.contains($0) }, id: \.self) { item in
+                            if item == "Unicode" {
+                                let code = (data ?? CharacterReference(character: character)).code
+                                Button(code) { if let data { show(.init(data: data, book: nil)) } }
+                                    .simultaneousGesture(LongPressGesture().onEnded { _ in copy(code) })
+                                    .accessibilityIdentifier("characterUnicode")
+                                    .accessibilityAction(named: Text(ui("複製"))) { copy(code) }
+                            } else if item == "地圖" {
+                                Button(action: map) { Text("🌍") }.accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("characterMap")
+                            } else if let data, data.values[item] != nil {
+                                Button(ui(item)) { show(.init(data: data, book: item)) }
+                            }
                         }
                     }
-                    Button(action: map) { Text("🌍") }.accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("characterMap")
                 }
             }
         }.buttonStyle(.borderless)
@@ -76,10 +106,7 @@ struct CharacterReferenceDetail: View {
                     Text(page.data.character).font(.system(size: 46, design: .serif))
                     if let book = page.book { Text(page.data.values[book] ?? "") }
                     else {
-                        Text("【" + ui("統一碼") + "】 " + page.data.code + " " + ui(page.data.block))
-                        ForEach(CharacterReference.fields, id: \.self) { field in
-                            if let value = page.data.values[field] { Text("【" + ui(field) + "】 " + value) }
-                        }
+                        Text(page.data.code)
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading).padding().textSelection(.enabled)
             }.navigationTitle(ui(page.book ?? "統一碼")).navigationBarTitleDisplayMode(.inline)

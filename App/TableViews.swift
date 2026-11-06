@@ -36,7 +36,7 @@ struct DataView: View {
     private var selection: Set<String> { Set(available.filter { names.contains($0.name) }.map(\.id)) }
     private var available: [TablePackage] { model.availableTables }
     var body: some View {
-        NavigationStack {
+        Group {
             List {
                 Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
                 LanguageSelectionPanel(tables: available, names: $names, cacheKey: "downloads", entryID: "downloadLanguageSelection",
@@ -47,7 +47,8 @@ struct DataView: View {
                     HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
                 }
             }
-            .navigationTitle(ui("字表")).navigationBarTitleDisplayMode(.large)
+            .navigationTitle(ui("字表下載")).navigationBarTitleDisplayMode(.large)
+            .toolbar(.hidden, for: .tabBar)
             .toolbar {
                 Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
             .safeAreaInset(edge: .bottom, spacing: 0) { TableActions(selection: selection) }
@@ -63,7 +64,11 @@ struct TableActions: View {
         let local = selection.intersection(Set(model.installed?.tables.map(\.id) ?? []))
         HStack(spacing: 10) {
             Spacer(minLength: 0)
-            Text(ui(model.downloading ? "已下載 \(model.downloadedCount) 份" : "已選 \(selection.count) 份")).foregroundStyle(.white).accessibilityIdentifier("downloadCount")
+            Text(ui(model.removing ? "正在移除" : model.downloading ? "已下載 \(model.downloadedCount) 份" : "已選 \(selection.count) 份")).foregroundStyle(.white).accessibilityIdentifier("downloadCount")
+            if model.downloading || model.removing {
+                ProgressView(value: model.tableProgress).progressViewStyle(.linear).frame(width: 60)
+                    .accessibilityLabel(ui("字表處理進度"))
+            }
             if model.downloading {
                 Button(ui("取消下載")) { model.cancelDownload() }.accessibilityIdentifier("cancelDownload")
             } else {

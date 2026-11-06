@@ -183,10 +183,11 @@ actor TableStore {
         defer { busy = false }
         return try await applyInternal(catalog, selected: selected, localFiles: localFiles, progress: progress)
     }
-    private func applyInternal(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], progress: @Sendable (String) async -> Void) async throws -> TableInstallation {
+    private func applyInternal(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], phaseProgress: @Sendable (Double) async -> Void = { _ in }, progress: @Sendable (String) async -> Void) async throws -> TableInstallation {
         try catalog.validate()
         guard selected.isSubset(of: Set(catalog.tables.map(\.id))) else { throw DictionaryFailure(message: "選取項目不在目前目錄中") }
         try prepare()
+        await phaseProgress(0.05)
         let tables = catalog.tables.filter { selected.contains($0.id) }.sorted { $0.id < $1.id }
         let previous = try await restore()
         let previousByID = Dictionary(uniqueKeysWithValues: (previous?.tables ?? []).map { ($0.id, $0) })
@@ -239,6 +240,7 @@ actor TableStore {
             if let oldFile = previous?.databaseFile {
                 try FileManager.default.copyItem(at: root.appendingPathComponent(oldFile), to: assembled)
             }
+            await phaseProgress(0.25)
             let output = try SQLiteConnection(url: assembled, readOnly: false)
             if !reusable {
                 let first = try SQLiteConnection(url: root.appendingPathComponent(tables[0].localName))
@@ -253,6 +255,7 @@ actor TableStore {
                 _ = try output.rows("DELETE FROM langs WHERE 語言 IN (SELECT value FROM json_each(?))", [names])
                 _ = try output.rows("DELETE FROM info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [names])
             }
+            await phaseProgress(0.75)
             for table in changed {
                 try Task.checkCancellation()
                 _ = try output.rows("ATTACH DATABASE ? AS shard", [root.appendingPathComponent(table.localName).path])
@@ -270,6 +273,7 @@ actor TableStore {
         } else {
             try await repository.clear { try data.write(to: pointer, options: .atomic) }
         }
+        await phaseProgress(0.95)
         committed = true
         let retained = Set(tables.map(\.localName) + [assembled?.lastPathComponent].compactMap { $0 })
         for file in (try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)) ?? [] where file.pathExtension == "db" && !retained.contains(file.lastPathComponent) {
@@ -342,14 +346,16 @@ actor TableStore {
         }.value
         return TableDownloadResult(installation: state, cancelled: cancelled, failure: failure, completed: completed)
     }
-    func remove(selected: Set<String>) async throws -> TableInstallation {
+    func remove(selected: Set<String>, progress: @escaping @Sendable (Double) async -> Void = { _ in }) async throws -> TableInstallation {
         guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
         busy = true
         defer { busy = false }
         let previous = try await restore()
         let remaining = (previous?.tables ?? []).filter { !selected.contains($0.id) }
         let catalog = TableCatalog(schemaVersion: 1, version: previous?.catalogVersion ?? "local", sourceRepository: UpstreamTables.repository, sourceCommit: remaining.first?.sourceCommit ?? "", scope: "", tables: remaining)
-        return try await applyInternal(catalog, selected: Set(remaining.map(\.id))) { _ in }
+        let result = try await applyInternal(catalog, selected: Set(remaining.map(\.id)), phaseProgress: progress) { _ in }
+        await progress(1)
+        return result
     }
 
 }

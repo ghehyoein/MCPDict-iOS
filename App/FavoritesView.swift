@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 enum NotebookCategory: String, CaseIterable {
     case language = "語言", pronunciation = "發音", character = "單字"
@@ -36,6 +37,9 @@ struct FavoritesView: View {
     @State private var selection = Set<UUID>()
     @State private var selecting = false
     @State private var showBooks = false
+    @State private var exporting = false
+    @State private var importing = false
+    @State private var transferMessage: String?
     private var categories: Set<NotebookCategory> {
         Set(stored.split(separator: "|").compactMap { NotebookCategory(rawValue: String($0)) })
     }
@@ -58,7 +62,7 @@ struct FavoritesView: View {
                                 if !active.insert(kind).inserted { active.remove(kind) }
                                 stored = NotebookCategory.allCases.filter(active.contains).map(\.rawValue).joined(separator: "|")
                             } label: {
-                                Label(ui(kind.rawValue), systemImage: categories.contains(kind) ? "checkmark.square.fill" : "square")
+                                Label(ui(kind.rawValue), systemImage: categories.contains(kind) ? "checkmark.square.fill" : "square").contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
                             }.buttonStyle(.borderless)
                         }
                     }
@@ -85,7 +89,7 @@ struct FavoritesView: View {
                                     Button {
                                         if !selection.insert(saved.id).inserted { selection.remove(saved.id) }
                                     } label: {
-                                        Image(systemName: selection.contains(saved.id) ? "checkmark.square.fill" : "square").padding(8)
+                                        Image(systemName: selection.contains(saved.id) ? "checkmark.square.fill" : "square").contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }.padding(8)
                                     }.buttonStyle(.borderless).accessibilityLabel(ui("選擇") + saved.reading.characters)
                                 }
                                 VStack(alignment: .leading) {
@@ -98,9 +102,29 @@ struct FavoritesView: View {
                         }.onDelete { indices in remove(Set(indices.map { group.entries[$0].id })) }
                     } header: { if !group.title.isEmpty { Text(verbatim: group.title).textCase(nil) } }
                 }
-            }.sheet(isPresented: $showBooks) { BookPicker() }
+            }
+            .fileExporter(isPresented: $exporting, document: NotebookTextDocument(archive: model.notebook), contentType: .json, defaultFilename: "漢字音典生字本") { result in
+                if case .failure(let error) = result { model.error = error.localizedDescription }
+            }
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.json, .plainText]) { result in
+                do {
+                    let url = try result.get()
+                    let granted = url.startAccessingSecurityScopedResource()
+                    defer { if granted { url.stopAccessingSecurityScopedResource() } }
+                    try model.importNotebook(Data(contentsOf: url))
+                    transferMessage = ui("已合併匯入生字表，原有內容已保留。")
+                } catch { model.error = error.localizedDescription }
+            }
+            .alert(ui("生字本匯入"), isPresented: Binding(get: { transferMessage != nil }, set: { if !$0 { transferMessage = nil } })) {
+                Button(ui("好")) { transferMessage = nil }
+            } message: { Text(transferMessage ?? "") }
+            .sheet(isPresented: $showBooks) { BookPicker() }
              .onChange(of: model.notebook.selected) { _, _ in selection = [] }
              .navigationTitle(ui("生字本")).toolbar {
+                Menu {
+                    Button(ui("匯出全部生字表 · JSON 純文字")) { exporting = true }
+                    Button(ui("匯入生字表 · JSON 純文字")) { importing = true }
+                } label: { Image(systemName: "square.and.arrow.up.on.square") }.accessibilityLabel(ui("匯入及匯出"))
                 Button(ui(selecting ? "完成" : "多選")) { selecting.toggle(); selection = [] }
             }
         }
