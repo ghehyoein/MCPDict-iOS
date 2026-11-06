@@ -15,7 +15,7 @@ struct LanguageSelectionPanel: View {
     @State private var flags = LanguageFlags()
     @State private var restored = false
     private let cache = LanguageSelectionCache()
-    private var scope: LanguageSelectionScope { kind == .region ? .terminalGroups : (kind == .administrative ? .topGroups : .points) }
+    private var scope: LanguageSelectionScope { kind == .region ? .terminalGroups : .points }
     private var grouping: TableGrouping { kind == .administrative ? .administrative : .atlas }
     private var key: String { cacheKey + "." + kind.rawValue }
     private var available: Set<String> { Set(scope.eligible(tables, grouping: grouping).map(\.name)) }
@@ -40,7 +40,7 @@ struct LanguageSelectionPanel: View {
                     flagButton("方言島", $flags.island); flagButton("歷史音", $flags.history)
                 }
                 if kind == .custom { Text(ui("自選功能後續待更新，目前與語言模式相同")).font(.caption).foregroundStyle(.secondary) }
-                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key, inspect: inspect, palette: colorScheme == "dictionary" ? .dictionary : .atlas, flags: flags) {
+                LanguageDropdown(tables: tables, names: chosen, initialGrouping: grouping, scope: scope, regionCacheKey: key, inspect: inspect, palette: colorScheme == "dictionary" ? .dictionary : .atlas, flags: flags, fixedAdministrative: kind == .administrative) {
                     expanded = false; finished()
                 }.id(key)
                 }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
@@ -67,7 +67,7 @@ struct LanguageSelectionPanel: View {
         // Initialize the mode before enabling mode-change persistence.
         kind = savedKind
         if let saved = cache.load(cacheKey + "." + savedKind.rawValue) {
-            let savedScope: LanguageSelectionScope = savedKind == .region ? .terminalGroups : (savedKind == .administrative ? .topGroups : .points)
+            let savedScope: LanguageSelectionScope = savedKind == .region ? .terminalGroups : .points
             let savedGrouping: TableGrouping = savedKind == .administrative ? .administrative : .atlas
             names = saved.intersection(Set(savedScope.eligible(tables, grouping: savedGrouping).map(\.name)))
         }
