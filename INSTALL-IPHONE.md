@@ -1,4 +1,4 @@
-# iPhone 安装：Windows 免费测试路线
+# iPhone 安装
 
 支持 iOS 17 及更新版本。**IPA 未签名，必须经你电脑上的 AltServer / AltStore Classic 使用你的 Apple 账号重新签名安装。Safari 下载文件后直接点击不会完成安装。** 当前不是 App Store 或 TestFlight 版本。
 
