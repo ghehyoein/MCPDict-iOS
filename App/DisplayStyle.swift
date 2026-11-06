@@ -67,6 +67,8 @@ struct GroupColorSwatch: View {
 }
 
 enum ToneDisplay {
+    static let previewTable = TablePackage(id: "tone-preview", name: "聲調預覽", fullName: "聲調預覽", atlas: [], dictionary: [], administrative: [], source: "", sourceCommit: "", recordCount: 0, size: 0, sha256: "", url: URL(string: "https://github.com/osfans/MCPDict")!, metadata: ["聲調": "{\"3\":[\"51\",\"陰上\",\"2\",\"上\",\"꜂\"]}"])
+
     static let styles: [(String, String)] = [("pinYin", "拼音：12345678"), ("baSheng", "八聲：①③⑤⑦"), ("siSheng", "四聲：①②③④"), ("hanzi", "漢字：平上去入"), ("corners", "四角：꜀平꜂上去꜄入꜆"), ("stacked", "並排：上排調值、下排調類"), ("hidden", "隱藏")]
     struct Part: Identifiable, Codable, Equatable {
         let id: Int
@@ -152,7 +154,7 @@ struct PronunciationView: View {
                     Text(part.tone)
                 }
             }
-        }.lineLimit(1).fixedSize(horizontal: true, vertical: false)
+        }.textSelection(.enabled).lineLimit(1).fixedSize(horizontal: true, vertical: false)
         }.fixedSize(horizontal: false, vertical: true)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(ToneDisplay.text(raw, table: table, style: style, pitch: pitch))

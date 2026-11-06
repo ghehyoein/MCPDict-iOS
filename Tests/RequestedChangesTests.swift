@@ -88,4 +88,20 @@ final class RequestedChangesTests: XCTestCase {
         XCTAssertThrowsError(try NotebookArchive.decode(JSONEncoder().encode(archive)))
     }
 
+    func testIndexedResultsPreserveOrderAndRepeatedReadings() {
+        let rows = [Reading(id: 1, characters: "中 輸", language: "乙", pronunciation: "a", note: ""), Reading(id: 2, characters: "中", language: "甲", pronunciation: "b", note: ""), Reading(id: 3, characters: "中", language: "乙", pronunciation: "c", note: "")]
+        let sorted = ResultOrdering.sorted(rows, ranks: ["甲": 0, "乙": 1])
+        XCTAssertEqual(sorted.map(\.id), [2, 1, 3])
+        let index = CharacterResults.index(sorted)
+        XCTAssertEqual(index["中"]?.map(\.language), ["甲", "乙"])
+        XCTAssertEqual(index["中"]?.last?.readings.map(\.id), [1, 3])
+        XCTAssertEqual(index["輸"]?.first?.readings.map(\.id), [1])
+    }
+    func testTonePreviewUsesYinShangAnd51() {
+        let part = ToneDisplay.parts("hæ3", table: ToneDisplay.previewTable, style: "hanzi", pitchStyle: "number")
+        XCTAssertEqual(part.first?.base, "hæ")
+        XCTAssertEqual(part.first?.tone, "上")
+        XCTAssertEqual(part.first?.pitch, "51")
+    }
+
 }

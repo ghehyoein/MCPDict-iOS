@@ -8,7 +8,6 @@ struct NativeDialectMap: UIViewRepresentable {
     var readingSize: Double = 16
     var mapStyle: String = "standard"
     var centerChanged: (TableLocation) -> Void = { _ in }
-    var copied: () -> Void = {}
     let choose: (String) -> Void
     func makeCoordinator() -> Coordinator { Coordinator(choose: choose) }
     func makeUIView(context: Context) -> MKMapView {
@@ -20,7 +19,6 @@ struct NativeDialectMap: UIViewRepresentable {
     }
     func updateUIView(_ map: MKMapView, context: Context) {
         context.coordinator.choose = choose
-        context.coordinator.copied = copied
         context.coordinator.centerChanged = centerChanged
         let type = (BaseMapStyle(rawValue: mapStyle) ?? .standard).type
         if map.mapType != type { map.mapType = type }
@@ -39,8 +37,7 @@ struct NativeDialectMap: UIViewRepresentable {
         var fontSize = 16.0
         var readingSize = 16.0
         var centerChanged: (TableLocation) -> Void = { _ in }
-        var copied: () -> Void = {}
-        var choose: (String) -> Void
+            var choose: (String) -> Void
         init(choose: @escaping (String) -> Void) { self.choose = choose }
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             let center = TableLocation(longitude: mapView.centerCoordinate.longitude, latitude: mapView.centerCoordinate.latitude)
@@ -56,7 +53,12 @@ struct NativeDialectMap: UIViewRepresentable {
                 var retained = Set<String>()
                 var removed = [PointAnnotation]()
                 for annotation in map.annotations.compactMap({ $0 as? PointAnnotation }) {
-                    if !fontChanged, wanted[annotation.point.id] == annotation.point { retained.insert(annotation.point.id) }
+                    if wanted[annotation.point.id] == annotation.point {
+                        retained.insert(annotation.point.id)
+                        if fontChanged, let view = map.view(for: annotation) as? LabelAnnotationView {
+                            view.configure(annotation.point, fontSize: readingSize, labelSize: fontSize) { [weak self] in self?.choose(annotation.point.id) }
+                        }
+                    }
                     else { removed.append(annotation) }
                 }
                 map.removeAnnotations(removed)
@@ -75,7 +77,6 @@ struct NativeDialectMap: UIViewRepresentable {
             view.displayPriority = .required
             view.centerOffset = .zero
             view.canShowCallout = false
-            view.copied = copied
             view.configure(point.point, fontSize: readingSize, labelSize: fontSize) { [weak self] in self?.choose(point.point.id) }
             return view
         }
@@ -86,8 +87,7 @@ struct NativeDialectMap: UIViewRepresentable {
 
 final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     let nameButton = UIButton(type: .system)
-    let readingButton = UIButton(type: .system)
-    var copied: () -> Void = {}
+    let readingText = UITextView()
     private let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
     private let gradient = CAGradientLayer()
     private var choose: (() -> Void)?
@@ -97,60 +97,39 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         // Only the map slider sizes annotation text; map controls keep their normal traits.
         traitOverrides.preferredContentSizeCategory = .large
         nameButton.titleLabel?.adjustsFontForContentSizeCategory = false
-        readingButton.titleLabel?.adjustsFontForContentSizeCategory = false
+        readingText.adjustsFontForContentSizeCategory = false
+        readingText.isEditable = false; readingText.isSelectable = true
+        readingText.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+        readingText.textContainer.lineFragmentPadding = 0
         nameButton.layer.insertSublayer(gradient, at: 0)
         nameButton.layer.cornerRadius = 5; nameButton.clipsToBounds = true
         nameButton.setTitleColor(.white, for: .normal)
-        readingButton.setTitleColor(.label, for: .normal)
-        readingButton.backgroundColor = .clear
+        readingText.textColor = .label
+        readingText.backgroundColor = .clear
         blur.isUserInteractionEnabled = false
         blur.layer.cornerRadius = 4; blur.clipsToBounds = true
         insertSubview(blur, at: 0)
-        readingButton.layer.cornerRadius = 3
-        readingButton.titleLabel?.numberOfLines = 0
-        readingButton.titleLabel?.lineBreakMode = .byCharWrapping
-        addSubview(nameButton); addSubview(readingButton)
+        readingText.layer.cornerRadius = 3
+        readingText.textContainer.maximumNumberOfLines = 0
+        readingText.textContainer.lineBreakMode = .byCharWrapping
+        addSubview(nameButton); addSubview(readingText)
         nameButton.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
         isUserInteractionEnabled = true
         isAccessibilityElement = false
-        accessibilityElements = [readingButton, nameButton]
-        let press = UILongPressGestureRecognizer(target: self, action: #selector(longPress(_:)))
-        press.minimumPressDuration = 0.5
-        press.cancelsTouchesInView = false
-        press.delegate = self
-        addGestureRecognizer(press)
-        readingButton.accessibilityCustomActions = [UIAccessibilityCustomAction(name: ui("複製讀音"), target: self, selector: #selector(accessibilityCopy))]
+        accessibilityElements = [readingText, nameButton]
+
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     // MapKit handles annotation selection itself. Explicit child hit testing keeps the
     // pronunciation and name controls interactive, including overlapping label bounds.
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
-        for control in [readingButton, nameButton] where !control.isHidden {
+        for control in [readingText as UIView, nameButton as UIView] where !control.isHidden {
             if let hit = control.hitTest(convert(point, to: control), with: event) { return hit }
         }
         return nil
     }
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
-        !readingButton.isHidden && readingButton.frame.contains(touch.location(in: self))
-    }
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool { true }
-    @objc private func accessibilityCopy() -> Bool { copyReading(); return !rawReading.isEmpty }
     @objc private func openDetails() { choose?() }
-    @objc private func longPress(_ gesture: UILongPressGestureRecognizer) {
-        if gesture.state == .began { copyReading() }
-    }
-    func copyReading() {
-        guard !rawReading.isEmpty else { return }
-        UIPasteboard.general.string = rawReading
-        #if DEBUG
-        // XCTest waits for MapKit to idle, which can outlast the one-second hint.
-        if ProcessInfo.processInfo.arguments.contains("--ui-fixture") { readingButton.accessibilityValue = UIPasteboard.general.string }
-        #endif
-        copied()
-        UIAccessibility.post(notification: .announcement, argument: ui("已複製讀音"))
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-    }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
         self.choose = choose; rawReading = point.copyText ?? point.reading
         nameButton.setTitle(point.name, for: .normal)
@@ -178,21 +157,21 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
                 text.append(NSAttributedString(attachment: attachment))
             } else { text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: UIColor.label])) }
         }
-        readingButton.setAttributedTitle(text, for: .normal)
-        readingButton.accessibilityIdentifier = "map-reading-" + point.id
-        readingButton.accessibilityLabel = point.reading
-        readingButton.accessibilityHint = ui("長按複製讀音")
-        readingButton.isHidden = point.reading.isEmpty
+        readingText.attributedText = text
+        readingText.setContentOffset(.zero, animated: false)
+        readingText.accessibilityIdentifier = "map-reading-" + point.id
+        readingText.accessibilityLabel = point.reading
+        readingText.isHidden = point.reading.isEmpty
         let nameButtonSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
         let readingRect = text.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
         let nameWidth: CGFloat = nameButtonSize.width + 12, nameHeight: CGFloat = max(nameButtonSize.height, CGFloat(labelSize) * 1.4)
         let readingWidth: CGFloat = min(268, ceil(readingRect.width) + 8)
-        let readingHeight: CGFloat = point.reading.isEmpty ? 0 : ceil(readingRect.height) + 8
+        let readingHeight: CGFloat = point.reading.isEmpty ? 0 : min(180, ceil(readingRect.height) + 8)
         let width = max(nameWidth, readingWidth)
         bounds = CGRect(x: 0, y: 0, width: width, height: nameHeight + readingHeight)
         nameButton.frame = CGRect(x: (width-nameWidth)/2, y: readingHeight, width: nameWidth, height: nameHeight)
-        readingButton.frame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
-        blur.frame = readingButton.frame; blur.isHidden = readingButton.isHidden
+        readingText.frame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
+        blur.frame = readingText.frame; blur.isHidden = readingText.isHidden
         gradient.frame = nameButton.bounds
         collisionMode = .rectangle
     }

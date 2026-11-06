@@ -54,24 +54,31 @@ struct FavoriteSettingsSection: View {
 extension NotebookArchive {
     mutating func merge(_ incoming: Self) {
         var mapped = [UUID: UUID]()
+        var bookByName = Dictionary(books.map { ($0.name, $0.id) }, uniquingKeysWith: { a, _ in a })
+        var bookIDs = Set(books.map(\.id))
+        var entryIDs = Set(entries.map(\.id))
+        var entryByContent = Dictionary(entries.enumerated().map { (ReadingContentKey($0.element.reading), $0.offset) }, uniquingKeysWith: { a, _ in a })
         for book in incoming.books {
-            if let existing = books.first(where: { $0.name == book.name }) { mapped[book.id] = existing.id }
+            if let existing = bookByName[book.name] { mapped[book.id] = existing }
             else {
-                let id = books.contains(where: { $0.id == book.id }) ? UUID() : book.id
+                let id = bookIDs.contains(book.id) ? UUID() : book.id
                 books.append(VocabularyBook(id: id, name: book.name)); mapped[book.id] = id
+                bookByName[book.name] = id; bookIDs.insert(id)
             }
         }
         for entry in incoming.entries {
             let membership = Set(entry.membership.compactMap { mapped[$0] })
-            if let i = entries.firstIndex(where: { ReadingContentKey($0.reading) == ReadingContentKey(entry.reading) }) {
+            if let i = entryByContent[ReadingContentKey(entry.reading)] {
                 entries[i].books = entries[i].membership.union(membership)
                 if !entry.note.isEmpty && !entries[i].note.contains(entry.note) {
                     entries[i].note = entries[i].note.isEmpty ? entry.note : entries[i].note + "\n" + entry.note
                 }
             } else {
                 var next = entry
-                if entries.contains(where: { $0.id == next.id }) { next.id = UUID() }
-                next.books = membership; entries.append(next)
+                if entryIDs.contains(next.id) { next.id = UUID() }
+                next.books = membership
+                entryIDs.insert(next.id); entryByContent[ReadingContentKey(next.reading)] = entries.count
+                entries.append(next)
             }
         }
     }

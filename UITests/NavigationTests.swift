@@ -8,8 +8,7 @@ final class NavigationTests: XCTestCase {
         app.buttons["查詢"].tap()
         let ipa = app.descendants(matching: .any).matching(identifier: "dictionary-reading-示例語言點").firstMatch
         XCTAssertTrue(ipa.waitForExistence(timeout: 8))
-        ipa.press(forDuration: 0.55)
-        XCTAssertEqual(app.staticTexts["dictionaryCopyStatus"].label, "已複製到剪貼板")
+        XCTAssertFalse(app.staticTexts["dictionaryCopyStatus"].exists)
         app.buttons["dictionaryLanguageSelection"].tap()
         app.segmentedControls.buttons["行政區"].tap()
         app.buttons["check-北京"].tap()
@@ -183,10 +182,9 @@ final class NavigationTests: XCTestCase {
         let input = app.textFields["請輸入漢字"]
         input.tap(); input.typeText("中")
         app.buttons["查字"].tap()
-        let reading = app.buttons["map-reading-" + String(repeating: "a", count: 24)]
+        let reading = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
         XCTAssertTrue(reading.waitForExistence(timeout: 10))
-        reading.press(forDuration: 0.8)
-        XCTAssertEqual(reading.value as? String, "tɕiɔŋ1", "The native long press must write the actual reading to the pasteboard")
+        XCTAssertTrue(reading.isHittable)
         // Resolve a fresh accessibility element after the label changes. The simulator
         // can retain the toast snapshot while querying a cached XCUIElement.
         let restored = app.staticTexts.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
@@ -210,11 +208,10 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("一中")
         app.buttons["查詢"].tap()
-        let unicode = app.buttons["characterUnicode"]
+        let unicode = app.staticTexts["characterUnicode"]
         XCTAssertTrue(unicode.waitForExistence(timeout: 8))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "基本 1.1")).firstMatch.waitForExistence(timeout: 5))
-        unicode.press(forDuration: 0.6)
-        XCTAssertEqual(app.staticTexts["dictionaryCopyStatus"].label, "已複製到剪貼板")
+        XCTAssertFalse(app.staticTexts["dictionaryCopyStatus"].exists)
         if app.navigationBars.buttons["完成"].exists { app.navigationBars.buttons["完成"].tap() }
         app.buttons["說文"].tap()
         XCTAssertTrue(app.navigationBars["說文"].waitForExistence(timeout: 5))
@@ -222,7 +219,7 @@ final class NavigationTests: XCTestCase {
         app.buttons["中"].tap()
         app.buttons["characterMap"].tap()
         XCTAssertTrue(app.tabBars.buttons["地圖"].isSelected)
-        let mark = app.buttons["map-reading-" + String(repeating: "a", count: 24)]
+        let mark = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
         XCTAssertTrue(mark.waitForExistence(timeout: 8))
         XCTAssertEqual(mark.label, "tɕiɔŋ1")
     }
@@ -238,7 +235,7 @@ final class NavigationTests: XCTestCase {
             let field = app.textFields[hint]
             field.tap(); field.typeText(value); app.buttons["查字"].tap()
         }
-        let mark = app.buttons["map-reading-" + String(repeating: "a", count: 24)]
+        let mark = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
         query("請輸入漢字", "中输")
         XCTAssertTrue(app.buttons["輸"].waitForExistence(timeout: 8))
         app.buttons["輸"].tap()
@@ -306,7 +303,7 @@ final class NavigationTests: XCTestCase {
         app.textFields["請輸入漢字"].tap(); app.textFields["請輸入漢字"].typeText("中")
         app.buttons["mapLanguageSelection"].tap(); app.segmentedControls.buttons["語言"].tap()
         app.buttons["selectAllLanguages"].tap(); app.buttons["finishLanguages"].tap()
-        XCTAssertTrue(app.buttons["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
     }
     @MainActor func testDownloadsPushAndReferenceOptionsSheet() throws {
         let app = XCUIApplication()
@@ -325,7 +322,7 @@ final class NavigationTests: XCTestCase {
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
         app.buttons["查詢"].tap()
         XCTAssertTrue(app.staticTexts["dictionaryHeadword"].waitForExistence(timeout: 8))
-        XCTAssertFalse(app.buttons["characterUnicode"].exists)
+        XCTAssertFalse(app.staticTexts["characterUnicode"].exists)
     }
 
 }

@@ -37,7 +37,6 @@ struct CharacterReferenceHeader: View {
     let character: String
     let show: (ReferencePage) -> Void
     let map: () -> Void
-    let copy: (String) -> Void
     @State private var loaded: CharacterReference?
     @State private var moreInformation = false
     @AppStorage(ReferencePreferences.key) private var raw = ""
@@ -73,10 +72,8 @@ struct CharacterReferenceHeader: View {
                         ForEach(settings.order.filter { !settings.hidden.contains($0) }, id: \.self) { item in
                             if item == "Unicode" {
                                 let code = (data ?? CharacterReference(character: character)).code
-                                Button(code) { if let data { show(.init(data: data, book: nil)) } }
-                                    .simultaneousGesture(LongPressGesture().onEnded { _ in copy(code) })
+                                Text(code).foregroundStyle(AppAccent.color).textSelection(.enabled)
                                     .accessibilityIdentifier("characterUnicode")
-                                    .accessibilityAction(named: Text(ui("複製"))) { copy(code) }
                             } else if item == "地圖" {
                                 Button(action: map) { Text("🌍") }.accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("characterMap")
                             } else if let data, data.values[item] != nil {

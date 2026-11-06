@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SelectionTree: View {
+    @EnvironmentObject var model: AppModel
     @Environment(\.tableDownloadStates) private var downloadStates
     @Environment(\.mapLabelSize) private var mapLabelSize
     let tables: [TablePackage]
@@ -30,7 +31,7 @@ struct SelectionTree: View {
                     }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + row.node.title).accessibilityIdentifier("check-" + row.node.title)
                         .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
                     if let table = row.node.table {
-                        Button { if let inspect { inspect(table) } else { toggle(row) } } label: {
+                        Button { if let inspect { inspect(table) } else { model.tableDetail = table } } label: {
                             LanguageBadge(name: table.name, table: table, grouping: badgeGrouping ?? grouping).frame(minHeight: 44).contentShape(Rectangle())
                         }.buttonStyle(.plain)
                         Spacer()
@@ -43,12 +44,12 @@ struct SelectionTree: View {
                             if !expanded.insert(row.id).inserted { expanded.remove(row.id) }
                             refreshRows()
                         } label: {
-                            HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)).font(mapLabelSize.map { Font.system(size: $0) }); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }.contentShape(Rectangle())
+                            HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }.contentShape(Rectangle())
                         }.buttonStyle(.plain).accessibilityIdentifier("expand-" + row.node.title)
                             .accessibilityValue(expanded.contains(row.id) ? "expanded" : "collapsed")
                     } else {
                         Button { toggle(row) } label: {
-                            HStack { Text(ui(row.node.title)).font(mapLabelSize.map { Font.system(size: $0) }); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }
+                            HStack { Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }
                         }.buttonStyle(.plain)
                     }
                 }.padding(.leading, CGFloat(row.node.depth) * 18).padding(.vertical, 4)
@@ -199,7 +200,6 @@ struct FavoriteButton: View {
 
 struct HomophoneResultsView: View {
     @AppStorage("dictionaryPalette") private var palette = "atlas"
-    let copy: (String) -> Void
     @EnvironmentObject var model: AppModel
     private var groups: [[Reading]] { model.homophoneGroups() }
     var body: some View {
@@ -208,7 +208,7 @@ struct HomophoneResultsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Button { model.tableDetail = model.table(named: first.language) } label: { LanguageBadge(name: first.language, table: model.table(named: first.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
                     PronunciationView(raw: first.pronunciation, table: model.table(named: first.language)).font(.title3)
-                        .contentShape(Rectangle()).simultaneousGesture(LongPressGesture().onEnded { _ in copy(first.pronunciation) })
+                        .textSelection(.enabled)
                     ForEach(rows) { row in
                         HStack(alignment: .top) {
                             FavoriteButton(reading: row)
