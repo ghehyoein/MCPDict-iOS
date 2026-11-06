@@ -12,6 +12,8 @@ struct SavedReading: Identifiable, Codable {
     var id = UUID()
     let reading: Reading
     var note = ""
+    var books: Set<UUID>? = nil
+    var membership: Set<UUID> { books ?? [VocabularyBook.original.id] }
 }
 
 @MainActor
@@ -27,7 +29,16 @@ final class AppModel: ObservableObject {
     @Published var resultCharacters = [String]()
     @Published var downloading = false
     @Published var downloadedCount = 0
-    @Published var favorites = [SavedReading]() { didSet { savedKeys = Set(favorites.map { ReadingContentKey($0.reading) }) } }
+    @Published private(set) var notebook = NotebookArchive() {
+        didSet { savedMemberships = notebook.entries.reduce(into: [:]) { $0[ReadingContentKey($1.reading)] = $1.membership } }
+    }
+    var favorites: [SavedReading] {
+        get { notebook.entries }
+        set { notebook.entries = newValue }
+    }
+    var visibleFavorites: [SavedReading] {
+        favorites.filter { !$0.membership.isDisjoint(with: notebook.selected) }
+    }
     @Published var query = ""
     @Published var mode: SearchMode = .character
     @Published var language = ""
@@ -43,12 +54,12 @@ final class AppModel: ObservableObject {
     private var updateTask: Task<Void, Never>?
     private let favoritesURL: URL
     private let selectionCache: LanguageSelectionCache
-    init(defaults: UserDefaults = .standard) {
+    init(defaults: UserDefaults = .standard, favoritesURL: URL? = nil) {
         selectionCache = LanguageSelectionCache(defaults: defaults)
         let repository = DictionaryRepository()
         self.repository = repository
         tableStore = TableStore(repository: repository)
-        favoritesURL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("favorites.json")
+        self.favoritesURL = favoritesURL ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("favorites.json")
     }
     func start() async {
         guard !started else { return }; started = true
@@ -76,9 +87,7 @@ final class AppModel: ObservableObject {
         // Remove the retired optional map-provider setting on upgrade.
         UserDefaults.standard.removeObject(forKey: "mapTilerKey")
         do {
-            if FileManager.default.fileExists(atPath: favoritesURL.path) {
-                favorites = try JSONDecoder().decode([SavedReading].self, from: Data(contentsOf: favoritesURL))
-            }
+            try restoreNotebook()
         } catch { self.error = "收藏讀取失敗：\(error.localizedDescription)" }
         do {
             try await tableStore.installBundledTablesIfNeeded()
@@ -202,8 +211,10 @@ final class AppModel: ObservableObject {
     }
     private var characterGroupCache = [String: [CharacterReadingGroup]]()
     private var homophoneCache: [[Reading]]?
-    private var savedKeys = Set<ReadingContentKey>()
-    func isSaved(_ reading: Reading) -> Bool { savedKeys.contains(ReadingContentKey(reading)) }
+    private var savedMemberships = [ReadingContentKey: Set<UUID>]()
+    func isSaved(_ reading: Reading) -> Bool {
+        !notebook.selected.isEmpty && notebook.selected.isSubset(of: savedMemberships[ReadingContentKey(reading)] ?? [])
+    }
     func characterGroups(_ character: String) -> [CharacterReadingGroup] {
         if let cached = characterGroupCache[character] { return cached }
         let groups = CharacterResults.groups(results, character: character)
@@ -222,24 +233,66 @@ final class AppModel: ObservableObject {
         homophoneCache = values
         return values
     }
-    func save(_ reading: Reading) {
-        guard !isSaved(reading) else { return }
-        let old = favorites
-        favorites.append(SavedReading(reading: reading))
-        if !persistFavorites() { favorites = old }
+    func restoreNotebook() throws {
+        if FileManager.default.fileExists(atPath: favoritesURL.path) {
+            notebook = try NotebookArchive.decode(Data(contentsOf: favoritesURL))
+        }
     }
-    func deleteFavorites(_ offsets: IndexSet) {
-        let old = favorites
-        favorites.remove(atOffsets: offsets)
-        if !persistFavorites() { favorites = old }
-    }
-    @discardableResult func persistFavorites() -> Bool {
+    @discardableResult private func changeNotebook(_ edit: (inout NotebookArchive) -> Void) -> Bool {
+        var next = notebook
+        edit(&next)
         do {
             try FileManager.default.createDirectory(at: favoritesURL.deletingLastPathComponent(), withIntermediateDirectories: true)
-            try JSONEncoder().encode(favorites).write(to: favoritesURL, options: .atomic)
+            try JSONEncoder().encode(next).write(to: favoritesURL, options: .atomic)
+            notebook = next
             return true
         } catch { self.error = "收藏儲存失敗：\(error.localizedDescription)"; return false }
     }
+    func save(_ reading: Reading, to targets: Set<UUID>? = nil) {
+        let targets = (targets ?? notebook.selected).intersection(notebook.books.map(\.id))
+        guard !targets.isEmpty else { error = "請先在生字本選擇或新建生字表"; return }
+        if targets.isSubset(of: savedMemberships[ReadingContentKey(reading)] ?? []) { return }
+        changeNotebook { next in
+            if let i = next.entries.firstIndex(where: { ReadingContentKey($0.reading) == ReadingContentKey(reading) }) {
+                next.entries[i].books = next.entries[i].membership.union(targets)
+            } else { next.entries.append(SavedReading(reading: reading, books: targets)) }
+        }
+    }
+    func setBookName(_ raw: String, id: UUID? = nil) {
+        let name = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty, !notebook.books.contains(where: { $0.id != id && $0.name == name }) else {
+            error = "請輸入非空且未使用的生字表名稱"; return
+        }
+        changeNotebook { next in
+            if let id, let i = next.books.firstIndex(where: { $0.id == id }) { next.books[i].name = name }
+            else if id == nil { let book = VocabularyBook(id: UUID(), name: name); next.books.append(book); next.selected = [book.id] }
+        }
+    }
+    func selectBooks(_ ids: Set<UUID>) { changeNotebook { $0.selected = ids.intersection($0.books.map(\.id)) } }
+    func deleteBooks(_ ids: Set<UUID>) { changeNotebook { $0.remove(ids) } }
+    func addFavorites(_ ids: Set<UUID>, to book: UUID) {
+        guard notebook.books.contains(where: { $0.id == book }) else { return }
+        changeNotebook { next in
+            for i in next.entries.indices where ids.contains(next.entries[i].id) {
+                next.entries[i].books = next.entries[i].membership.union([book])
+            }
+        }
+    }
+    func setNote(_ note: String, for id: UUID) {
+        changeNotebook { next in
+            if let i = next.entries.firstIndex(where: { $0.id == id }) { next.entries[i].note = note }
+        }
+    }
+    func removeVisibleFavorites(_ ids: Set<UUID>) {
+        changeNotebook { next in
+            for i in next.entries.indices where ids.contains(next.entries[i].id) {
+                next.entries[i].books = next.entries[i].membership.subtracting(next.selected)
+            }
+            next.entries.removeAll { $0.membership.isEmpty }
+        }
+    }
+    func deleteFavorites(_ offsets: IndexSet) { changeNotebook { $0.entries.remove(atOffsets: offsets) } }
+
 }
 
 struct RootView: View {

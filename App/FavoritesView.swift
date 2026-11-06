@@ -35,6 +35,7 @@ struct FavoritesView: View {
     @AppStorage("notebookCategories") private var stored = ""
     @State private var selection = Set<UUID>()
     @State private var selecting = false
+    @State private var showBooks = false
     private var categories: Set<NotebookCategory> {
         Set(stored.split(separator: "|").compactMap { NotebookCategory(rawValue: String($0)) })
     }
@@ -42,6 +43,14 @@ struct FavoritesView: View {
         NavigationStack {
             List {
                 Section {
+                    Button { showBooks = true } label: {
+                        HStack {
+                            Text(ui("生字表")); Spacer()
+                            Text(model.notebook.books.filter { model.notebook.selected.contains($0.id) }.map(\.title).joined(separator: "、"))
+                                .lineLimit(1).foregroundStyle(.secondary)
+                            Image(systemName: "chevron.right")
+                        }
+                    }.accessibilityIdentifier("chooseNotebooks")
                     HStack {
                         ForEach(NotebookCategory.allCases, id: \.self) { kind in
                             Button {
@@ -55,15 +64,20 @@ struct FavoritesView: View {
                     }
                     if selecting {
                         HStack {
-                            Button(ui("全選")) { selection = Set(model.favorites.map(\.id)) }
+                            Button(ui("全選")) { selection = Set(model.visibleFavorites.map(\.id)) }
                             Spacer()
                             Text(ui("已選 ") + String(selection.count))
+                            Menu(ui("加入生字表")) {
+                                ForEach(model.notebook.books) { book in Button(book.title) { model.addFavorites(selection, to: book.id) } }
+                            }.disabled(selection.isEmpty)
                             Button(ui("刪除"), role: .destructive) { remove(selection) }.disabled(selection.isEmpty)
                         }.buttonStyle(.borderless)
                     }
                 }
-                if model.favorites.isEmpty { Text(ui("點擊查詢結果旁的星號，即可加入生字本。")) }
-                ForEach(NotebookGroup.make(model.favorites, categories: categories)) { group in
+                if model.notebook.books.isEmpty { Text(ui("請先新建生字表。")) }
+                else if model.notebook.selected.isEmpty { Text(ui("請選擇要查看的生字表。")) }
+                else if model.visibleFavorites.isEmpty { Text(ui("點擊查詢結果旁的星號，即可加入所選生字表。")) }
+                ForEach(NotebookGroup.make(model.visibleFavorites, categories: categories)) { group in
                     Section {
                         ForEach(group.entries) { saved in
                             HStack(alignment: .top) {
@@ -77,22 +91,22 @@ struct FavoritesView: View {
                                 VStack(alignment: .leading) {
                                     ReadingView(reading: saved.reading)
                                     TextField(ui("個人筆記"), text: Binding(get: { saved.note }, set: { note in
-                                        if let i = model.favorites.firstIndex(where: { $0.id == saved.id }) {
-                                            model.favorites[i].note = note; model.persistFavorites()
-                                        }
+                                        model.setNote(note, for: saved.id)
                                     }), axis: .vertical)
                                 }
                             }
                         }.onDelete { indices in remove(Set(indices.map { group.entries[$0].id })) }
                     } header: { if !group.title.isEmpty { Text(verbatim: group.title).textCase(nil) } }
                 }
-            }.navigationTitle(ui("生字本")).toolbar {
+            }.sheet(isPresented: $showBooks) { BookPicker() }
+             .onChange(of: model.notebook.selected) { _, _ in selection = [] }
+             .navigationTitle(ui("生字本")).toolbar {
                 Button(ui(selecting ? "完成" : "多選")) { selecting.toggle(); selection = [] }
             }
         }
     }
     private func remove(_ ids: Set<UUID>) {
-        model.deleteFavorites(IndexSet(model.favorites.indices.filter { ids.contains(model.favorites[$0].id) }))
-        selection.formIntersection(Set(model.favorites.map(\.id)))
+        model.removeVisibleFavorites(ids)
+        selection.formIntersection(Set(model.visibleFavorites.map(\.id)))
     }
 }

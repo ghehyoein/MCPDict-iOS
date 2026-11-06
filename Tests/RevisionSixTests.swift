@@ -16,7 +16,7 @@ final class RevisionSixTests: XCTestCase {
         let reading = Reading(id: 1, characters: "輸", language: "甲", pronunciation: "su1", note: "運輸")
         model.save(reading); model.save(reading)
         XCTAssertEqual(model.favorites.count, 1)
-        let restored = try JSONDecoder().decode([SavedReading].self, from: Data(contentsOf: file))
+        let restored = try NotebookArchive.decode(Data(contentsOf: file)).entries
         XCTAssertEqual(restored.first?.reading, reading)
         model.deleteFavorites(IndexSet(integer: 0))
         XCTAssertTrue(model.favorites.isEmpty)
