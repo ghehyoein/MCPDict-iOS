@@ -40,7 +40,7 @@ struct CharacterResultsView: View {
                     VStack(alignment: .leading, spacing: 8) {
                         ForEach(group.readings) { reading in
                             VStack(alignment: .leading, spacing: 2) {
-                                HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).onLongPressGesture { copy(reading.pronunciation) } }
+                                HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).contentShape(Rectangle()).simultaneousGesture(LongPressGesture().onEnded { _ in copy(reading.pronunciation) }).accessibilityIdentifier("dictionary-reading-" + reading.language) }
                                 if !reading.note.isEmpty { Text(reading.note).font(.subheadline).foregroundStyle(.secondary) }
                             }
 

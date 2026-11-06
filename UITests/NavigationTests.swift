@@ -1,6 +1,27 @@
 import XCTest
 
 final class NavigationTests: XCTestCase {
+    @MainActor func testDictionaryResultSurvivesModeSwitchAndNotebookMultiselect() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
+        app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
+        app.buttons["查詢"].tap()
+        let ipa = app.descendants(matching: .any).matching(identifier: "dictionary-reading-示例語言點").firstMatch
+        XCTAssertTrue(ipa.waitForExistence(timeout: 8))
+        ipa.press(forDuration: 0.55)
+        XCTAssertEqual(app.staticTexts["dictionaryCopyStatus"].label, "已複製到剪貼板")
+        app.buttons["dictionaryLanguageSelection"].tap()
+        app.segmentedControls.buttons["行政區"].tap()
+        app.buttons["finishLanguages"].tap()
+        XCTAssertTrue(ipa.exists)
+        let star = app.buttons["加入生字本"].firstMatch
+        if star.exists { star.tap() }
+        app.tabBars.buttons["生字本"].tap()
+        app.buttons["語言"].tap(); app.buttons["發音"].tap(); app.buttons["單字"].tap()
+        app.buttons["多選"].tap(); app.buttons["全選"].tap()
+        XCTAssertTrue(app.staticTexts["已選 1"].exists)
+        XCTAssertTrue(app.staticTexts["發音 · tɕiɔŋ1"].exists)
+    }
     @MainActor func testTreeSelectionBlankStartAndSettings() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()

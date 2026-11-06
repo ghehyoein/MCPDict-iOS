@@ -84,7 +84,7 @@ struct FavoritesView: View {
                                 }
                             }
                         }.onDelete { indices in remove(Set(indices.map { group.entries[$0].id })) }
-                    } header: { if !group.title.isEmpty { Text(verbatim: group.title) } }
+                    } header: { if !group.title.isEmpty { Text(verbatim: group.title).textCase(nil) } }
                 }
             }.navigationTitle(ui("生字本")).toolbar {
                 Button(ui(selecting ? "完成" : "多選")) { selecting.toggle(); selection = [] }

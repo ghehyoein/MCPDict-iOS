@@ -145,7 +145,7 @@ struct HomophoneResultsView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Button { info = model.table(named: first.language) } label: { LanguageBadge(name: first.language, table: model.table(named: first.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
                     PronunciationView(raw: first.pronunciation, table: model.table(named: first.language)).font(.title3)
-                        .onLongPressGesture { copy(first.pronunciation) }
+                        .contentShape(Rectangle()).simultaneousGesture(LongPressGesture().onEnded { _ in copy(first.pronunciation) })
                     ForEach(rows) { row in
                         HStack(alignment: .top) {
                             FavoriteButton(reading: row)
