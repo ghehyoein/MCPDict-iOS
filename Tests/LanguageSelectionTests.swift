@@ -40,20 +40,25 @@ final class LanguageSelectionTests: XCTestCase {
         XCTAssertEqual(tables.filter(LanguageFlags(island: true, history: true).matches).map(\.name), ["甲"])
         XCTAssertEqual(tables.filter(LanguageFlags(history: true).matches).map(\.name), ["甲","丙"])
     }
-    func testAdministrativeGroupsSkipEmptyLevelsAndHideMixedLeaves() throws {
-        func table(_ name: String, _ path: [String]) throws -> TablePackage {
+    func testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing() throws {
+        func table(_ name: String, _ metadata: [String:String]) throws -> TablePackage {
             var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(UITestFixtures.catalog.tables[0])) as? [String: Any])
-            json["id"] = name; json["name"] = name; json["administrative"] = path
+            json["id"] = name; json["name"] = name; json["metadata"] = metadata
+            json["administrative"] = ["省","市","縣","鎮","村"].compactMap { metadata[$0] }.filter { !$0.isEmpty }
             return try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: json))
         }
-        let shallow = try table("直屬點", ["北京", "", "東城"])
-        let deep = try table("街道點", ["北京", "／", "東城", "示例街道"])
-        let index = SelectionIndex(tables: [deep,shallow], grouping: .administrative)
+        let direct = try table("直屬點", ["省":"北京","鎮":"某街道"])
+        let a = try table("甲", ["省":"北京","市":"","縣":"東城","鎮":"示例街道"])
+        let b = try table("乙", ["省":"北京","市":"／","縣":"東城","村":"某村"])
+        let c = try table("丙", ["省":"廣西","市":"南寧","縣":"上林","鎮":"白墟","村":"龍寶"])
+        XCTAssertEqual(TableGrouping.administrative.path(c), ["廣西","南寧","上林"])
+        let index = SelectionIndex(tables: [direct,a,b], grouping: .administrative)
         let rows = index.rows(expanded: Set(index.nodes.keys), matching: nil, scope: .administrativeGroups)
-        XCTAssertEqual(rows.map(\.node.title), ["北京","東城","示例街道"])
-        XCTAssertEqual(rows[1].ids, [deep.id,shallow.id])
-        XCTAssertTrue(rows[1].expandable)
-        XCTAssertFalse(rows[2].expandable)
+        XCTAssertEqual(rows.map(\.node.title), ["北京","東城"])
+        XCTAssertEqual(rows[0].ids, [direct.id,a.id,b.id])
+        XCTAssertEqual(rows[1].ids, [a.id,b.id])
+        XCTAssertTrue(rows[0].expandable)
+        XCTAssertFalse(rows[1].expandable)
         XCTAssertTrue(rows.allSatisfy { $0.node.table == nil })
     }
     @MainActor func testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection() throws {
