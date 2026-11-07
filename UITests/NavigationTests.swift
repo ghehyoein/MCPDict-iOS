@@ -394,12 +394,12 @@ final class NavigationTests: XCTestCase {
         app.tabBars.buttons["地圖"].tap()
         XCTAssertTrue(app.segmentedControls.buttons["分區"].isSelected)
         XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
-        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "音典分區")
+        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "1")
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "共用語言選單及原生地音開關"; picture.lifetime = .keepAlways; add(picture)
         app.buttons["finishLanguages"].tap()
         app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
         XCTAssertTrue(app.segmentedControls.buttons["語言"].isSelected)
-        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "音典分區")
+        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "1")
         XCTAssertFalse(app.buttons["finishLanguages"].exists)
     }
     @MainActor func testNativeTextSelectionAndDefaultBookNavigation() throws {
@@ -407,7 +407,8 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--long-results-fixture"]; app.launch()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中"); app.buttons["查詢"].tap()
         let note = app.textViews.matching(NSPredicate(format: "label BEGINSWITH %@", "完整注釋內容")).firstMatch
-        XCTAssertTrue(note.waitForExistence(timeout: 8)); note.press(forDuration: 1.2)
+        XCTAssertTrue(note.waitForExistence(timeout: 8))
+        note.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.12)).press(forDuration: 1.2)
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "原生文字選區及系統選單"; picture.lifetime = .keepAlways; add(picture)
         let copy = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Copy", "拷貝", "拷贝", "複製", "复制"])).firstMatch
         XCTAssertTrue(copy.waitForExistence(timeout: 4))
