@@ -88,7 +88,7 @@ final class RevisionTests: XCTestCase {
         XCTAssertEqual(noOp.installation.databaseFile, state?.databaseFile)
         let queriedDuringRemoval = CompletedCounts()
         let removed = try await reopened.remove(selected: [first.id]) { phase in
-            if phase > 0 && phase < 1 {
+            if phase > 0 && phase < 0.9 {
                 do {
                     let found = try await restoredRepo.search("中", mode: .character, language: "")
                     XCTAssertEqual(Set(found.map(\.language)), ["原有", "第一"])

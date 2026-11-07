@@ -118,7 +118,7 @@ actor DictionaryRepository {
 
     func clear(commitPointer: () throws -> Void) throws {
         try commitPointer()
-        connection = nil
+        connection = nil; activeURL = nil
         statisticsCache = [:]
     }
 
