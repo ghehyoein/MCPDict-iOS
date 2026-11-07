@@ -1,0 +1,242 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "2CD8F6AB-02D3-4DAA-831B-6459B69CCCF3.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖文字原生選取_0_4A030D89-9F87-4C57-85D8-17F66DA25345.png",
+        "timestamp" : 1794068913.62
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "CD5831A9-C82F-46B8-BCDA-5BA7E6EE5C8D.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "原生文字選區及系統選單_0_C257439A-6FEA-4B72-8E43-EE6FEC516273.png",
+        "timestamp" : 1794068929.705
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "F4AD88B7-0F97-4737-8505-7C57CC5885C2.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "生字本滾動後浮動操作_0_BD158640-A23F-488A-8C62-4818B31AD9EA.png",
+        "timestamp" : 1794068965.62
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "919B101F-DA41-4C8B-ACD4-0A6D67770487.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "滾動後固定選字區及頂部遮罩_0_B726FBEA-9E63-445F-91A3-7FD6FB40AD58.png",
+        "timestamp" : 1794068988.01
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "73ED6595-0EC7-4B7B-A5DA-DFF4E4070F24.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "末級邯彰直接補入贊皇_0_0BC0D29A-3413-4223-92E8-2EC71E3966D8.png",
+        "timestamp" : 1794069036.552
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "C9BD913A-F364-4DD0-AD2A-59DE7E2C3723.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "南通補入潤州過渡色子目錄_0_EB8B3EC1-654F-4D57-9968-54A2A3B07D0A.png",
+        "timestamp" : 1794069012.288
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "B2E4E9E1-6F95-47A3-A62C-7FD0328DB19E",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-07 at 04.31.40 PM",
+        "timestamp" : 1794069100.864
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "E829E089-B3BC-4D5B-B7DE-C6660CB7F217",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.41 PM",
+        "timestamp" : 1794069101.153
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "4029E1DE-DE23-4B07-9822-E58B6A84072A",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-07 at 04.31.37 PM",
+        "timestamp" : 1794069097.978
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "68B5603A-84E4-4BA0-89CF-0EA6D2B5EEC9",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.38 PM",
+        "timestamp" : 1794069098.274
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "8DF494D4-DF55-4059-B961-4922558DA652",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-07 at 04.31.37 PM",
+        "timestamp" : 1794069097.423
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "342A2ACF-DB14-4A84-AB7B-52B73176DA01",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.37 PM",
+        "timestamp" : 1794069097.743
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "5D9C1349-A6CA-41EE-9A6B-90C6A7991F06.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "共用語言選單及原生地音開關_0_0D93F4CE-6B0B-472B-B4D6-FF23DF1FFC17.png",
+        "timestamp" : 1794069097.173
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "070829F8-4045-4AFD-99D9-C60A0F528E53",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.28 PM",
+        "timestamp" : 1794069088.822
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "607BF18D-47CD-4C48-B267-A3E71F1F502F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.27 PM",
+        "timestamp" : 1794069087.372
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "23C3785E-AAEC-4903-9CF1-3F50A31FC07C",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.24 PM",
+        "timestamp" : 1794069084.682
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "A5BA4158-9483-4B28-AAF6-BD3074DF21B1",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.24 PM",
+        "timestamp" : 1794069084.054
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "6253FE73-346C-4998-93ED-8C3CE957E142",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.22 PM",
+        "timestamp" : 1794069082.745
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "385C83FB-AA96-4565-AA0D-53FAC7E378D3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 04.31.21 PM",
+        "timestamp" : 1794069081.092
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "E7C9A926-ABB5-4406-BFC3-78754349420B.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-07 at 04.31.14 PM.mp4",
+        "timestamp" : 1794069074.856
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "33AD79EC-AED0-47F3-8754-D4B452A5AE91.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_2AF89C99-565C-499C-9A25-D53427127C28.png",
+        "timestamp" : 1794069141.52
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "5F1E8D24-ADDC-4B8F-89A1-B34361C78C8F",
+        "deviceName" : "MCPDict-iPhone-13-26.2",
+        "exportedFileName" : "AF1F3F97-9094-493B-9D4F-5F8AA1161AAC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_B18D501C-E8A3-4680-ADA9-C4D53EB60A59.png",
+        "timestamp" : 1794069138.226
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  }
+]
