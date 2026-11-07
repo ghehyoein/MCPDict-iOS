@@ -51,6 +51,7 @@ struct LanguageSelectionPanel: View {
             HStack(spacing: 10) {
                 flagButton("方言島", $state.flags.island)
                 flagButton("歷史音", $state.flags.history)
+                if state.kind == .region && state.grouping == .dictionary { TransitionToggle(state: state) }
                 Spacer(minLength: 0)
                 PaletteSwitch()
                 Button { paletteInfo = true } label: { Image(systemName: "info.circle").foregroundStyle(.blue) }
@@ -83,5 +84,18 @@ struct LanguageSelectionPanel: View {
     }
     private func restoreMode() {
         names = (cache.load(state.key) ?? []).intersection(Set(state.scope.eligible(tables, grouping: state.grouping).map(\.name)))
+    }
+}
+
+struct TransitionToggle: View {
+    @ObservedObject var state: LanguageSelectionState
+    var body: some View {
+        Button { state.includeTransitions.toggle() } label: {
+            HStack(spacing: 0) {
+                Image(systemName: state.includeTransitions ? "checkmark.square.fill" : "square")
+                Text(ui("過渡色"))
+            }.fixedSize().contentTransition(.identity)
+                .transaction { $0.animation = nil; $0.disablesAnimations = true }
+        }.buttonStyle(.borderless).accessibilityIdentifier("includeDictionaryTransitions")
     }
 }

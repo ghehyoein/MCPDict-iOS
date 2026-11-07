@@ -33,7 +33,7 @@ struct FavoriteSettingsSection: View {
             Picker(ui("點擊收藏星號"), selection: $action) {
                 Text(ui("詢問加入哪些生字表")).tag("ask")
                 Text(ui("直接加入預設字表")).tag("direct")
-            }.pickerStyle(.navigationLink)
+            }.pickerStyle(.menu)
             if action == "direct" {
                 NavigationLink(ui("設定預設字表")) { DefaultFavoriteBooksView() }
             }

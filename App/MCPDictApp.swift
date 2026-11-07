@@ -168,17 +168,41 @@ final class AppModel: ObservableObject {
             hasMore = false
         } catch { self.error = error.localizedDescription }
     }
+    func resetSettings() {
+        let defaults = selectionCache.defaults
+        let keys = ["appearance", "uiLanguage", AppTypography.interfaceKey, AppTypography.mapKey,
+                    AppTypography.readingKey, "toneStyle", "pitchStyle", "colorScheme", "dictionaryPalette",
+                    "mapPalette", "baseMapStyle", "preferredMapApp", ReferencePreferences.key]
+        let prefixes = ["languageSelection.", "selectionMode.", "grouping.", "roles.", "regionNode.", "island.", "history.", "transitions."]
+        for key in defaults.dictionaryRepresentation().keys where keys.contains(key) || prefixes.contains(where: key.hasPrefix) {
+            defaults.removeObject(forKey: key)
+        }
+        languageSelection.resetDefaults()
+        selectedLanguages = nil; language = ""
+        query = ""; mode = .character; generation += 1; searching = false
+        results = []; resultCharacters = []; hasMore = false; lastSearch = nil; mapHandoff = nil
+        settingsRevision += 1
+    }
+    @Published var settingsRevision = 0
+    func downloadableIDs(_ selection: Set<String>) -> Set<String> {
+        selection.intersection(Set(catalog?.tables.filter { downloadStates[$0.id] != .downloaded }.map(\.id) ?? []))
+    }
     func loadCatalog() async {
         guard !updating else { return }
         updating = true
-        defer { updating = false }
         status = "正在取得字表目錄…"
-        do {
-            catalog = try await tableStore.catalog()
-            status = "目錄已更新 · 已下載 \(installed?.tables.count ?? 0) 份字表"
-        } catch { status = "檢查失敗，現有資料仍可使用"; self.error = error.localizedDescription }
+        let task = Task {
+            defer { updating = false; updateTask = nil }
+            do {
+                catalog = try await tableStore.catalog()
+                status = "目錄已更新 · 已下載 \(installed?.tables.count ?? 0) 份字表"
+            } catch { status = "檢查失敗，現有資料仍可使用"; self.error = error.localizedDescription }
+        }
+        updateTask = task
+        await task.value
     }
     func downloadTables(_ selection: Set<String>) {
+        let selection = downloadableIDs(selection)
         guard !updating, !selection.isEmpty, let catalog else { return }
         updating = true; downloading = true; downloadedCount = 0; tableProgress = 0
         status = "正在下載字表…"
@@ -381,14 +405,14 @@ struct RootView: View {
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
     var body: some View {
         TabView(selection: $model.activeTab) {
-            SearchView().tag(0).tabItem { Label(ui("字典"), systemImage: "character.book.closed") }
+            SearchView().tag(0).tabItem { Label { Text(ui("字典")) } icon: { Image(uiImage: DictionaryTabIcon.image) } }
             FavoritesView().tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
             DialectMapView().tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
             SettingsView().tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
         .environmentObject(model.languageSelection)
         .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
-        .id(uiLanguage)
+        .id(uiLanguage + String(model.settingsRevision))
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
         .dynamicTypeSize(AppTypography.size(fontSize))
         .tint(AppAccent.color)
