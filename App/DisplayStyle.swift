@@ -152,7 +152,7 @@ struct PronunciationView: View {
         }
     }
     private var content: some View {
-        SystemText(ToneDisplay.text(raw, table: table, style: style, pitch: pitch), pointSize: pointSize.map(CGFloat.init),
+        SystemText(ToneDisplay.text(raw, table: table, style: style, pitch: pitch), pointSize: pointSize.map { CGFloat($0) },
                    parts: ToneDisplay.parts(raw, table: table, style: style, pitchStyle: pitch), smallerPitch: pitch == "number")
             .fixedSize(horizontal: true, vertical: false)
     }
