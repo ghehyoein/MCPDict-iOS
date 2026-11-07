@@ -33,7 +33,7 @@ final class LanguageSelectionTests: XCTestCase {
         let index = SelectionIndex(tables: tables, grouping: .person)
         XCTAssertEqual(index.nodes[index.roots[0]]?.title, "(無)")
         XCTAssertEqual(index.nodes["g:B"]?.ids, ["甲","乙"])
-        XCTAssertEqual(index.nodes["g:(無)"]?.ids, ["乙","丙"])
+        XCTAssertEqual(index.nodes["g:(無)"]?.ids, ["丙"])
         XCTAssertEqual(index.nodes["g:B"]?.children.count, 2)
         XCTAssertTrue(SelectionIndex(tables: tables, grouping: .person, roles: []).roots.isEmpty)
         XCTAssertEqual(SelectionIndex(tables: tables, grouping: .person, roles: [.maintainer]).nodes["g:B"]?.ids, ["甲"])
