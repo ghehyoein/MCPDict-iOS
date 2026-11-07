@@ -21,6 +21,7 @@ import SwiftUI
         defaults.set(flags.history, forKey: "history." + namespace)
     } }
     @Published var roles = Set(PersonRole.allCases) { didSet { defaults.set(roles.map(\.rawValue), forKey: "roles." + key) } }
+    @Published var includeTransitions = false { didSet { defaults.set(includeTransitions, forKey: "transitions." + namespace) } }
     @Published var filter = ""
     @Published var expandedNodes = Set<String>()
     @Published var region: String? { didSet { defaults.set(region, forKey: "regionNode." + key + grouping.rawValue) } }
@@ -31,12 +32,13 @@ import SwiftUI
         self.namespace = namespace; self.defaults = defaults
         kind = defaults.string(forKey: "selectionMode." + namespace).flatMap(MapSearchKind.init(rawValue:)) ?? .language
         flags = LanguageFlags(island: defaults.bool(forKey: "island." + namespace), history: defaults.bool(forKey: "history." + namespace))
+        includeTransitions = defaults.bool(forKey: "transitions." + namespace)
         restoreControls()
     }
     #if DEBUG
     func resetFixture() {
         expanded = false; kind = .language; grouping = .atlas
-        flags = LanguageFlags(); roles = Set(PersonRole.allCases)
+        flags = LanguageFlags(); roles = Set(PersonRole.allCases); includeTransitions = false
         filter = ""; expandedNodes = []; region = nil
     }
     #endif

@@ -110,6 +110,7 @@ final class AppModel: ObservableObject {
                     }
                     selectionCache.defaults.removeObject(forKey: "island." + namespace)
                     selectionCache.defaults.removeObject(forKey: "history." + namespace)
+                    selectionCache.defaults.removeObject(forKey: "transitions." + namespace)
                 }
             }
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") { languageSelection.resetFixture() }

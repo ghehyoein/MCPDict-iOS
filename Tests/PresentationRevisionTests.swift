@@ -9,15 +9,18 @@ final class PresentationRevisionTests: XCTestCase {
         let shared = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
         shared.kind = .region; shared.grouping = .dictionary
         shared.flags = LanguageFlags(island: true, history: true)
+        shared.includeTransitions = true
         let downloads = LanguageSelectionState(namespace: "downloads", defaults: defaults)
         XCTAssertEqual(downloads.kind, .language)
         XCTAssertEqual(downloads.grouping, .atlas)
         XCTAssertFalse(downloads.flags.history)
+        XCTAssertFalse(downloads.includeTransitions)
         let restored = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
         XCTAssertEqual(restored.kind, .region)
         XCTAssertEqual(restored.grouping, .dictionary)
         XCTAssertEqual(restored.groupingChoices, [.atlas, .dictionary])
         XCTAssertTrue(restored.flags.history && restored.flags.island)
+        XCTAssertTrue(restored.includeTransitions)
         restored.kind = .language; restored.grouping = .person; restored.roles = [.editor]
         restored.kind = .region
         XCTAssertEqual(restored.grouping, .dictionary)
