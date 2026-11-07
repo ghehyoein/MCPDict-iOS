@@ -8,6 +8,29 @@ final class MapTests: XCTestCase {
         XCTAssertEqual(TableLocation.parse(" -73.5， 45.5 ")?.longitude, -73.5)
         for invalid in ["", "113", "a,23", "113,NaN", "181,23", "113,91", "1,2,3"] { XCTAssertNil(TableLocation.parse(invalid), invalid) }
     }
+    @MainActor func testAutomaticMapFitLimitsDenseResultsAndKeepsSpreadOutPointsVisible() throws {
+        func point(_ longitude: Double, _ latitude: Double) -> DialectPoint {
+            DialectPoint(id: "\(longitude),\(latitude)", name: "點", longitude: longitude, latitude: latitude, color: "#008080", reading: "")
+        }
+        for viewport in [CGSize(width: 390, height: 700), CGSize(width: 700, height: 390)] {
+            for latitude in [23.0, 45.0] {
+                for points in [[point(113, latitude)], [point(113, latitude), point(113.01, latitude + 0.01)]] {
+                    let rect = try XCTUnwrap(NativeDialectMap.Coordinator.automaticMapRect(points: points, viewport: viewport))
+                    let north = MKMapPoint(x: rect.midX, y: rect.minY).coordinate
+                    let south = MKMapPoint(x: rect.midX, y: rect.maxY).coordinate
+                    let distance = CLLocation(latitude: north.latitude, longitude: north.longitude).distance(from: CLLocation(latitude: south.latitude, longitude: south.longitude))
+                    XCTAssertEqual(distance, 500_000, accuracy: 5_000)
+                    XCTAssertEqual(rect.width / rect.height, viewport.width / viewport.height, accuracy: 0.001)
+                }
+            }
+            let points = [point(80, 22), point(130, 50)]
+            let rect = try XCTUnwrap(NativeDialectMap.Coordinator.automaticMapRect(points: points, viewport: viewport))
+            for item in points {
+                XCTAssertTrue(rect.contains(MKMapPoint(CLLocationCoordinate2D(latitude: item.latitude, longitude: item.longitude))))
+            }
+        }
+        XCTAssertNil(NativeDialectMap.Coordinator.automaticMapRect(points: [], viewport: .zero))
+    }
     func testMapQueryDoesNotStopAtOneHundred() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)

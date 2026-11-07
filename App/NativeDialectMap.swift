@@ -66,8 +66,26 @@ struct NativeDialectMap: UIViewRepresentable {
             }
             if self.fit != fit {
                 self.fit = fit
-                if !map.annotations.isEmpty { map.showAnnotations(map.annotations, animated: true) }
+                if let rect = Self.automaticMapRect(points: points, viewport: map.bounds.size) {
+                    map.setVisibleMapRect(rect, animated: true)
+                }
             }
+        }
+        // Limit automatic fitting only; user gestures can still zoom in freely.
+        // Match the device viewport so its north-to-south extent is at least ~500 km.
+        static func automaticMapRect(points: [DialectPoint], viewport: CGSize) -> MKMapRect? {
+            guard !points.isEmpty else { return nil }
+            let locations = points.map { MKMapPoint(CLLocationCoordinate2D(latitude: $0.latitude, longitude: $0.longitude)) }
+            let minX = locations.map(\.x).min()!, maxX = locations.map(\.x).max()!
+            let minY = locations.map(\.y).min()!, maxY = locations.map(\.y).max()!
+            let center = MKMapPoint(x: (minX + maxX) / 2, y: (minY + maxY) / 2)
+            let aspect = max(1, viewport.width) / max(1, viewport.height)
+            let minimumHeight = 500_000 * MKMapPointsPerMeterAtLatitude(center.coordinate.latitude)
+            // Leave breathing room around spread-out results, without adding it to
+            // the minimum scale for a single point or a dense cluster.
+            let height = max(minimumHeight, (maxY - minY) * 1.25, (maxX - minX) * 1.25 / aspect)
+            let width = height * aspect
+            return MKMapRect(x: center.x - width / 2, y: center.y - height / 2, width: width, height: height)
         }
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             guard let point = annotation as? PointAnnotation else { return nil }
