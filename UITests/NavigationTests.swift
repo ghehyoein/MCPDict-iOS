@@ -37,7 +37,7 @@ final class NavigationTests: XCTestCase {
         let person = app.buttons["check-測試維護人"]
         XCTAssertTrue(blank.exists); XCTAssertTrue(person.exists)
         person.tap()
-        app.switches["paletteSwitch"].tap()
+        flipSwitch(app.switches["paletteSwitch"])
         XCTAssertEqual(person.value as? String, "checked")
         app.buttons["personRole-維護人"].tap()
         XCTAssertFalse(person.exists); XCTAssertTrue(blank.exists)
@@ -389,6 +389,17 @@ final class NavigationTests: XCTestCase {
         XCTAssertFalse(app.textViews["characterUnicode"].exists, app.debugDescription)
     }
 
+    @MainActor private func flipSwitch(_ control: XCUIElement) {
+        guard let before = control.value as? String, ["0", "1"].contains(before) else {
+            XCTFail("Expected a native on/off switch"); return
+        }
+        // A 50 ms synthesized tap can reach iOS 26 with both touch events in
+        // one batch. Use one ordinary 200 ms touch, without retrying the action.
+        control.press(forDuration: 0.2)
+        let expected = before == "0" ? "1" : "0"
+        let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", expected), object: control)
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 3), .completed, "Switch must change before testing persistence")
+    }
     @MainActor private func chooseClassification(_ app: XCUIApplication, _ value: String) {
         app.descendants(matching: .any).matching(identifier: "classificationPickerToggle").firstMatch.tap()
         app.buttons[value].tap()
@@ -399,7 +410,7 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.buttons["dictionaryLanguageSelection"].tap()
         app.buttons["clearLanguages"].tap()
-        app.switches["paletteSwitch"].tap()
+        flipSwitch(app.switches["paletteSwitch"])
         app.segmentedControls.buttons["分區"].tap()
         XCTAssertEqual(app.segmentedControls["regionClassification"].buttons.count, 2)
         app.buttons["check-漢語"].tap()
