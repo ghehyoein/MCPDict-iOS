@@ -1,0 +1,14 @@
+name: Validate final 0.9.2 development commit
+on: [push]
+permissions:
+  contents: read
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run complete device and OS matrix on development branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ghehyoein/MCPDict-iOS
+        run: gh workflow run ios.yml --ref codex/revision-092
