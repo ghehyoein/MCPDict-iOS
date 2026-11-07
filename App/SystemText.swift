@@ -10,10 +10,13 @@ struct SystemText: UIViewRepresentable {
     var weight: UIFont.Weight = .regular
     var serif = false
     var parts: [ToneDisplay.Part]? = nil
+    var boldPrefix: String? = nil
+    var smallerPitch = false
+    var onTap: (() -> Void)? = nil
     @Environment(\.font) private var font
     @Environment(\.dynamicTypeSize) private var dynamicType
-    init(_ text: String, color: UIColor = .label, pointSize: CGFloat? = nil, weight: UIFont.Weight = .regular, serif: Bool = false, parts: [ToneDisplay.Part]? = nil) {
-        self.text = text; self.color = color; self.pointSize = pointSize; self.weight = weight; self.serif = serif; self.parts = parts
+    init(_ text: String, color: UIColor = .label, pointSize: CGFloat? = nil, weight: UIFont.Weight = .regular, serif: Bool = false, parts: [ToneDisplay.Part]? = nil, boldPrefix: String? = nil, smallerPitch: Bool = false, onTap: (() -> Void)? = nil) {
+        self.text = text; self.color = color; self.pointSize = pointSize; self.weight = weight; self.serif = serif; self.parts = parts; self.boldPrefix = boldPrefix; self.smallerPitch = smallerPitch; self.onTap = onTap
     }
     private var category: UIContentSizeCategory {
         switch dynamicType {
@@ -48,6 +51,7 @@ struct SystemText: UIViewRepresentable {
         let base = UIFont.systemFont(ofSize: size, weight: weight)
         return serif ? UIFont(descriptor: base.fontDescriptor.withDesign(.serif) ?? base.fontDescriptor, size: size) : base
     }
+    func makeCoordinator() -> Coordinator { Coordinator(onTap) }
     func makeUIView(context: Context) -> UITextView {
         let view = UITextView()
         view.isEditable = false; view.isSelectable = true; view.isScrollEnabled = false
@@ -55,11 +59,22 @@ struct SystemText: UIViewRepresentable {
         view.textContainerInset = .zero; view.textContainer.lineFragmentPadding = 0
         view.adjustsFontForContentSizeCategory = false
         view.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        if onTap != nil {
+            let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.tapped(_:)))
+            tap.cancelsTouchesInView = false; tap.delegate = context.coordinator
+            view.addGestureRecognizer(tap)
+        }
         return view
     }
     func updateUIView(_ view: UITextView, context: Context) {
-        let value = parts.map { ToneAttributedText.make($0, font: resolvedFont, color: color) }
+        context.coordinator.action = onTap
+        let pitchFont: UIFont? = smallerPitch ? (pointSize.map { UIFont.systemFont(ofSize: $0 * 0.7) } ?? UIFont.preferredFont(forTextStyle: .caption1, compatibleWith: UITraitCollection(preferredContentSizeCategory: category))) : nil
+        let content = parts.map { ToneAttributedText.make($0, font: resolvedFont, color: color, pitchFont: pitchFont) }
             ?? NSAttributedString(string: text, attributes: [.font: resolvedFont, .foregroundColor: color])
+        let value = NSMutableAttributedString(attributedString: content)
+        if let prefix = boldPrefix, text.hasPrefix(prefix) {
+            value.addAttribute(.font, value: UIFont.systemFont(ofSize: resolvedFont.pointSize, weight: .bold), range: NSRange(location: 0, length: (prefix as NSString).length))
+        }
         if view.attributedText != value { view.attributedText = value }
         view.accessibilityLabel = text
     }
@@ -69,10 +84,20 @@ struct SystemText: UIViewRepresentable {
         let measured = uiView.sizeThatFits(CGSize(width: width, height: CGFloat.greatestFiniteMagnitude))
         return CGSize(width: width, height: ceil(measured.height))
     }
+    final class Coordinator: NSObject, UIGestureRecognizerDelegate {
+        var action: (() -> Void)?
+        init(_ action: (() -> Void)?) { self.action = action }
+        @objc func tapped(_ gesture: UITapGestureRecognizer) {
+            guard let view = gesture.view as? UITextView, view.selectedRange.length == 0 else { return }
+            action?()
+        }
+        func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool { true }
+    }
+
 }
 
 enum ToneAttributedText {
-    static func make(_ parts: [ToneDisplay.Part], font: UIFont, color: UIColor = .label) -> NSAttributedString {
+    static func make(_ parts: [ToneDisplay.Part], font: UIFont, color: UIColor = .label, pitchFont: UIFont? = nil) -> NSAttributedString {
         let text = NSMutableAttributedString(string: "")
         for part in parts {
             text.append(NSAttributedString(string: part.base, attributes: [.font: font, .foregroundColor: color]))
@@ -88,7 +113,8 @@ enum ToneAttributedText {
                 attachment.bounds = CGRect(x: 0, y: -font.pointSize * 0.25, width: width, height: font.pointSize * 1.35)
                 text.append(NSAttributedString(attachment: attachment))
             } else {
-                text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: color]))
+                text.append(NSAttributedString(string: part.pitch, attributes: [.font: pitchFont ?? font, .foregroundColor: color]))
+                text.append(NSAttributedString(string: part.tone, attributes: [.font: font, .foregroundColor: color]))
             }
         }
         return text

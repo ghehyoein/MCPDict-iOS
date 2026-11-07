@@ -42,7 +42,6 @@ struct SelectionTree: View {
                     } else if row.expandable {
                         Button {
                             if !expanded.insert(row.id).inserted { expanded.remove(row.id) }
-                            refreshRows()
                         } label: {
                             HStack { Image(systemName: expanded.contains(row.id) ? "chevron.down" : "chevron.right"); Text(ui(row.node.title)); Spacer(); Text("\(row.ids.count)").foregroundStyle(.secondary).padding(.trailing, 12) }.contentShape(Rectangle())
                         }.buttonStyle(.plain).accessibilityIdentifier("expand-" + row.node.title)
@@ -58,6 +57,7 @@ struct SelectionTree: View {
             .onChange(of: tables) { _, _ in rebuild() }
             .onChange(of: grouping) { _, _ in expanded = []; rebuild() }
             .onChange(of: roles) { _, _ in expanded = []; rebuild() }
+            .onChange(of: expanded) { _, _ in refreshRows() }
             .onChange(of: filterQuery) { _, _ in matching = index.matches(filterQuery); refreshRows() }
     }
     private func rebuild() {
@@ -187,7 +187,7 @@ struct HomophoneResultsView: View {
                     ForEach(rows) { row in
                         HStack(alignment: .top) {
                             FavoriteButton(reading: row)
-                            SystemText(row.characters + (row.note.isEmpty ? "" : "  " + row.note))
+                            SystemText(row.characters + (row.note.isEmpty ? "" : "  " + row.note), boldPrefix: row.characters)
                         }
                     }
                 }

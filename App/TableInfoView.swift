@@ -54,7 +54,7 @@ struct TableInfoView: View {
                 } else { SystemText(value(key)) }
             }
         } else {
-            SystemText(ui(key == "字表品質説明" ? "字表品質說明" : key) + "：" + value(key))
+            SystemText(ui(key == "字表品質説明" ? "字表品質說明" : key) + "：" + value(key), boldPrefix: ui(key == "字表品質説明" ? "字表品質說明" : key) + "：")
             ForEach(MetadataText.links(current.metadata?[key] ?? ""), id: \.absoluteString) { url in
                 Link(url.absoluteString, destination: url).font(.caption)
             }
