@@ -1,0 +1,15 @@
+name: iOS runtime inventory
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: macos-15
+    steps:
+      - name: Installed Xcodes and simulators
+        run: |
+          ls -d /Applications/Xcode*.app
+          for xcode in /Applications/Xcode*.app; do
+            echo "$xcode"
+            DEVELOPER_DIR="$xcode/Contents/Developer" xcrun simctl list runtimes
+          done
