@@ -49,6 +49,7 @@ struct LanguageBadge: View {
     let name: String
     let table: TablePackage?
     var grouping: TableGrouping? = nil
+    var transitionAsterisk = false
     @AppStorage("colorScheme") private var colorScheme = "atlas"
     var body: some View {
         let scheme = grouping == .atlas || grouping == .dictionary ? grouping! : (colorScheme == "dictionary" ? .dictionary : .atlas)
@@ -57,6 +58,15 @@ struct LanguageBadge: View {
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(TableColors.gradient(colors), in: RoundedRectangle(cornerRadius: 5))
             .fixedSize(horizontal: false, vertical: true)
+            .overlay(alignment: .topTrailing) {
+                if transitionAsterisk {
+                    Text("*").font(.caption).foregroundStyle(.primary)
+                        .offset(x: 7, y: -7).allowsHitTesting(false)
+                }
+            }
+            .padding(.trailing, transitionAsterisk ? 8 : 0)
+            .accessibilityLabel(name)
+            .accessibilityValue(transitionAsterisk ? "*" : "")
     }
 }
 

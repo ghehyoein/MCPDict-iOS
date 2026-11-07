@@ -443,6 +443,7 @@ final class NavigationTests: XCTestCase {
             let button = app.buttons["expand-" + name]; reveal(button); button.tap()
         }
         let added = app.buttons["check-南通"]; reveal(added); added.tap()
+        XCTAssertEqual(app.buttons["南通"].value as? String, "*")
         XCTAssertTrue(app.buttons["dictionaryLanguageSelection"].label.contains("已選 1"))
         let branch = XCTAttachment(screenshot: app.screenshot()); branch.name = "南通補入潤州過渡色子目錄"; branch.lifetime = .keepAlways; add(branch)
         app.buttons["南通"].tap()
@@ -456,10 +457,18 @@ final class NavigationTests: XCTestCase {
         include.tap()
         let terminal = app.buttons["check-贊皇"]; reveal(terminal)
         XCTAssertTrue(terminal.exists)
+        XCTAssertNotEqual(app.buttons["贊皇"].value as? String, "*")
         XCTAssertFalse(app.buttons["expand-過渡色"].exists)
         let direct = XCTAttachment(screenshot: app.screenshot()); direct.name = "末級邯彰直接補入贊皇"; direct.lifetime = .keepAlways; add(direct)
         app.buttons["贊皇"].tap()
         XCTAssertTrue(app.textViews.matching(NSPredicate(format: "label CONTAINS %@", "音典分區過渡色：華北－邯彰")).firstMatch.waitForExistence(timeout: 5))
+        app.navigationBars.buttons["完成"].tap()
+        include.tap()
+        for name in ["下江", "通泰", "南通"] {
+            let button = app.buttons["expand-" + name]; reveal(button); button.tap()
+        }
+        XCTAssertTrue(app.buttons["南通"].exists)
+        XCTAssertNotEqual(app.buttons["南通"].value as? String, "*")
     }
 
 }
