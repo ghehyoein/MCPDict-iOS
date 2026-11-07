@@ -491,8 +491,10 @@ final class NavigationTests: XCTestCase {
         let text = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
         XCTAssertTrue(text.waitForExistence(timeout: 8))
         text.press(forDuration: 1.2)
-        let copy = app.buttons.matching(NSPredicate(format: "label IN %@", ["Copy", "拷貝", "拷贝", "複製", "复制"])).firstMatch
+        let copy = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Copy", "拷貝", "拷贝", "複製", "复制"])).firstMatch
         XCTAssertTrue(copy.waitForExistence(timeout: 5), app.debugDescription)
+        let lookup = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Look Up", "查詢", "查询"])).firstMatch
+        XCTAssertTrue(lookup.exists, "Map text must expose the native selection menu, including dictionary lookup")
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "地圖文字原生選取"; shot.lifetime = .keepAlways; add(shot)
         XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].exists)
     }
