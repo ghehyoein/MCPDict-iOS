@@ -81,6 +81,9 @@ final class AppModel: ObservableObject {
     private let favoritesURL: URL
     private let selectionCache: LanguageSelectionCache
     init(defaults: UserDefaults = .standard, favoritesURL: URL? = nil) {
+        if defaults.object(forKey: "colorScheme") == nil {
+            defaults.set(defaults.string(forKey: "dictionaryPalette") ?? defaults.string(forKey: "mapPalette") ?? "atlas", forKey: "colorScheme")
+        }
         selectionCache = LanguageSelectionCache(defaults: defaults)
         languageSelection = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
         let repository = DictionaryRepository()

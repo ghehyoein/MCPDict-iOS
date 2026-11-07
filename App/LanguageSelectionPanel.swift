@@ -61,13 +61,15 @@ struct LanguageSelectionPanel: View {
         }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
     }
     private func flagButton(_ title: String, _ value: Binding<Bool>) -> some View {
-        Button { value.wrappedValue.toggle() } label: {
-            HStack(spacing: 0) {
+        HStack(spacing: 0) {
+            Button { value.wrappedValue.toggle() } label: {
                 Image(systemName: value.wrappedValue ? "checkmark.square.fill" : "square")
-                Text(ui(title))
-            }.contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
-        }.buttonStyle(.borderless)
+                    .contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
+            }.buttonStyle(.borderless).accessibilityLabel(ui(title))
+            SystemText(ui(title), color: AppAccent.uiColor, onTap: { value.wrappedValue.toggle() })
+        }
     }
+
     private func restoreInitial() {
         guard !restored, !tables.isEmpty else { return }
         if cache.load(state.key) != nil { restoreMode() }
