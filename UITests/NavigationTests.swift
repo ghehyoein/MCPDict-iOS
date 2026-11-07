@@ -68,7 +68,6 @@ final class NavigationTests: XCTestCase {
         let reading = app.sliders["mapReadingSlider"]
         XCTAssertTrue(reading.exists)
         XCTAssertEqual(app.sliders.count, 3)
-        defer { other.adjust(toNormalizedSliderPosition: 0.25); map.adjust(toNormalizedSliderPosition: 0.55); reading.adjust(toNormalizedSliderPosition: 0.55) }
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "字體大小內置預覽"; picture.lifetime = .keepAlways; add(picture)
         let oldReading = reading.value as? String
         let oldOther = other.value as? String
@@ -488,6 +487,41 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(copy.waitForExistence(timeout: 5), app.debugDescription)
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "地圖文字原生選取"; shot.lifetime = .keepAlways; add(shot)
         XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].exists)
+    }
+
+    @MainActor func testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--notebook-list-fixture"]; app.launch()
+        app.tabBars.buttons["生字本"].tap()
+        app.segmentedControls.buttons["語言"].tap()
+        let choice = app.scrollViews["notebookChoiceBar"].buttons["示例語言點"]
+        XCTAssertTrue(choice.waitForExistence(timeout: 5)); choice.tap()
+        XCTAssertFalse(app.navigationBars.buttons["完成"].exists)
+        app.buttons["多選"].tap()
+        let all = app.buttons["全選"]
+        let before = all.frame.midY
+        app.swipeUp(); app.swipeUp()
+        XCTAssertTrue(all.isHittable)
+        XCTAssertEqual(all.frame.midY, before, accuracy: 2)
+        all.tap()
+        XCTAssertTrue(app.textViews["已選 35"].exists)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "生字本滾動後浮動操作"; shot.lifetime = .keepAlways; add(shot)
+    }
+    @MainActor func testTableOperationDoesNotDisableSelectionOrMapQuery() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--busy-fixture"]; app.launch()
+        app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
+        XCTAssertTrue(app.buttons["selectAllLanguages"].isEnabled)
+        app.buttons["selectAllLanguages"].tap()
+        XCTAssertTrue(app.buttons["expand-漢語"].isEnabled)
+        app.buttons["expand-漢語"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        app.tabBars.buttons["地圖"].tap()
+        let input = app.textFields["請輸入漢字"]
+        input.tap(); input.typeText("中")
+        XCTAssertTrue(app.buttons["查字"].isEnabled)
+        app.buttons["查字"].tap()
+        XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
     }
 
 }

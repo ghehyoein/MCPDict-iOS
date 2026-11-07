@@ -43,7 +43,7 @@ struct LanguageSelectionPanel: View {
                 // refreshes must not overwrite it with the previous mode's names.
                 let saved = cache.load(state.namespace + "." + mode.rawValue) ?? []
                 state.kind = mode
-                names = saved.intersection(Set(state.scope.eligible(tables, grouping: state.grouping).map(\.name)))
+                names = restoredNames(saved)
                 cache.save(names, for: state.key)
             })) {
                 ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
@@ -78,12 +78,16 @@ struct LanguageSelectionPanel: View {
 
     private func restoreInitial() {
         guard !restored, !tables.isEmpty else { return }
-        if cache.load(state.key) != nil { restoreMode() }
+        names = restoredNames(cache.load(state.key) ?? names)
         cache.save(names, for: state.key)
         restored = true
     }
-    private func restoreMode() {
-        names = (cache.load(state.key) ?? []).intersection(Set(state.scope.eligible(tables, grouping: state.grouping).map(\.name)))
+    private func restoredNames(_ saved: Set<String>) -> Set<String> {
+        var eligible = state.scope.eligible(tables.filter(state.flags.matches), grouping: state.grouping, roles: state.roles)
+        if state.grouping == .dictionary && state.includeTransitions {
+            eligible = eligible.filter(DictionaryTransitions(tables: tables).hasTransition)
+        }
+        return saved.intersection(Set(eligible.map(\.name)))
     }
 }
 
