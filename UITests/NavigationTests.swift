@@ -71,7 +71,9 @@ final class NavigationTests: XCTestCase {
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "字體大小內置預覽"; picture.lifetime = .keepAlways; add(picture)
         let oldReading = reading.value as? String
         let oldOther = other.value as? String
+        let originalMap = map.value as? String
         map.adjust(toNormalizedSliderPosition: 0.8)
+        let enlarged = XCTAttachment(screenshot: app.screenshot()); enlarged.name = "地圖語言點放大後的固定分隔線"; enlarged.lifetime = .keepAlways; add(enlarged)
         XCTAssertEqual(other.value as? String, oldOther)
         XCTAssertEqual(reading.value as? String, oldReading)
         let mapValue = map.value as? String
@@ -79,6 +81,12 @@ final class NavigationTests: XCTestCase {
         XCTAssertEqual(map.value as? String, mapValue)
         other.adjust(toNormalizedSliderPosition: 0.6)
         XCTAssertEqual(map.value as? String, mapValue)
+        let reset = app.buttons["resetSettings"]
+        for _ in 0..<8 { if reset.isHittable { break }; app.swipeUp() }
+        XCTAssertTrue(reset.isHittable); reset.tap()
+        XCTAssertTrue(map.waitForExistence(timeout: 5))
+        XCTAssertEqual(map.value as? String, originalMap)
+        XCTAssertEqual(reading.value as? String, oldReading)
     }
 
     @MainActor func testTreeSelectionBlankStartAndSettings() throws {
