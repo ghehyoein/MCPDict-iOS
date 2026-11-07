@@ -35,7 +35,7 @@ struct SelectionTree: View {
                     if let table = row.node.table {
                         Button { if let inspect { inspect(table) } else { model.tableDetail = table } } label: {
                             LanguageBadge(name: table.name, table: table, grouping: badgeGrouping ?? grouping, transitionAsterisk: inferredTransitionIDs.contains(table.id)).frame(minHeight: 44).contentShape(Rectangle())
-                        }.buttonStyle(.plain)
+                        }.buttonStyle(.plain).accessibilityLabel(table.name)
                             .accessibilityValue(inferredTransitionIDs.contains(table.id) ? "*" : "")
                         Spacer()
                         if let state = downloadStates[table.id] {
