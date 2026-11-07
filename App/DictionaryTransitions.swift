@@ -37,9 +37,9 @@ struct DictionaryTransitions {
     func additionalPaths(_ tables: [TablePackage]) -> [String: [[String]]] {
         var result = [String: [[String]]]()
         for table in tables {
-            let paths = destinations(table).filter { !table.dictionary.starts(with: $0) }.map {
+            let paths = destinations(table).map {
                 branches.contains($0) ? $0 + ["過渡色"] : $0
-            }
+            }.filter { $0 != table.dictionary }
             if !paths.isEmpty { result[table.id] = paths }
         }
         return result
