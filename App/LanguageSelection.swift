@@ -32,7 +32,9 @@ extension TableGrouping {
         for role in roles {
             let raw = table.metadata?[role.rawValue] ?? ""
             let values = raw.components(separatedBy: CharacterSet(charactersIn: ",，、;；")).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty && $0 != "null" }
-            people.formUnion(values.isEmpty ? ["(無)"] : values)
+            if role == .maintainer {
+                people.formUnion(values.filter { !["(無)", "（無）", "(无)", "（无）"].contains($0) })
+            } else { people.formUnion(values.isEmpty ? ["(無)"] : values) }
         }
         return people.sorted().map { [$0] }
     }

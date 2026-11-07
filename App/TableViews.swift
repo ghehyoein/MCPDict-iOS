@@ -41,7 +41,6 @@ struct DataView: View {
                 LanguageSelectionPanel(tables: available, names: $names, state: selector, entryID: "downloadLanguageSelection",
                                        inspect: { model.tableDetail = $0 }, alwaysExpanded: true)
                     .environment(\.tableDownloadStates, model.downloadStates)
-                    .disabled(model.updating)
             }
             .navigationTitle(ui("字表下載")).navigationBarTitleDisplayMode(.large)
             .toolbar(.hidden, for: .tabBar)
@@ -56,7 +55,7 @@ struct TableActions: View {
     @EnvironmentObject var model: AppModel
     let selection: Set<String>
     var body: some View {
-        let online = selection.intersection(Set(model.catalog?.tables.map(\.id) ?? []))
+        let online = model.downloadableIDs(selection)
         let local = selection.intersection(Set(model.installed?.tables.map(\.id) ?? []))
         HStack(spacing: 10) {
             Spacer(minLength: 0)

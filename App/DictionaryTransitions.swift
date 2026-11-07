@@ -37,6 +37,10 @@ struct DictionaryTransitions {
         }
         return paths
     }
+    func hasTransition(_ table: TablePackage) -> Bool {
+        let colors = TableColors.hexes(table.dictionaryColor).map { $0.uppercased() }
+        return !recordedDestinations(table).isEmpty || colors.dropFirst().contains { $0 != colors.first }
+    }
     func destinations(_ table: TablePackage) -> [[String]] {
         let recorded = recordedDestinations(table)
         let paths = recorded.isEmpty

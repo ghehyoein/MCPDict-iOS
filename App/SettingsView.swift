@@ -30,13 +30,13 @@ struct SettingsView: View {
                     sizeSlider("顯示介面", $fontSize, range: 14...26, identifier: "fontSizeSlider", sample: 2)
                 }
                 Section(ui("聲調顯示")) {
-                    HStack { SystemText(ui("聲調預覽：")); Spacer(); SystemText("好"); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) }
+                    HStack { SystemText(ui("聲調預覽：")); Spacer(); HStack(spacing: 0) { SystemText("好"); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) } }
                     Picker("", selection: $toneStyle) {
                         ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
                     }.pickerStyle(.inline).labelsHidden()
                     Picker(ui("調值樣式"), selection: $pitchStyle) {
                         Text(ui("曲線")).tag("curve"); Text(ui("數字")).tag("number"); Text(ui("隱藏")).tag("hidden")
-                    }.pickerStyle(.navigationLink)
+                    }.pickerStyle(.menu)
                 }
                 Section(ui("界面外觀")) {
                     option(ui("跟隨系統"), value: "system", selection: $appearance)
@@ -44,6 +44,10 @@ struct SettingsView: View {
                     option(ui("深色"), value: "dark", selection: $appearance)
                 }
                 MapSettingsSection()
+                Section {
+                    Button(ui("還原預設設定"), role: .destructive) { model.resetSettings() }
+                        .foregroundStyle(.red).accessibilityIdentifier("resetSettings")
+                }
             }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
         }.sheet(isPresented: $referenceSettings) { ReferenceSettingsView().dynamicTypeSize(AppTypography.size(fontSize)) }
     }
@@ -58,11 +62,12 @@ struct SettingsView: View {
                         LanguageBadge(name: "通東呂四", table: table).environment(\.mapLabelSize, mapSize)
                     }.buttonStyle(.plain).disabled(table == nil)
                 } else if sample == 1 {
-                    HStack(spacing: 4) { SystemText("好", pointSize: CGFloat(readingSize)); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false) }
+                    HStack(spacing: 0) { SystemText("好", pointSize: CGFloat(readingSize)); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false) }
                 } else { SystemText(ui("漢字音典"), pointSize: CGFloat(fontSize)) }
             }
             Slider(value: size, in: range) { Text(ui(label)) }.accessibilityIdentifier(identifier)
-        }
+        }.alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+            .alignmentGuide(.listRowSeparatorTrailing) { $0.width }
     }
     private func option(_ title: String, value: String, selection: Binding<String>) -> some View {
         Button { selection.wrappedValue = value } label: {

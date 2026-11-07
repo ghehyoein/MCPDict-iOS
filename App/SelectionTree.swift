@@ -101,6 +101,7 @@ struct LanguageDropdown: View {
         eligible = treeScope.eligible(tables.filter(state.flags.matches), grouping: state.grouping, roles: state.roles)
         let transitions = DictionaryTransitions(tables: model.availableTables)
         let includesTransitions = state.grouping == .dictionary && state.includeTransitions
+        if includesTransitions { eligible = eligible.filter(transitions.hasTransition) }
         additionalPaths = includesTransitions ? transitions.additionalPaths(eligible) : [:]
         inferredTransitionIDs = includesTransitions ? Set(eligible.filter { transitions.needsAsterisk($0) }.map(\.id)) : []
         if prune { names = names.intersection(Set(eligible.map(\.name))) }
@@ -123,37 +124,36 @@ struct LanguageDropdown: View {
         VStack(alignment: .leading) {
             TextField(ui("搜尋語言或分區"), text: $state.filter).textFieldStyle(.roundedBorder)
             if state.kind != .administrative {
-                HStack(spacing: 8) {
-                    if state.grouping == .dictionary {
-                        Button { state.includeTransitions.toggle() } label: {
-                            HStack(spacing: 0) {
-                                Image(systemName: state.includeTransitions ? "checkmark.square.fill" : "square")
-                                Text(ui("過渡色"))
-                            }.fixedSize().contentTransition(.identity)
-                                .transaction { $0.animation = nil; $0.disablesAnimations = true }
-                        }.buttonStyle(.borderless).accessibilityIdentifier("includeDictionaryTransitions")
-                    }
-                    if state.grouping == .person {
-                        ForEach(PersonRole.allCases, id: \.self) { role in
-                            Button { if !state.roles.insert(role).inserted { state.roles.remove(role) } } label: {
+                if state.kind == .region {
+                    Picker(ui("分區方式"), selection: $state.grouping) {
+                        ForEach([TableGrouping.atlas, .dictionary]) { Text(ui($0.rawValue)).tag($0) }
+                    }.pickerStyle(.segmented).accessibilityIdentifier("regionClassification")
+                } else {
+                    HStack(spacing: 8) {
+                        Text(ui("分類方式"))
+                        if state.grouping == .dictionary { TransitionToggle(state: state) }
+                        if state.grouping == .person {
+                            Button {
+                                if !state.roles.insert(.maintainer).inserted { state.roles.remove(.maintainer) }
+                                state.roles.insert(.editor)
+                            } label: {
                                 HStack(spacing: 0) {
-                                    Image(systemName: state.roles.contains(role) ? "checkmark.square.fill" : "square")
-                                    Text(ui(role.rawValue))
+                                    Image(systemName: state.roles.contains(.maintainer) ? "checkmark.square.fill" : "square")
+                                    Text(ui("維護人"))
                                 }.fixedSize().contentTransition(.identity)
                                     .transaction { $0.animation = nil; $0.disablesAnimations = true }
-                            }.buttonStyle(.borderless).accessibilityIdentifier("personRole-" + role.rawValue)
+                            }.buttonStyle(.borderless).accessibilityIdentifier("personRole-維護人")
                         }
-                    }
-                    if state.kind == .region {
-                        Picker(ui("分區方式"), selection: $state.grouping) {
-                            ForEach([TableGrouping.atlas, .dictionary]) { Text(ui($0.rawValue)).tag($0) }
-                        }.pickerStyle(.segmented).accessibilityIdentifier("regionClassification")
-                    } else {
+                        Spacer(minLength: 0)
                         Picker(ui("分類方式"), selection: $state.grouping) {
                             ForEach(state.groupingChoices) { Text(ui($0.rawValue)).tag($0) }
-                        }.pickerStyle(.navigationLink).accessibilityIdentifier("classificationPickerToggle")
+                        }.labelsHidden().pickerStyle(.menu).accessibilityIdentifier("classificationPickerToggle")
                     }
                 }
+            }
+            if state.grouping == .dictionary && state.includeTransitions {
+                Text(ui("* 表示過渡分區按相同色值推定，或尚無對應分區記錄。"))
+                    .font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("transitionExplanation")
             }
             ScrollView {
                 SelectionTree(tables: eligible, grouping: state.grouping, roles: state.roles, badgeGrouping: palette,
@@ -176,7 +176,7 @@ struct LanguageDropdown: View {
         .onAppear { refresh(prune: state.flags.island || state.flags.history) }
         .onChange(of: tables) { _, _ in refresh(prune: true) }
         .onChange(of: state.grouping) { _, _ in refresh(prune: true) }
-        .onChange(of: state.includeTransitions) { _, _ in refresh(prune: false, updateRegion: true) }
+        .onChange(of: state.includeTransitions) { _, _ in refresh(prune: true, updateRegion: true) }
         .onChange(of: model.availableTables) { _, _ in refresh(prune: false, updateRegion: true) }
         .onChange(of: state.flags) { _, _ in refresh(prune: true) }
         .onChange(of: state.roles) { _, _ in refresh(prune: true) }

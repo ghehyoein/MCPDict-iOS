@@ -35,17 +35,18 @@ import SwiftUI
         includeTransitions = defaults.bool(forKey: "transitions." + namespace)
         restoreControls()
     }
-    #if DEBUG
-    func resetFixture() {
+    func resetDefaults() {
         expanded = false; kind = .language; grouping = .atlas
         flags = LanguageFlags(); roles = Set(PersonRole.allCases); includeTransitions = false
         filter = ""; expandedNodes = []; region = nil
     }
+    #if DEBUG
+    func resetFixture() { resetDefaults() }
     #endif
     private func restoreControls() {
         let saved = defaults.string(forKey: "grouping." + key).flatMap(TableGrouping.init(rawValue:)) ?? .atlas
         grouping = kind == .administrative ? .administrative : (groupingChoices.contains(saved) ? saved : .atlas)
-        roles = Set((defaults.stringArray(forKey: "roles." + key) ?? PersonRole.allCases.map(\.rawValue)).compactMap(PersonRole.init(rawValue:)))
+        roles = Set((defaults.stringArray(forKey: "roles." + key) ?? PersonRole.allCases.map(\.rawValue)).compactMap(PersonRole.init(rawValue:))).union([.editor])
         filter = ""; expandedNodes = []
         region = defaults.string(forKey: "regionNode." + key + grouping.rawValue)
     }

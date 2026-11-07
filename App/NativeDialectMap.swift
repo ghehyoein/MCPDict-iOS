@@ -4,6 +4,7 @@ import MapKit
 struct NativeDialectMap: UIViewRepresentable {
     let points: [DialectPoint]
     let fit: Int
+    var revision: UUID? = nil
     var fontSize: Double = 16
     var readingSize: Double = 16
     var mapStyle: String = "standard"
@@ -11,7 +12,7 @@ struct NativeDialectMap: UIViewRepresentable {
     let choose: (String) -> Void
     func makeCoordinator() -> Coordinator { Coordinator(choose: choose) }
     func makeUIView(context: Context) -> MKMapView {
-        let map = MKMapView()
+        let map = SelectionFriendlyMapView()
         map.delegate = context.coordinator
         map.pointOfInterestFilter = .excludingAll
         map.setRegion(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 34, longitude: 108), span: MKCoordinateSpan(latitudeDelta: 38, longitudeDelta: 48)), animated: false)
@@ -22,10 +23,10 @@ struct NativeDialectMap: UIViewRepresentable {
         context.coordinator.centerChanged = centerChanged
         let type = (BaseMapStyle(rawValue: mapStyle) ?? .standard).type
         if map.mapType != type { map.mapType = type }
-        context.coordinator.update(map, points: points, fit: fit, fontSize: fontSize, readingSize: readingSize)
+        context.coordinator.update(map, points: points, fit: fit, fontSize: fontSize, readingSize: readingSize, revision: revision)
     }
     final class PointAnnotation: NSObject, MKAnnotation {
-        let point: DialectPoint
+        var point: DialectPoint
         var coordinate: CLLocationCoordinate2D { .init(latitude: point.latitude, longitude: point.longitude) }
         var title: String? { point.name }
         var subtitle: String? { point.reading }
@@ -33,6 +34,7 @@ struct NativeDialectMap: UIViewRepresentable {
     }
     final class Coordinator: NSObject, MKMapViewDelegate {
         var points = [DialectPoint]()
+        private var revision: UUID?
         var fit = 0
         var fontSize = 16.0
         var readingSize = 16.0
@@ -43,26 +45,28 @@ struct NativeDialectMap: UIViewRepresentable {
             let center = TableLocation(longitude: mapView.centerCoordinate.longitude, latitude: mapView.centerCoordinate.latitude)
             DispatchQueue.main.async { [weak self] in self?.centerChanged(center) }
         }
-        func update(_ map: MKMapView, points: [DialectPoint], fit: Int, fontSize: Double = 16, readingSize: Double = 16) {
+        func update(_ map: MKMapView, points: [DialectPoint], fit: Int, fontSize: Double = 16, readingSize: Double = 16, revision: UUID? = nil) {
             let fontChanged = self.fontSize != fontSize || self.readingSize != readingSize
-            if self.points != points || fontChanged {
-                self.fontSize = fontSize
-                self.readingSize = readingSize
-                self.points = points
+            let contentChanged = revision.map { $0 != self.revision } ?? (self.points != points)
+            if contentChanged || fontChanged {
+                self.fontSize = fontSize; self.readingSize = readingSize
+                self.points = points; self.revision = revision
                 let wanted = Dictionary(uniqueKeysWithValues: points.map { ($0.id, $0) })
                 var retained = Set<String>()
                 var removed = [PointAnnotation]()
                 for annotation in map.annotations.compactMap({ $0 as? PointAnnotation }) {
-                    if wanted[annotation.point.id] == annotation.point {
-                        retained.insert(annotation.point.id)
-                        if fontChanged, let view = map.view(for: annotation) as? LabelAnnotationView {
-                            view.configure(annotation.point, fontSize: readingSize, labelSize: fontSize) { [weak self] in self?.choose(annotation.point.id) }
-                        }
+                    guard let next = wanted[annotation.point.id], next.latitude == annotation.point.latitude,
+                          next.longitude == annotation.point.longitude else { removed.append(annotation); continue }
+                    retained.insert(next.id)
+                    let changed = annotation.point != next
+                    annotation.point = next
+                    if changed || fontChanged, let view = map.view(for: annotation) as? LabelAnnotationView {
+                        view.configure(next, fontSize: readingSize, labelSize: fontSize) { [weak self] in self?.choose(next.id) }
                     }
-                    else { removed.append(annotation) }
                 }
-                map.removeAnnotations(removed)
-                map.addAnnotations(points.filter { !retained.contains($0.id) }.map(PointAnnotation.init))
+                if !removed.isEmpty { map.removeAnnotations(removed) }
+                let added = points.filter { !retained.contains($0.id) }.map(PointAnnotation.init)
+                if !added.isEmpty { map.addAnnotations(added) }
             }
             if self.fit != fit {
                 self.fit = fit
@@ -109,6 +113,10 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
     private let gradient = CAGradientLayer()
     private var choose: (() -> Void)?
+    private var previousReading: String?
+    private var previousParts: [ToneDisplay.Part]?
+    private var previousFontSize: Double?
+    private var cachedText = NSAttributedString(string: "")
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         // Only the map slider sizes annotation text; map controls keep their normal traits.
@@ -156,6 +164,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         nameButton.backgroundColor = TableColors.uiColor(colors.first ?? "#008080")
         gradient.colors = (colors.count == 1 ? colors + colors : colors).map { TableColors.uiColor($0).cgColor }
         gradient.startPoint = CGPoint(x: 0, y: 0.5); gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        let textChanged = previousReading != point.reading || previousParts != point.toneParts || previousFontSize != fontSize
+        if textChanged {
         let text = NSMutableAttributedString(string: "")
         let font = UIFont.systemFont(ofSize: fontSize)
         let parts = point.toneParts ?? [.init(id: 0, base: point.reading, pitch: "", tone: "", stacked: false)]
@@ -174,9 +184,14 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
                 text.append(NSAttributedString(attachment: attachment))
             } else { text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: UIColor.label])) }
         }
-        let contentChanged = readingText.attributedText?.string != text.string
+        let contentChanged = previousReading != point.reading
+        let selection = readingText.selectedRange
         readingText.attributedText = text
+        if !contentChanged && NSMaxRange(selection) <= text.length { readingText.selectedRange = selection }
         if contentChanged { readingText.setContentOffset(.zero, animated: false) }
+        cachedText = text; previousReading = point.reading; previousParts = point.toneParts; previousFontSize = fontSize
+        }
+        let text = cachedText
         readingText.accessibilityIdentifier = "map-reading-" + point.id
         readingText.accessibilityLabel = point.reading
         readingText.isHidden = point.reading.isEmpty
@@ -192,8 +207,28 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         bounds = CGRect(x: 0, y: 0, width: width, height: nameHeight + readingHeight)
         nameButton.frame = CGRect(x: (width-nameWidth)/2, y: readingHeight, width: nameWidth, height: nameHeight)
         readingText.frame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
+        readingText.isScrollEnabled = ceil(readingRect.height) + 8 > readingHeight
         blur.frame = readingText.frame; blur.isHidden = readingText.isHidden
         gradient.frame = nameButton.bounds
         collisionMode = .rectangle
+    }
+}
+
+/// Let UITextView own selection/drag gestures inside annotation text. Map gestures
+/// resume on the next touch outside text, without replacing any UIKit edit actions.
+final class SelectionFriendlyMapView: MKMapView {
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let hit = super.hitTest(point, with: event)
+        var ancestor = hit
+        var inReading = false
+        while let view = ancestor, view !== self {
+            if let text = view as? UITextView, text.superview is LabelAnnotationView { inReading = true; break }
+            ancestor = view.superview
+        }
+        if isScrollEnabled == inReading {
+            isScrollEnabled = !inReading; isZoomEnabled = !inReading
+            isRotateEnabled = !inReading; isPitchEnabled = !inReading
+        }
+        return hit
     }
 }

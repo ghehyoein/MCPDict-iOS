@@ -34,6 +34,7 @@ struct NotebookGroup: Identifiable {
 
 struct FavoritesView: View {
     @EnvironmentObject var model: AppModel
+    @AppStorage("colorScheme") private var palette = "atlas"
     @AppStorage("notebookCategory") private var stored = ""
     @State private var selectedKey = ""
     @State private var selection = Set<UUID>()
@@ -57,13 +58,14 @@ struct FavoritesView: View {
             ScrollView(.horizontal) {
                 HStack {
                     ForEach(keys, id: \.self) { key in
-                        Button {
-                            selectedKey = key
-                            if category == .language { model.tableDetail = model.table(named: key) }
-                        } label: {
-                            if category == .language { LanguageBadge(name: key, table: model.table(named: key)) }
-                            else { Text(key) }
-                        }.buttonStyle(.bordered).tint(key == currentKey ? AppAccent.color : .gray)
+                        Button { selectedKey = key } label: { Text(key) }
+                            .buttonStyle(.bordered).tint(key == currentKey ? AppAccent.color : (category == .language ? .white : .gray))
+                            .background {
+                                if category == .language && key != currentKey {
+                                    let colors = model.table(named: key).map { TableColors.hexes(TableColors.raw($0, palette == "dictionary" ? .dictionary : .atlas)) } ?? []
+                                    TableColors.gradient(colors).clipShape(RoundedRectangle(cornerRadius: 8))
+                                }
+                            }
                     }
                 }
             }.accessibilityIdentifier("notebookChoiceBar")
@@ -85,17 +87,7 @@ struct FavoritesView: View {
                         ForEach(NotebookCategory.allCases, id: \.self) { Text(ui($0.rawValue)).tag($0.rawValue) }
                     }.pickerStyle(.segmented).accessibilityIdentifier("notebookCategory")
                     choiceBar
-                    if selecting {
-                        HStack {
-                            Button(ui("全選")) { selection = Set(shown.map(\.id)) }
-                            Spacer()
-                            SystemText(ui("已選 ") + String(selection.count))
-                            Menu(ui("加入生字表")) {
-                                ForEach(model.notebook.books) { book in Button(book.title) { model.addFavorites(selection, to: book.id) } }
-                            }.disabled(selection.isEmpty)
-                            Button(ui("刪除"), role: .destructive) { remove(selection) }.disabled(selection.isEmpty)
-                        }.buttonStyle(.borderless)
-                    }
+
                 }
                 if model.notebook.books.isEmpty { SystemText(ui("請先新建生字表。")) }
                 else if model.notebook.selected.isEmpty { SystemText(ui("請選擇要查看的生字表。")) }
@@ -120,6 +112,21 @@ struct FavoritesView: View {
                             }
                         }.onDelete { indices in remove(Set(indices.map { group.entries[$0].id })) }
                     } header: { if !group.title.isEmpty { Text(verbatim: group.title).textCase(nil) } }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if selecting {
+                        HStack {
+                            Button(ui("全選")) { selection = Set(shown.map(\.id)) }
+                            Spacer()
+                            SystemText(ui("已選 ") + String(selection.count))
+                            Menu(ui("加入生字表")) {
+                                ForEach(model.notebook.books) { book in Button(book.title) { model.addFavorites(selection, to: book.id) } }
+                            }.disabled(selection.isEmpty)
+                            Button(ui("刪除"), role: .destructive) { remove(selection) }.disabled(selection.isEmpty)
+                        }.buttonStyle(.borderless)
+                        .padding(12).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal).padding(.bottom, 6).accessibilityIdentifier("notebookSelectionActions")
                 }
             }
             .fileExporter(isPresented: $exporting, document: NotebookTextDocument(archive: model.notebook.exportingSelected()), contentType: .plainText, defaultFilename: "漢字音典生字本") { result in

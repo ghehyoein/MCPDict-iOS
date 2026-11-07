@@ -97,14 +97,22 @@ actor DictionaryRepository {
     private var connection: SQLiteConnection?
     private var statisticsCache = [String: [String: String]]()
 
-    func open(_ url: URL) throws { connection = try SQLiteConnection(url: url); statisticsCache = [:] }
+    private var activeURL: URL?
+    func open(_ url: URL) throws {
+        guard activeURL != url else { return }
+        connection = try SQLiteConnection(url: url); activeURL = url; statisticsCache = [:]
+    }
 
     // Validate before touching the active connection; failed activation preserves it.
-    func activate(_ url: URL, requireSample: Bool = true, commitPointer: () throws -> Void) throws {
+    func activate(_ url: URL, requireSample: Bool = true, commitPointer: () throws -> Void) async throws {
+        try await Task.detached(priority: .utility) {
+            let candidate = try SQLiteConnection(url: url)
+            try candidate.validate(requireSample: requireSample)
+        }.value
+        try Task.checkCancellation()
         let candidate = try SQLiteConnection(url: url)
-        try candidate.validate(requireSample: requireSample)
         try commitPointer()
-        connection = candidate
+        connection = candidate; activeURL = url
         statisticsCache = [:]
     }
 
