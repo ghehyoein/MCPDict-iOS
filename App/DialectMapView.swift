@@ -75,7 +75,7 @@ struct DialectMapView: View {
             Picker(ui("查詢方式"), selection: $mode) {
                 ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).padding(.horizontal)
-            SelectionMenuButton(count: names.count, entryID: "mapLanguageSelection", expanded: $selector.expanded).opacity(menuOpen ? 0 : 1).allowsHitTesting(!menuOpen).accessibilityHidden(menuOpen).padding(.horizontal)
+            SelectionMenuButton(count: names.count, entryID: menuOpen ? "" : "mapLanguageSelection", expanded: $selector.expanded).opacity(menuOpen ? 0 : 1).allowsHitTesting(!menuOpen).accessibilityHidden(menuOpen).padding(.horizontal)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }

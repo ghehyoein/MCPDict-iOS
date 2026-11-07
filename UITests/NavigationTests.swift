@@ -412,6 +412,8 @@ final class NavigationTests: XCTestCase {
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "原生文字選區及系統選單"; picture.lifetime = .keepAlways; add(picture)
         let copy = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Copy", "拷貝", "拷贝", "複製", "复制"])).firstMatch
         XCTAssertTrue(copy.waitForExistence(timeout: 4))
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Look Up", "查詢", "查询"])).firstMatch.exists)
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Translate", "翻譯", "翻译"])).firstMatch.exists)
         app.tabBars.buttons["設定"].tap()
         XCTAssertFalse(app.buttons["設定預設字表"].exists)
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "點擊收藏星號")).firstMatch.tap()
