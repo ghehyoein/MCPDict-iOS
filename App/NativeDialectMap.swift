@@ -12,7 +12,7 @@ struct NativeDialectMap: UIViewRepresentable {
     let choose: (String) -> Void
     func makeCoordinator() -> Coordinator { Coordinator(choose: choose) }
     func makeUIView(context: Context) -> MKMapView {
-        let map = SelectionFriendlyMapView()
+        let map = MKMapView()
         map.delegate = context.coordinator
         map.pointOfInterestFilter = .excludingAll
         map.setRegion(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 34, longitude: 108), span: MKCoordinateSpan(latitudeDelta: 38, longitudeDelta: 48)), animated: false)
@@ -145,6 +145,10 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
 
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if window != nil { MapTextGestureGate.install(above: self) }
+    }
     // MapKit handles annotation selection itself. Explicit child hit testing keeps the
     // pronunciation and name controls interactive, including overlapping label bounds.
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
@@ -214,21 +218,37 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     }
 }
 
-/// Let UITextView own selection/drag gestures inside annotation text. Map gestures
-/// resume on the next touch outside text, without replacing any UIKit edit actions.
-final class SelectionFriendlyMapView: MKMapView {
-    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        let hit = super.hitTest(point, with: event)
-        var ancestor = hit
-        var inReading = false
-        while let view = ancestor, view !== self {
-            if let text = view as? UITextView, text.superview is LabelAnnotationView { inReading = true; break }
+/// Preserve MapKit's delegate for every normal gesture, but do not let ancestor
+/// map recognizers consume touches belonging to a selectable annotation text view.
+private final class MapTextGestureGate: NSObject, UIGestureRecognizerDelegate {
+    private static var associationKey: UInt8 = 0
+    private weak var original: UIGestureRecognizerDelegate?
+    init(original: UIGestureRecognizerDelegate?) { self.original = original }
+    static func install(above view: UIView) {
+        var parent = view.superview
+        while let ancestor = parent {
+            for gesture in ancestor.gestureRecognizers ?? [] where !(gesture.delegate is MapTextGestureGate) {
+                let gate = MapTextGestureGate(original: gesture.delegate)
+                objc_setAssociatedObject(gesture, &associationKey, gate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
+                gesture.delegate = gate
+            }
+            if ancestor is MKMapView { break }
+            parent = ancestor.superview
+        }
+    }
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        var ancestor = touch.view
+        while let view = ancestor {
+            if view is UITextView, view.superview is LabelAnnotationView { return false }
             ancestor = view.superview
         }
-        if isScrollEnabled == inReading {
-            isScrollEnabled = !inReading; isZoomEnabled = !inReading
-            isRotateEnabled = !inReading; isPitchEnabled = !inReading
-        }
-        return hit
+        return original?.gestureRecognizer?(gestureRecognizer, shouldReceive: touch) ?? true
+    }
+    override func responds(to selector: Selector!) -> Bool {
+        super.responds(to: selector) || (original?.responds(to: selector) ?? false)
+    }
+    override func forwardingTarget(for selector: Selector!) -> Any? {
+        if original?.responds(to: selector) == true { return original }
+        return super.forwardingTarget(for: selector)
     }
 }

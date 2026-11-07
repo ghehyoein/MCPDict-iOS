@@ -57,6 +57,14 @@ final class Revision092Tests: XCTestCase {
         model.installed = TableInstallation(catalogVersion: "test", tables: [tables[0]], databaseFile: "existing.db")
         XCTAssertFalse(model.downloadableIDs(Set(tables.map(\.id))).contains(tables[0].id))
         if tables.count > 1 { XCTAssertTrue(model.downloadableIDs([tables[1].id]).contains(tables[1].id)) }
+        let old = tables[0]
+        let updated = TablePackage(id: old.id, name: old.name, fullName: old.fullName, atlas: old.atlas,
+                                   dictionary: old.dictionary, administrative: old.administrative, source: old.source,
+                                   sourceCommit: old.sourceCommit, recordCount: old.recordCount, size: old.size,
+                                   sha256: String(repeating: "c", count: 64), url: old.url)
+        model.catalog = TableCatalog(schemaVersion: 1, version: "new", sourceRepository: UpstreamTables.repository,
+                                     sourceCommit: old.sourceCommit, scope: "", tables: [updated])
+        XCTAssertEqual(model.downloadableIDs([old.id]), [old.id])
     }
     @MainActor func testMapRetainsAnnotationAndSelectionAcrossPaletteChanges() throws {
         let coordinator = NativeDialectMap.Coordinator { _ in }

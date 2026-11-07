@@ -100,7 +100,7 @@ final class AppModel: ObservableObject {
             installed = TableInstallation(catalogVersion: "ui-test", tables: UITestFixtures.catalog.tables, databaseFile: nil)
             languages = UITestFixtures.catalog.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
-                for key in ["favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, "notebookCategory", "notebookCategories", "colorScheme"] { UserDefaults.standard.removeObject(forKey: key) }
+                for key in ["favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
                 for namespace in ["dictionary", "map", "downloads"] {
                     selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace)
                     selectionCache.defaults.removeObject(forKey: "selectionMode." + namespace)
@@ -116,6 +116,12 @@ final class AppModel: ObservableObject {
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") { languageSelection.resetFixture() }
             try? await repository.open(UITestFixtures.database())
             restoreLanguageSelection()
+            if ProcessInfo.processInfo.arguments.contains("--notebook-list-fixture") {
+                favorites = (0..<35).map { index in
+                    SavedReading(reading: Reading(id: Int64(index), characters: "好", language: "示例語言點", pronunciation: "hæ3", note: String(repeating: "完整注釋內容", count: 15)))
+                }
+            }
+            if ProcessInfo.processInfo.arguments.contains("--busy-fixture") { updating = true; downloading = true }
             status = ""
             return
         }
@@ -185,7 +191,9 @@ final class AppModel: ObservableObject {
     }
     @Published var settingsRevision = 0
     func downloadableIDs(_ selection: Set<String>) -> Set<String> {
-        selection.intersection(Set(catalog?.tables.filter { downloadStates[$0.id] != .downloaded }.map(\.id) ?? []))
+        // Only catalog entries can be missing/update; use the cached lookup rather
+        // than scanning every available table on each progress notification.
+        selection.filter { downloadStates[$0] == .missing || downloadStates[$0] == .update }
     }
     func loadCatalog() async {
         guard !updating else { return }
