@@ -61,12 +61,10 @@ struct LanguageBadge: View {
             .overlay(alignment: .topTrailing) {
                 if transitionAsterisk {
                     Text("*").font(.caption).foregroundStyle(.primary)
-                        .offset(x: 7, y: -7).allowsHitTesting(false)
+                        .offset(x: 7, y: -7).allowsHitTesting(false).accessibilityHidden(true)
                 }
             }
             .padding(.trailing, transitionAsterisk ? 8 : 0)
-            .accessibilityLabel(name)
-            .accessibilityValue(transitionAsterisk ? "*" : "")
     }
 }
 
