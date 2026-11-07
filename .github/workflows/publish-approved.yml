@@ -12,12 +12,12 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
-      EXPECTED_SHA: 069e15b5e681c4604cc1950ac31cafa424acdcf1
+      EXPECTED_SHA: 0111ad521f3ed37d8026be8ebcc5d04185bd786d
     steps:
       - name: Queue device build with the repository mandatory simulator release gate
         run: |
           test "$(gh api repos/$GH_REPO/git/ref/heads/main --jq .object.sha)" = "$EXPECTED_SHA"
-          run=$(gh run view 42390732849 --json headSha,status,conclusion)
+          run=$(gh run view 42393488722 --json headSha,status,conclusion)
           test "$(echo "$run" | jq -r .headSha)" = "$EXPECTED_SHA"
           test "$(echo "$run" | jq -r .status)" = completed
           test "$(echo "$run" | jq -r .conclusion)" = success
