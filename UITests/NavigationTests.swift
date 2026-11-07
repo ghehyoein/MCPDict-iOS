@@ -2,7 +2,7 @@ import XCTest
 import UIKit
 
 final class NavigationTests: XCTestCase {
-    @MainActor func testDictionaryResultSurvivesModeSwitchAndNotebookMultiselect() throws {
+    @MainActor func testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
@@ -18,25 +18,26 @@ final class NavigationTests: XCTestCase {
         let star = app.buttons["加入生字本"].firstMatch
         if star.exists { star.tap(); app.buttons["全選"].tap(); app.buttons["完成"].tap() }
         app.tabBars.buttons["生字本"].tap()
-        app.buttons["語言"].tap(); app.buttons["發音"].tap(); app.buttons["單字"].tap()
+        app.segmentedControls.buttons["發音"].tap()
+        XCTAssertTrue(app.scrollViews["notebookChoiceBar"].exists)
+        XCTAssertTrue(app.buttons["tɕiɔŋ1"].exists)
+        app.segmentedControls.buttons["隱藏"].tap()
+        XCTAssertFalse(app.scrollViews["notebookChoiceBar"].exists)
         app.buttons["多選"].tap(); app.buttons["全選"].tap()
         XCTAssertTrue(app.staticTexts["已選 1"].exists)
-        XCTAssertTrue(app.staticTexts["發音 · tɕiɔŋ1"].exists)
     }
     @MainActor func testContributorGroupingDoesNotFollowColorTabs() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
-        app.buttons["downloadLanguageSelection"].tap()
+        XCTAssertFalse(app.buttons["downloadLanguageSelection"].exists)
         let toggle = app.buttons["classificationPickerToggle"]
-        toggle.tap()
-        app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "維護人")
-        toggle.tap()
+        chooseClassification(app, "維護人")
         let blank = app.buttons["check-(無)"]
         let person = app.buttons["check-測試維護人"]
         XCTAssertTrue(blank.exists); XCTAssertTrue(person.exists)
         person.tap()
-        app.buttons["音典分區"].tap()
+        app.switches["paletteSwitch"].tap()
         XCTAssertEqual(person.value as? String, "checked")
         app.buttons["personRole-維護人"].tap()
         XCTAssertFalse(person.exists); XCTAssertTrue(blank.exists)
@@ -44,14 +45,13 @@ final class NavigationTests: XCTestCase {
         XCTAssertFalse(blank.exists)
         // Reset this persisted classification for other independent fixture launches.
         app.buttons["personRole-錄入人"].tap(); app.buttons["personRole-維護人"].tap()
-        toggle.tap(); app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "行政區劃")
-        toggle.tap()
+        chooseClassification(app, "行政區劃")
         app.buttons["expand-北京"].tap()
         XCTAssertTrue(app.buttons["check-東城"].exists)
         XCTAssertFalse(app.buttons["expand-東城"].exists)
         XCTAssertFalse(app.buttons["check-示例街道"].exists)
         XCTAssertFalse(app.buttons["check-示例語言點"].exists)
-        toggle.tap(); app.pickerWheels.firstMatch.adjust(toPickerWheelValue: "地圖集二分區")
+        chooseClassification(app, "地圖集二分區")
     }
 
     @MainActor func testThreeIndependentFontSliders() throws {
@@ -88,7 +88,7 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         XCTAssertEqual(app.textFields.firstMatch.value as? String, "漢字、U+4E2D 或原始讀音")
         app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
-        app.buttons["downloadLanguageSelection"].tap()
+        XCTAssertFalse(app.buttons["downloadLanguageSelection"].exists)
         app.buttons["selectAllLanguages"].tap()
         XCTAssertTrue(app.buttons["downloadTables"].isEnabled)
         for key in ["漢語", "官話", "北京"] {
@@ -101,7 +101,7 @@ final class NavigationTests: XCTestCase {
         app.buttons["check-示例語言點"].tap()
         XCTAssertEqual(app.buttons["check-示例語言點"].value as? String, "unchecked")
         XCTAssertFalse(app.buttons["downloadTables"].isEnabled)
-        XCTAssertTrue(app.buttons["finishLanguages"].exists)
+        XCTAssertFalse(app.buttons["finishLanguages"].exists)
         XCTAssertEqual(app.staticTexts["downloadState-" + String(repeating: "a", count: 24)].label, "已下載")
         app.buttons.matching(identifier: "示例語言點").firstMatch.tap()
         XCTAssertTrue(app.navigationBars.buttons["完成"].waitForExistence(timeout: 5))
@@ -153,6 +153,7 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.tabBars.buttons["地圖"].tap()
         app.buttons["mapLanguageSelection"].tap()
+        app.segmentedControls.buttons["分區"].tap()
         XCTAssertTrue(app.buttons["check-漢語"].exists)
         app.buttons["expand-漢語"].tap(); app.buttons["expand-官話"].tap()
         XCTAssertTrue(app.buttons["check-北京"].exists)
@@ -166,8 +167,8 @@ final class NavigationTests: XCTestCase {
         XCTAssertEqual(app.buttons["check-北京"].value as? String, "unchecked")
         XCTAssertFalse(app.buttons["selectAllLanguages"].exists)
         app.segmentedControls.buttons["語言"].tap()
-        XCTAssertTrue(app.buttons["mapLanguageSelection"].label.contains("已選 0"))
-        XCTAssertEqual(app.buttons["check-漢語"].value as? String, "unchecked")
+        XCTAssertTrue(app.buttons["mapLanguageSelection"].label.contains("已選 1"))
+        XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
         app.buttons["selectAllLanguages"].tap()
         app.segmentedControls.buttons["自選"].tap()
         XCTAssertTrue(app.buttons["mapLanguageSelection"].label.contains("已選 0"))
@@ -190,8 +191,8 @@ final class NavigationTests: XCTestCase {
         let reading = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
         XCTAssertTrue(reading.waitForExistence(timeout: 10))
         XCTAssertTrue(reading.isHittable)
-        let restored = app.staticTexts.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
-        XCTAssertTrue(restored.waitForExistence(timeout: 10), app.staticTexts["mapPointStatus"].debugDescription)
+        let restored = app.textViews.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
+        XCTAssertTrue(restored.waitForExistence(timeout: 10), app.textViews["mapPointStatus"].debugDescription)
 
         let labelFrame = reading.frame
         app.buttons["mapLanguageSelection"].tap()
@@ -211,9 +212,11 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("一中")
         app.buttons["查詢"].tap()
-        let unicode = app.staticTexts["characterUnicode"]
+        let unicode = app.textViews["characterUnicode"]
         XCTAssertTrue(unicode.waitForExistence(timeout: 8))
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@", "基本 1.1")).firstMatch.waitForExistence(timeout: 5))
+        app.buttons["更多字形資料"].tap()
+        XCTAssertTrue(app.textViews.matching(NSPredicate(format: "label CONTAINS %@", "基本 1.1")).firstMatch.waitForExistence(timeout: 5))
+        app.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.15)).tap()
         XCTAssertFalse(app.staticTexts["dictionaryCopyStatus"].exists)
         if app.navigationBars.buttons["完成"].exists { app.navigationBars.buttons["完成"].tap() }
         app.buttons["說文"].tap()
@@ -288,7 +291,7 @@ final class NavigationTests: XCTestCase {
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
         app.buttons["dictionaryLanguageSelection"].tap()
         app.buttons["selectAllLanguages"].tap(); app.buttons["finishLanguages"].tap()
-        XCTAssertTrue(app.staticTexts["dictionaryHeadword"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.textViews["dictionaryHeadword"].waitForExistence(timeout: 8))
         app.tabBars.buttons["生字本"].tap()
         app.buttons["chooseNotebooks"].tap()
         app.buttons["新建生字表"].tap()
@@ -315,7 +318,7 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--long-results-fixture"]; app.launch()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
         app.buttons["查詢"].tap()
-        XCTAssertTrue(app.staticTexts["dictionaryHeadword"].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.textViews["dictionaryHeadword"].waitForExistence(timeout: 8))
         XCTAssertTrue(app.textFields.firstMatch.isHittable)
         app.buttons["dictionaryLanguageSelection"].tap()
         XCTAssertTrue(app.buttons["finishLanguages"].isHittable)
@@ -337,14 +340,20 @@ final class NavigationTests: XCTestCase {
         }
     }
 
-    @MainActor func testNoteInputVariantsAreAvailableBeforeQuery() throws {
+    @MainActor func testSelectorsChangeOnlyAfterSubmittedQuery() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         app.segmentedControls.buttons["註釋"].tap()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("输")
+        XCTAssertFalse(app.scrollViews["noteInputVariants"].exists)
+        app.buttons["查詢"].tap()
         XCTAssertTrue(app.scrollViews["noteInputVariants"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["輸"].waitForExistence(timeout: 5))
-        let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "注釋輸入異體字"; picture.lifetime = .keepAlways; add(picture)
+        XCTAssertTrue(app.buttons["輸"].exists)
+        app.segmentedControls.buttons["漢字"].tap()
+        XCTAssertTrue(app.scrollViews["noteInputVariants"].exists)
+        app.buttons["查詢"].tap()
+        let gone = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: app.scrollViews["noteInputVariants"])
+        XCTAssertEqual(XCTWaiter.wait(for: [gone], timeout: 5), .completed)
     }
 
     @MainActor func testDownloadsPushAndReferenceOptionsSheet() throws {
@@ -352,20 +361,64 @@ final class NavigationTests: XCTestCase {
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
         XCTAssertEqual(app.tabBars.buttons.count, 4)
         app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
-        XCTAssertTrue(app.buttons["downloadLanguageSelection"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["selectAllLanguages"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["downloadLanguageSelection"].exists)
         XCTAssertFalse(app.navigationBars.buttons["完成"].exists)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["字頭資料顯示"].tap()
         XCTAssertTrue(app.navigationBars["字頭資料顯示"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.switches["Unicode 碼"].exists)
-        app.switches["Unicode 碼"].tap()
-        XCTAssertEqual(app.switches["Unicode 碼"].value as? String, "0", app.debugDescription)
+        app.descendants(matching: .any).matching(identifier: "referenceField-Unicode").firstMatch.tap()
+        app.buttons["不顯示"].tap()
         app.navigationBars.buttons["完成"].tap()
         app.tabBars.buttons["字典"].tap()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
         app.buttons["查詢"].tap()
-        XCTAssertTrue(app.staticTexts["dictionaryHeadword"].waitForExistence(timeout: 8))
-        XCTAssertFalse(app.staticTexts["characterUnicode"].exists, app.debugDescription)
+        XCTAssertTrue(app.textViews["dictionaryHeadword"].waitForExistence(timeout: 8))
+        XCTAssertFalse(app.textViews["characterUnicode"].exists, app.debugDescription)
+    }
+
+    @MainActor private func chooseClassification(_ app: XCUIApplication, _ value: String) {
+        app.descendants(matching: .any).matching(identifier: "classificationPickerToggle").firstMatch.tap()
+        app.buttons[value].tap()
+        if app.navigationBars["分類方式"].exists { app.navigationBars.buttons.firstMatch.tap() }
+    }
+    @MainActor func testSharedLanguageStateAndIndependentDownloads() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
+        app.buttons["dictionaryLanguageSelection"].tap()
+        app.buttons["clearLanguages"].tap()
+        app.switches["paletteSwitch"].tap()
+        app.segmentedControls.buttons["分區"].tap()
+        XCTAssertEqual(app.segmentedControls["regionClassification"].buttons.count, 2)
+        app.buttons["check-漢語"].tap()
+        app.tabBars.buttons["地圖"].tap()
+        XCTAssertTrue(app.segmentedControls.buttons["分區"].isSelected)
+        XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
+        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "1")
+        app.buttons["finishLanguages"].tap()
+        app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
+        XCTAssertTrue(app.segmentedControls.buttons["語言"].isSelected)
+        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "1")
+        XCTAssertFalse(app.buttons["finishLanguages"].exists)
+    }
+    @MainActor func testNativeTextSelectionAndDefaultBookNavigation() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--long-results-fixture"]; app.launch()
+        app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中"); app.buttons["查詢"].tap()
+        let note = app.textViews.matching(NSPredicate(format: "label BEGINSWITH %@", "完整注釋內容")).firstMatch
+        XCTAssertTrue(note.waitForExistence(timeout: 8)); note.press(forDuration: 1.2)
+        let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "原生文字選區及系統選單"; picture.lifetime = .keepAlways; add(picture)
+        let copy = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Copy", "拷貝", "拷贝", "複製", "复制"])).firstMatch
+        XCTAssertTrue(copy.waitForExistence(timeout: 4))
+        app.tabBars.buttons["設定"].tap()
+        XCTAssertFalse(app.buttons["設定預設字表"].exists)
+        app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "點擊收藏星號")).firstMatch.tap()
+        app.buttons["直接加入預設字表"].tap()
+        if app.navigationBars["點擊收藏星號"].exists { app.navigationBars.buttons.firstMatch.tap() }
+        app.buttons["設定預設字表"].tap()
+        XCTAssertTrue(app.navigationBars["設定預設字表"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.navigationBars.buttons["完成"].exists)
+        XCTAssertTrue(app.buttons["預設生字表 · 預設生字表"].exists)
     }
 
 }

@@ -33,6 +33,17 @@ struct NotebookArchive: Codable {
         return state
     }
 
+    func exportingSelected() -> Self {
+        var archive = self
+        archive.books = books.filter { selected.contains($0.id) }
+        archive.entries = entries.compactMap { entry in
+            let included = entry.membership.intersection(selected)
+            guard !included.isEmpty else { return nil }
+            var copy = entry; copy.books = included; return copy
+        }
+        return archive
+    }
+
     mutating func remove(_ ids: Set<UUID>) {
         books.removeAll { ids.contains($0.id) }
         let lostSelection = !selected.isDisjoint(with: ids)

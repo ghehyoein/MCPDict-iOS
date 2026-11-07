@@ -20,6 +20,7 @@ struct SavedReading: Identifiable, Codable {
 final class AppModel: ObservableObject {
     let repository: DictionaryRepository
     let tableStore: TableStore
+    let languageSelection: LanguageSelectionState
     @Published var activeTab = 0
     @Published var mapHandoff: MapHandoff?
     func openResultOnMap(_ character: String) {
@@ -81,6 +82,7 @@ final class AppModel: ObservableObject {
     private let selectionCache: LanguageSelectionCache
     init(defaults: UserDefaults = .standard, favoritesURL: URL? = nil) {
         selectionCache = LanguageSelectionCache(defaults: defaults)
+        languageSelection = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
         let repository = DictionaryRepository()
         self.repository = repository
         tableStore = TableStore(repository: repository)
@@ -95,13 +97,19 @@ final class AppModel: ObservableObject {
             installed = TableInstallation(catalogVersion: "ui-test", tables: UITestFixtures.catalog.tables, databaseFile: nil)
             languages = UITestFixtures.catalog.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
-                for key in ["favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key] { UserDefaults.standard.removeObject(forKey: key) }
+                for key in ["favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, "notebookCategory", "notebookCategories", "colorScheme"] { UserDefaults.standard.removeObject(forKey: key) }
                 for namespace in ["dictionary", "map", "downloads"] {
                     selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace)
                     selectionCache.defaults.removeObject(forKey: "selectionMode." + namespace)
-                    for mode in MapSearchKind.allCases { selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace + "." + mode.rawValue) }
+                    for mode in MapSearchKind.allCases {
+                        for prefix in ["languageSelection.", "grouping.", "roles."] { selectionCache.defaults.removeObject(forKey: prefix + namespace + "." + mode.rawValue) }
+                        for grouping in TableGrouping.allCases { selectionCache.defaults.removeObject(forKey: "regionNode." + namespace + "." + mode.rawValue + grouping.rawValue) }
+                    }
+                    selectionCache.defaults.removeObject(forKey: "island." + namespace)
+                    selectionCache.defaults.removeObject(forKey: "history." + namespace)
                 }
             }
+            if ProcessInfo.processInfo.arguments.contains("--reset-selection") { languageSelection.resetFixture() }
             try? await repository.open(UITestFixtures.database())
             restoreLanguageSelection()
             status = ""
@@ -374,6 +382,7 @@ struct RootView: View {
             DialectMapView().tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
             SettingsView().tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
+        .environmentObject(model.languageSelection)
         .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
         .id(uiLanguage)
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
@@ -393,16 +402,16 @@ struct ReadingView: View {
         VStack(alignment: .leading, spacing: 8) {
             Button { model.tableDetail = model.table(named: reading.language) } label: { LanguageBadge(name: reading.language, table: model.table(named: reading.language)) }.buttonStyle(.plain)
             PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).foregroundStyle(.primary)
-            Text(reading.characters).font(.title3).textSelection(.enabled)
-            if !reading.note.isEmpty { Text(reading.note).font(.subheadline).textSelection(.enabled) }
+            SystemText(reading.characters).font(.title3)
+            if !reading.note.isEmpty { SystemText(reading.note).font(.subheadline) }
         }.padding(.vertical, 6)
     }
 }
 
 struct SearchView: View {
-    @AppStorage("dictionaryPalette") private var palette = "atlas"
+    @AppStorage("colorScheme") private var palette = "atlas"
     @FocusState private var searchFocused: Bool
-    @State private var menuOpen = false
+    @EnvironmentObject private var selector: LanguageSelectionState
     @State private var reference: ReferencePage?
     @State private var selectedCharacter = ""
     @State private var resultHeaderPinned = false
@@ -426,14 +435,14 @@ struct SearchView: View {
                             .focused($searchFocused).onSubmit { submitQuery() }
                         Button(ui("查詢")) { submitQuery() }.disabled(model.searching)
                     }
-                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), cacheKey: "dictionary", entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } }, colorScheme: $palette, expanded: $menuOpen)
+                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), state: selector, entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } })
                 }
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.updating { ProgressView(ui(model.status)) }
                 else if model.installed?.tables.isEmpty != false {
                     ContentUnavailableView(ui("先選擇字表"), systemImage: "arrow.down.circle", description: Text(ui("前往「設定 → 字表下載」恢復所需字表，或手動檢查上游更新。")))
                 } else if model.results.isEmpty && !model.searching {
-                    Text(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
+                    SystemText(ui("輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。"))
                 }
                 resultsSection(viewport: viewport.frame(in: .global))
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
@@ -450,7 +459,7 @@ struct SearchView: View {
         }
     }
     @ViewBuilder private func resultsSection(viewport: CGRect) -> some View {
-                if !model.resultQuery.isEmpty || (model.mode == .note && !model.query.isEmpty) {
+                if !model.resultQuery.isEmpty {
                     let hasCharacters = model.resultMode == .character || model.resultMode == .note
                     let chars = model.resultCharacters
                     let current = chars.contains(selectedCharacter) ? selectedCharacter : chars.first ?? ""
@@ -464,7 +473,7 @@ struct SearchView: View {
                         }
                     } header: {
                         VStack(alignment: .leading, spacing: 4) {
-                            if model.mode == .note { NoteVariantPicker(query: $model.query, submit: submitQuery) }
+                            if model.resultMode == .note { NoteVariantPicker(query: Binding(get: { model.resultQuery }, set: { model.query = $0; model.mode = .note }), submit: submitQuery) }
                             if hasCharacters && !chars.isEmpty {
                                 ScrollView(.horizontal) {
                                     HStack {

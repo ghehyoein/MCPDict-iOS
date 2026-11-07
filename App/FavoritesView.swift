@@ -2,12 +2,13 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 enum NotebookCategory: String, CaseIterable {
-    case language = "語言", pronunciation = "發音", character = "單字"
+    case language = "語言", pronunciation = "發音", character = "單字", hidden = "隱藏"
     func keys(_ reading: Reading) -> [String] {
         switch self {
         case .language: return [reading.language]
         case .pronunciation: return [reading.pronunciation]
         case .character: return CharacterResults.characters(reading.characters)
+        case .hidden: return []
         }
     }
 }
@@ -18,7 +19,7 @@ struct NotebookGroup: Identifiable {
     let title: String
     let entries: [SavedReading]
     static func make(_ entries: [SavedReading], categories: Set<NotebookCategory>) -> [Self] {
-        if categories.isEmpty { return [Self(id: "all", title: "", entries: entries)] }
+        if categories.isEmpty || categories == [.hidden] { return [Self(id: "all", title: "", entries: entries)] }
         return NotebookCategory.allCases.filter(categories.contains).flatMap { category in
             var groups = [String: [SavedReading]]()
             for item in entries {
@@ -33,15 +34,40 @@ struct NotebookGroup: Identifiable {
 
 struct FavoritesView: View {
     @EnvironmentObject var model: AppModel
-    @AppStorage("notebookCategories") private var stored = ""
+    @AppStorage("notebookCategory") private var stored = ""
+    @State private var selectedKey = ""
     @State private var selection = Set<UUID>()
     @State private var selecting = false
     @State private var showBooks = false
     @State private var exporting = false
     @State private var importing = false
     @State private var transferMessage: String?
-    private var categories: Set<NotebookCategory> {
-        Set(stored.split(separator: "|").compactMap { NotebookCategory(rawValue: String($0)) })
+    private var category: NotebookCategory { NotebookCategory(rawValue: stored) ?? .hidden }
+    private var keys: [String] { Set(model.visibleFavorites.flatMap { category.keys($0.reading) }).sorted() }
+    private var currentKey: String { keys.contains(selectedKey) ? selectedKey : keys.first ?? "" }
+    private var shown: [SavedReading] {
+        let entries = model.visibleFavorites
+        guard category != .hidden else { return entries }
+        let key = currentKey
+        return entries.filter { category.keys($0.reading).contains(key) }
+    }
+    private var groups: [NotebookGroup] { [NotebookGroup(id: "current", title: "", entries: shown)] }
+    @ViewBuilder private var choiceBar: some View {
+        if category != .hidden && !keys.isEmpty {
+            ScrollView(.horizontal) {
+                HStack {
+                    ForEach(keys, id: \.self) { key in
+                        Button {
+                            selectedKey = key
+                            if category == .language { model.tableDetail = model.table(named: key) }
+                        } label: {
+                            if category == .language { LanguageBadge(name: key, table: model.table(named: key)) }
+                            else { Text(key) }
+                        }.buttonStyle(.bordered).tint(key == currentKey ? AppAccent.color : .gray)
+                    }
+                }
+            }.accessibilityIdentifier("notebookChoiceBar")
+        }
     }
     var body: some View {
         NavigationStack {
@@ -55,17 +81,10 @@ struct FavoritesView: View {
                             Image(systemName: "chevron.right")
                         }
                     }.accessibilityIdentifier("chooseNotebooks")
-                    HStack {
-                        ForEach(NotebookCategory.allCases, id: \.self) { kind in
-                            Button {
-                                var active = categories
-                                if !active.insert(kind).inserted { active.remove(kind) }
-                                stored = NotebookCategory.allCases.filter(active.contains).map(\.rawValue).joined(separator: "|")
-                            } label: {
-                                Label(ui(kind.rawValue), systemImage: categories.contains(kind) ? "checkmark.square.fill" : "square").contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
-                            }.buttonStyle(.borderless)
-                        }
-                    }
+                    Picker(ui("生字本分類"), selection: $stored) {
+                        ForEach(NotebookCategory.allCases, id: \.self) { Text(ui($0.rawValue)).tag($0.rawValue) }
+                    }.pickerStyle(.segmented).accessibilityIdentifier("notebookCategory")
+                    choiceBar
                     if selecting {
                         HStack {
                             Button(ui("全選")) { selection = Set(model.visibleFavorites.map(\.id)) }
@@ -81,7 +100,7 @@ struct FavoritesView: View {
                 if model.notebook.books.isEmpty { Text(ui("請先新建生字表。")) }
                 else if model.notebook.selected.isEmpty { Text(ui("請選擇要查看的生字表。")) }
                 else if model.visibleFavorites.isEmpty { Text(ui("點擊查詢結果旁的星號，即可加入所選生字表。")) }
-                ForEach(NotebookGroup.make(model.visibleFavorites, categories: categories)) { group in
+                ForEach(groups) { group in
                     Section {
                         ForEach(group.entries) { saved in
                             HStack(alignment: .top) {
@@ -103,7 +122,7 @@ struct FavoritesView: View {
                     } header: { if !group.title.isEmpty { Text(verbatim: group.title).textCase(nil) } }
                 }
             }
-            .fileExporter(isPresented: $exporting, document: NotebookTextDocument(archive: model.notebook), contentType: .json, defaultFilename: "漢字音典生字本") { result in
+            .fileExporter(isPresented: $exporting, document: NotebookTextDocument(archive: model.notebook.exportingSelected()), contentType: .plainText, defaultFilename: "漢字音典生字本") { result in
                 if case .failure(let error) = result { model.error = error.localizedDescription }
             }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json, .plainText]) { result in
@@ -118,12 +137,19 @@ struct FavoritesView: View {
             .alert(ui("生字本匯入"), isPresented: Binding(get: { transferMessage != nil }, set: { if !$0 { transferMessage = nil } })) {
                 Button(ui("好")) { transferMessage = nil }
             } message: { Text(transferMessage ?? "") }
+            .onAppear {
+                if stored.isEmpty {
+                    let old = UserDefaults.standard.string(forKey: "notebookCategories") ?? ""
+                    stored = old.split(separator: "|").compactMap { NotebookCategory(rawValue: String($0)) }.first?.rawValue ?? NotebookCategory.hidden.rawValue
+                }
+            }
+            .onChange(of: stored) { _, _ in selectedKey = "" }
             .sheet(isPresented: $showBooks) { BookPicker() }
              .onChange(of: model.notebook.selected) { _, _ in selection = [] }
              .navigationTitle(ui("生字本")).toolbar {
                 Menu {
-                    Button(ui("匯出全部生字表 · JSON 純文字")) { exporting = true }
-                    Button(ui("匯入生字表 · JSON 純文字")) { importing = true }
+                    Button(ui("匯出所選生字表")) { exporting = true }.disabled(model.notebook.selected.isEmpty)
+                    Button(ui("匯入生字表")) { importing = true }
                 } label: { Image(systemName: "square.and.arrow.up.on.square") }.accessibilityLabel(ui("匯入及匯出"))
                 Button(ui(selecting ? "完成" : "多選")) { selecting.toggle(); selection = [] }
             }

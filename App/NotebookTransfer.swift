@@ -3,7 +3,8 @@ import UniformTypeIdentifiers
 
 // UTF-8 JSON is plain text and preserves book memberships, IPA and multiline notes.
 struct NotebookTextDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.json, .plainText] }
+    static var readableContentTypes: [UTType] { [.plainText, .json] }
+    static var writableContentTypes: [UTType] { [.plainText] }
     var archive: NotebookArchive
     init(archive: NotebookArchive) { self.archive = archive }
     init(configuration: ReadConfiguration) throws {
@@ -26,15 +27,25 @@ enum FavoritePreferences {
 }
 
 struct FavoriteSettingsSection: View {
-    @EnvironmentObject var model: AppModel
     @AppStorage("favoriteAction") private var action = "ask"
-    @State private var defaults = Set<UUID>()
     var body: some View {
         Section(ui("收藏")) {
             Picker(ui("點擊收藏星號"), selection: $action) {
                 Text(ui("詢問加入哪些生字表")).tag("ask")
-                Text(ui("直接加入預設生字表")).tag("direct")
+                Text(ui("直接加入預設字表")).tag("direct")
+            }.pickerStyle(.navigationLink)
+            if action == "direct" {
+                NavigationLink(ui("設定預設字表")) { DefaultFavoriteBooksView() }
             }
+        }
+    }
+}
+
+struct DefaultFavoriteBooksView: View {
+    @EnvironmentObject var model: AppModel
+    @State private var defaults = Set<UUID>()
+    var body: some View {
+        List {
             ForEach(model.notebook.books) { book in
                 Button {
                     if !defaults.insert(book.id).inserted { defaults.remove(book.id) }
@@ -48,6 +59,8 @@ struct FavoriteSettingsSection: View {
                 }.buttonStyle(.plain).accessibilityLabel(ui("預設生字表") + " · " + book.title)
             }
         }.onAppear { defaults = FavoritePreferences.targets(in: model.notebook) }
+            .navigationTitle(ui("設定預設字表")).navigationBarTitleDisplayMode(.inline)
+            .toolbar(.hidden, for: .tabBar)
     }
 }
 

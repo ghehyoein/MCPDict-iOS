@@ -42,11 +42,11 @@ enum CharacterResults {
 struct CharacterResultsView: View {
     @EnvironmentObject var model: AppModel
     let current: String
-    @AppStorage("dictionaryPalette") private var palette = "atlas"
+    @AppStorage("colorScheme") private var palette = "atlas"
     var body: some View {
         Group {
             let groups = model.characterGroups(current)
-            if groups.isEmpty { Text(ui("此字在已下載字表中沒有讀音")).foregroundStyle(.secondary) }
+            if groups.isEmpty { SystemText(ui("此字在已下載字表中沒有讀音"), color: .secondaryLabel) }
             ForEach(groups) { group in
                 HStack(alignment: .top, spacing: 12) {
                     Button { model.tableDetail = model.table(named: group.language) } label: { LanguageBadge(name: group.language, table: model.table(named: group.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
@@ -54,7 +54,7 @@ struct CharacterResultsView: View {
                         ForEach(group.readings) { reading in
                             VStack(alignment: .leading, spacing: 2) {
                                 HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).contentShape(Rectangle()).textSelection(.enabled).accessibilityIdentifier("dictionary-reading-" + reading.language) }
-                                if !reading.note.isEmpty { Text(reading.note).textSelection(.enabled).font(.subheadline).foregroundStyle(.secondary) }
+                                if !reading.note.isEmpty { SystemText(reading.note, color: .secondaryLabel).font(.subheadline) }
                             }
 
                         }
