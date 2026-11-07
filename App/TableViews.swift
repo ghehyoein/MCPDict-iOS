@@ -37,7 +37,7 @@ struct DataView: View {
     var body: some View {
         Group {
             List {
-                Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
+                SystemText(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
                 LanguageSelectionPanel(tables: available, names: $names, state: selector, entryID: "downloadLanguageSelection",
                                        inspect: { model.tableDetail = $0 }, alwaysExpanded: true)
                     .environment(\.tableDownloadStates, model.downloadStates)
@@ -60,7 +60,7 @@ struct TableActions: View {
         let local = selection.intersection(Set(model.installed?.tables.map(\.id) ?? []))
         HStack(spacing: 10) {
             Spacer(minLength: 0)
-            Text(ui(model.removing ? "正在移除" : model.downloading ? "已下載 \(model.downloadedCount) 份" : model.updating ? model.status : "已選 \(selection.count) 份")).foregroundStyle(.white).accessibilityIdentifier("downloadCount")
+            SystemText(ui(model.removing ? "正在移除" : model.downloading ? "已下載 \(model.downloadedCount) 份" : model.updating ? model.status : "已選 \(selection.count) 份"), color: .white).accessibilityIdentifier("downloadCount")
             if model.downloading || model.removing {
                 ProgressView(value: model.tableProgress).progressViewStyle(.linear).frame(width: 60)
                     .accessibilityLabel(ui("字表處理進度"))

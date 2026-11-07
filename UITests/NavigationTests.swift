@@ -24,7 +24,7 @@ final class NavigationTests: XCTestCase {
         app.segmentedControls.buttons["隱藏"].tap()
         XCTAssertFalse(app.scrollViews["notebookChoiceBar"].exists)
         app.buttons["多選"].tap(); app.buttons["全選"].tap()
-        XCTAssertTrue(app.staticTexts["已選 1"].exists)
+        XCTAssertTrue(app.textViews["已選 1"].exists)
     }
     @MainActor func testContributorGroupingDoesNotFollowColorTabs() throws {
         let app = XCUIApplication()
