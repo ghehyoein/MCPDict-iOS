@@ -149,20 +149,11 @@ struct PronunciationView: View {
             if scrollable {
                 ScrollView(.horizontal, showsIndicators: false) { content }.fixedSize(horizontal: false, vertical: true)
             } else { content }
-        }.accessibilityElement(children: .ignore)
-            .accessibilityLabel(ToneDisplay.text(raw, table: table, style: style, pitch: pitch))
+        }
     }
     private var content: some View {
-        HStack(alignment: .center, spacing: 0) {
-            ForEach(ToneDisplay.parts(raw, table: table, style: style, pitchStyle: pitch)) { part in
-                Text(part.base).font(pointSize.map { .system(size: $0) })
-                if part.stacked {
-                    VStack(spacing: 0) { Text(part.pitch); Text(part.tone) }.font(pointSize.map { .system(size: $0 * 0.6) } ?? .caption2)
-                } else {
-                    Text(part.pitch).font(pointSize.map { .system(size: $0 * (pitch == "number" ? 0.7 : 1)) } ?? (pitch == "number" ? .caption : .body))
-                    Text(part.tone).font(pointSize.map { .system(size: $0) })
-                }
-            }
-        }.textSelection(.enabled).lineLimit(1).fixedSize(horizontal: true, vertical: false)
+        SystemText(ToneDisplay.text(raw, table: table, style: style, pitch: pitch), pointSize: pointSize,
+                   parts: ToneDisplay.parts(raw, table: table, style: style, pitchStyle: pitch))
+            .fixedSize(horizontal: true, vertical: false)
     }
 }

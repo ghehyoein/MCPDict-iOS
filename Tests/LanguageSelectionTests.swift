@@ -28,7 +28,7 @@ final class LanguageSelectionTests: XCTestCase {
         }
         let a = try table("甲", "歷史音", ["錄入人":"A,B","維護人":"B","方言島":"true","歷史音":"0"])
         let b = try table("乙", "吳語", ["錄入人":"B", "維護人":"", "方言島":"true"])
-        let c = try table("丙", "吳語", ["維護人":"A", "歷史音":"#BADDFF"])
+        let c = try table("丙", "吳語", ["維護人":"A", "歷史音":"#808080"])
         let tables = [a,b,c]
         let index = SelectionIndex(tables: tables, grouping: .person)
         XCTAssertEqual(index.nodes[index.roots[0]]?.title, "(無)")

@@ -31,21 +31,17 @@ extension EnvironmentValues {
 struct DataView: View {
     @EnvironmentObject var model: AppModel
     @State private var names = Set<String>()
-    @State private var expanded = false
-    @AppStorage("downloadPalette") private var palette = "atlas"
+    @StateObject private var selector = LanguageSelectionState(namespace: "downloads")
     private var selection: Set<String> { Set(available.filter { names.contains($0.name) }.map(\.id)) }
     private var available: [TablePackage] { model.availableTables }
     var body: some View {
         Group {
             List {
                 Text(ui("網上字表 \(model.catalog?.tables.count ?? 0) 份 · 本地字表 \(model.installed?.tables.count ?? 0) 份")).font(.caption)
-                LanguageSelectionPanel(tables: available, names: $names, cacheKey: "downloads", entryID: "downloadLanguageSelection",
-                                       inspect: { model.tableDetail = $0 }, colorScheme: $palette, expanded: $expanded)
+                LanguageSelectionPanel(tables: available, names: $names, state: selector, entryID: "downloadLanguageSelection",
+                                       inspect: { model.tableDetail = $0 }, alwaysExpanded: true)
                     .environment(\.tableDownloadStates, model.downloadStates)
                     .disabled(model.updating)
-                if model.updating {
-                    HStack { ProgressView(); Text(ui(model.status)).font(.caption) }
-                }
             }
             .navigationTitle(ui("字表下載")).navigationBarTitleDisplayMode(.large)
             .toolbar(.hidden, for: .tabBar)
@@ -64,7 +60,7 @@ struct TableActions: View {
         let local = selection.intersection(Set(model.installed?.tables.map(\.id) ?? []))
         HStack(spacing: 10) {
             Spacer(minLength: 0)
-            Text(ui(model.removing ? "正在移除" : model.downloading ? "已下載 \(model.downloadedCount) 份" : "已選 \(selection.count) 份")).foregroundStyle(.white).accessibilityIdentifier("downloadCount")
+            Text(ui(model.removing ? "正在移除" : model.downloading ? "已下載 \(model.downloadedCount) 份" : model.updating ? model.status : "已選 \(selection.count) 份")).foregroundStyle(.white).accessibilityIdentifier("downloadCount")
             if model.downloading || model.removing {
                 ProgressView(value: model.tableProgress).progressViewStyle(.linear).frame(width: 60)
                     .accessibilityLabel(ui("字表處理進度"))

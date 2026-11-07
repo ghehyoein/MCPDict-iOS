@@ -13,24 +13,24 @@ struct TableInfoView: View {
         if let value = statistics[key] { return value }
         if key == "地點" { return current.administrative.joined(separator: "/") }
         if key == "地圖集二分區" { return current.atlas.joined(separator: "－") }
+        if key == "音典分區過渡色" { return TableColors.hexes(current.dictionaryColor).dropFirst().joined(separator: "、") }
         if key == "音典分區" { return current.dictionary.joined(separator: "－") }
         if key == "解析日志" { return log }
         if ["字數", "□數", "音節數", "不帶調音節數"].contains(key) { return ui("下載字表後統計") }
         return ""
     }
-    private let first = ["名稱", "地點", "經緯度", "地圖集二分區", "音典分區", "字數", "□數", "音節數", "不帶調音節數"]
+    private let first = ["名稱", "地點", "經緯度", "地圖集二分區", "音典分區", "音典分區過渡色", "字數", "□數", "音節數", "不帶調音節數"]
     private let second = ["錄入人", "維護人", "版本", "文件名", "字表來源", "參考文獻", "字表修改情況", "字表品質", "字表品質説明"]
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text(current.fullName).font(.title2).padding(.bottom, 12)
+                    SystemText(current.fullName).font(.title2).padding(.bottom, 12)
                     ForEach(first, id: \.self) { field($0) }
-                    Color.clear.frame(height: 22)
                     ForEach(second, id: \.self) { field($0) }
                     Color.clear.frame(height: 22)
-                    Text(ui("解析日誌")).font(.title2.bold())
-                    Text(value("解析日志")).textSelection(.enabled)
+                    SystemText(ui("解析日誌"), weight: .bold).font(.title2)
+                    SystemText(value("解析日志"))
                 }.frame(maxWidth: .infinity, alignment: .leading).padding()
             }
             .navigationTitle(table.name).navigationBarTitleDisplayMode(.inline)
@@ -48,14 +48,13 @@ struct TableInfoView: View {
     @ViewBuilder private func field(_ key: String) -> some View {
         if key == "文件名" {
             HStack(alignment: .firstTextBaseline, spacing: 0) {
-                Text(ui(key) + "：").bold()
+                SystemText(ui(key) + "：", weight: .bold)
                 if let source = current.metadata?["文件網址"], let url = URL(string: source), url.scheme == "https" {
                     Link(value(key), destination: url)
-                } else { Text(value(key)) }
+                } else { SystemText(value(key)) }
             }
         } else {
-            (Text(ui(key == "字表品質説明" ? "字表品質說明" : key) + "：").bold() + Text(value(key)))
-                .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+            SystemText(ui(key == "字表品質説明" ? "字表品質說明" : key) + "：" + value(key))
             ForEach(MetadataText.links(current.metadata?[key] ?? ""), id: \.absoluteString) { url in
                 Link(url.absoluteString, destination: url).font(.caption)
             }

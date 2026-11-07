@@ -2,7 +2,6 @@ import SwiftUI
 
 struct SettingsView: View {
     @EnvironmentObject var model: AppModel
-    @State private var pitchWheel = false
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
@@ -31,22 +30,13 @@ struct SettingsView: View {
                     sizeSlider("顯示介面", $fontSize, range: 14...26, identifier: "fontSizeSlider", sample: 2)
                 }
                 Section(ui("聲調顯示")) {
-                    HStack { Text(ui("聲調預覽：")); Spacer(); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) }
+                    HStack { Text(ui("聲調預覽：")); Spacer(); Text("好"); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) }
                     Picker("", selection: $toneStyle) {
                         ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
                     }.pickerStyle(.inline).labelsHidden()
-                    Picker(ui("調值樣式"), selection: .constant(pitchStyle)) {
+                    Picker(ui("調值樣式"), selection: $pitchStyle) {
                         Text(ui("曲線")).tag("curve"); Text(ui("數字")).tag("number"); Text(ui("隱藏")).tag("hidden")
-                    }.pickerStyle(.menu).allowsHitTesting(false).accessibilityHidden(true)
-                        .overlay {
-                            Button { pitchWheel.toggle() } label: { Color.clear.contentShape(Rectangle()) }
-                                .buttonStyle(.plain).accessibilityLabel(ui("調值樣式"))
-                        }
-                    if pitchWheel {
-                        Picker(ui("調值樣式"), selection: $pitchStyle) {
-                            Text(ui("曲線")).tag("curve"); Text(ui("數字")).tag("number"); Text(ui("隱藏")).tag("hidden")
-                        }.pickerStyle(.wheel).frame(height: 88).clipped()
-                    }
+                    }.pickerStyle(.navigationLink)
                 }
                 Section(ui("界面外觀")) {
                     option(ui("跟隨系統"), value: "system", selection: $appearance)
@@ -55,7 +45,7 @@ struct SettingsView: View {
                 }
                 MapSettingsSection()
             }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
-        }.sheet(isPresented: $referenceSettings) { ReferenceSettingsView() }
+        }.sheet(isPresented: $referenceSettings) { ReferenceSettingsView().dynamicTypeSize(AppTypography.size(fontSize)) }
     }
     private func sizeSlider(_ label: String, _ size: Binding<Double>, range: ClosedRange<Double>, identifier: String, sample: Int) -> some View {
         VStack(alignment: .leading) {
@@ -68,7 +58,7 @@ struct SettingsView: View {
                         LanguageBadge(name: "通東呂四", table: table).environment(\.mapLabelSize, mapSize)
                     }.buttonStyle(.plain).disabled(table == nil)
                 } else if sample == 1 {
-                    PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false)
+                    HStack(spacing: 4) { Text("好").font(.system(size: readingSize)); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false) }
                 } else { Text(ui("漢字音典")).font(.system(size: fontSize)).textSelection(.enabled) }
             }
             Slider(value: size, in: range) { Text(ui(label)) }.accessibilityIdentifier(identifier)

@@ -7,16 +7,18 @@ enum MapSearchKind: String, CaseIterable, Identifiable {
 
 struct DialectMapView: View {
     @EnvironmentObject var model: AppModel
-    @AppStorage("mapPalette") private var colorScheme = "atlas"
+    @AppStorage("colorScheme") private var colorScheme = "atlas"
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
     @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
     @AppStorage(AppTypography.readingKey) private var readingSize = 16.0
-    @State private var menuOpen = false
+    @EnvironmentObject private var selector: LanguageSelectionState
+    private var menuOpen: Bool { get { selector.expanded } nonmutating set { selector.expanded = newValue } }
     @State private var submittedNames = Set<String>()
     @AppStorage("baseMapStyle") private var baseMapStyle = "standard"
     @State private var center = TableLocation(longitude: 108, latitude: 34)
-    @State private var names = Set<String>()
+    private var names: Set<String> { Set(model.selectedLanguages ?? model.languages) }
+    private var namesBinding: Binding<Set<String>> { Binding(get: { names }, set: { model.selectLanguages($0) }) }
     @State private var character = ""
     @FocusState private var inputFocused: Bool
     @State private var activeCharacter = ""
@@ -35,7 +37,7 @@ struct DialectMapView: View {
     }
     private func rebuildPoints() {
         let group = result?.groups[activeCharacter] ?? [:]
-        let ranks = ResultOrdering.ranks(tables, namespace: "map")
+        let ranks = ResultOrdering.ranks(tables, namespace: "dictionary")
         points = (result == nil ? names : submittedNames).sorted { (ranks[$0] ?? Int.max) < (ranks[$1] ?? Int.max) }.compactMap { name in
             let lines = group[name] ?? []
             guard let table = tableByName[name], result == nil || !lines.isEmpty else { return nil }
@@ -73,7 +75,7 @@ struct DialectMapView: View {
             Picker(ui("查詢方式"), selection: $mode) {
                 ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).padding(.horizontal)
-            SelectionMenuButton(count: names.count, entryID: "", expanded: $menuOpen).hidden().accessibilityHidden(true).padding(.horizontal)
+            SelectionMenuButton(count: names.count, entryID: "", expanded: $selector.expanded).hidden().accessibilityHidden(true).padding(.horizontal)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }
@@ -91,13 +93,13 @@ struct DialectMapView: View {
         .onChange(of: colorScheme) { _, _ in rebuildPoints() }
     }
     private var menu: some View {
-        LanguageSelectionPanel(tables: tables, names: $names, cacheKey: "map", entryID: "mapLanguageSelection", initialKind: .region,
-                               finished: { Task { await query() } }, colorScheme: $colorScheme, expanded: $menuOpen)
+        LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: namesBinding, state: selector, entryID: "mapLanguageSelection",
+                               finished: { Task { await query() } })
     }
     private var mapContent: some View {
         VStack(spacing: 8) {
             searchBar
-            if mode == .note { NoteVariantPicker(query: $character) { Task { await query() } }.padding(.horizontal) }
+            if result?.mode == .note { NoteVariantPicker(query: Binding(get: { result?.query ?? "" }, set: { character = $0; mode = .note })) { Task { await query() } }.padding(.horizontal) }
             variantBar
             statusLabel
             NativeDialectMap(points: points, fit: fit, fontSize: min(25, max(5, mapSize)), readingSize: readingSize, mapStyle: baseMapStyle,
@@ -125,8 +127,8 @@ struct DialectMapView: View {
                 }
     }
     private var statusLabel: some View {
-                Text(ui("\(points.count) 個語言點" + (result.map { " ·「" + (activeCharacter.isEmpty ? $0.query : activeCharacter) + "」僅查已下載字表" } ?? "")))
-                    .font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("mapPointStatus")
+                SystemText(ui("\(points.count) 個語言點" + (result.map { " ·「" + (activeCharacter.isEmpty ? $0.query : activeCharacter) + "」僅查已下載字表" } ?? "")), color: .secondaryLabel)
+                    .font(.caption).accessibilityIdentifier("mapPointStatus")
     }
     @ToolbarContentBuilder private var mapToolbar: some ToolbarContent {
                 ToolbarItemGroup(placement: .topBarTrailing) {

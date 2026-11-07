@@ -42,41 +42,38 @@ struct CharacterReferenceHeader: View {
     @AppStorage(ReferencePreferences.key) private var raw = ""
     @EnvironmentObject var model: AppModel
     var body: some View {
-        let data = loaded?.character == character ? loaded : nil
+        let data = loaded?.character == character ? loaded! : CharacterReference(character: character)
         let settings = ReferencePreferences.load(raw)
         VStack(alignment: .leading, spacing: 6) {
-            if let data {
+            Group {
                 let expanded = settings.fieldOrder.filter { settings.mode($0) == "expanded" && settings.value($0, data: data) != nil }
                 let collapsed = settings.fieldOrder.filter { settings.mode($0) == "collapsed" && settings.value($0, data: data) != nil }
-                ScrollView(.horizontal) {
-                    HStack {
-                        ForEach(expanded, id: \.self) { field in Text(settings.value(field, data: data) ?? "").textSelection(.enabled) }
+                WrappingInformationLayout {
+                        ForEach(expanded, id: \.self) { field in
+                            SystemText(settings.value(field, data: data) ?? "", color: field == "Unicode" ? AppAccent.uiColor : .label)
+                                .accessibilityIdentifier(field == "Unicode" ? "characterUnicode" : "characterInfo-" + field)
+                        }
                         if !collapsed.isEmpty {
                             Button { moreInformation = true } label: { Image(systemName: "ellipsis") }
                                 .accessibilityLabel(ui("更多字形資料"))
                                 .popover(isPresented: $moreInformation) {
                                     ScrollView {
                                         VStack(alignment: .leading, spacing: 10) {
-                                            ForEach(collapsed, id: \.self) { field in Text(settings.value(field, data: data) ?? "").textSelection(.enabled) }
+                                            ForEach(collapsed, id: \.self) { field in SystemText(settings.value(field, data: data) ?? "") }
                                         }.padding()
                                     }.frame(minWidth: 260, idealHeight: 280).presentationCompactAdaptation(.popover)
                                 }
                         }
-                    }.font(.caption)
-                }
+                }.font(.body)
             }
             HStack {
-                Text(character).font(.system(size: 46, design: .serif)).accessibilityIdentifier("dictionaryHeadword")
+                SystemText(character, pointSize: 46, serif: true).accessibilityIdentifier("dictionaryHeadword")
                 ScrollView(.horizontal) {
                     HStack(spacing: 12) {
                         ForEach(settings.order.filter { !settings.hidden.contains($0) }, id: \.self) { item in
-                            if item == "Unicode" {
-                                let code = (data ?? CharacterReference(character: character)).code
-                                Text(code).foregroundStyle(AppAccent.color).textSelection(.enabled)
-                                    .accessibilityIdentifier("characterUnicode")
-                            } else if item == "地圖" {
-                                Button(action: map) { Text("🌍") }.accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("characterMap")
-                            } else if let data, data.values[item] != nil {
+                            if item == "地圖" {
+                                Button(action: map) { Image(systemName: "map") }.accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("characterMap")
+                            } else if data.values[item] != nil {
                                 Button(ui(item)) { show(.init(data: data, book: item)) }
                             }
                         }
@@ -100,10 +97,10 @@ struct CharacterReferenceDetail: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 7) {
-                    Text(page.data.character).font(.system(size: 46, design: .serif))
-                    if let book = page.book { Text(page.data.values[book] ?? "") }
+                    SystemText(page.data.character, pointSize: 46, serif: true)
+                    if let book = page.book { SystemText(page.data.values[book] ?? "") }
                     else {
-                        Text(page.data.code)
+                        SystemText(page.data.code)
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading).padding().textSelection(.enabled)
             }.navigationTitle(ui(page.book ?? "統一碼")).navigationBarTitleDisplayMode(.inline)

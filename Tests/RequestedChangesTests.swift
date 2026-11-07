@@ -11,11 +11,11 @@ final class RequestedChangesTests: XCTestCase {
             json["atlas"] = [root]
             return try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: json))
         }
-        for value in ["", "0", "1", "true", "#000000", "#FFFFFF", "bad"] {
+        for value in ["", "0", "1", "true", "#000000", "#FFFFFF", "#BADDFF", "bad"] {
             XCTAssertFalse(try LanguageFlags(history: true).matches(example(value)), value)
         }
-        XCTAssertTrue(try LanguageFlags(history: true).matches(example("#BADDFF")))
-        XCTAssertFalse(try LanguageFlags(history: true).matches(example("#BADDFF", root: "歷史音")))
+        XCTAssertTrue(try LanguageFlags(history: true).matches(example("#808080")))
+        XCTAssertFalse(try LanguageFlags(history: true).matches(example("#808080", root: "歷史音")))
     }
     func testRegionAncestorsFollowPathRatherThanSharedMembership() {
         let selected = "漢語\u{0}吳語\u{0}太湖"
@@ -32,7 +32,9 @@ final class RequestedChangesTests: XCTestCase {
         prefs.fieldModes["兩分"] = "collapsed"
         prefs.fieldModes["山人"] = "hidden"
         let restored = ReferencePreferences.load(prefs.encoded)
-        XCTAssertEqual(Array(restored.order.prefix(2)), ["康熙", "Unicode"])
+        XCTAssertEqual(Array(restored.order.prefix(2)), ["康熙", "說文"])
+        XCTAssertEqual(restored.mode("Unicode"), "expanded")
+        XCTAssertEqual(restored.mode("Unicode區段"), "collapsed")
         XCTAssertEqual(Set(restored.order), Set(ReferencePreferences.links))
         XCTAssertEqual(restored.order.count, ReferencePreferences.links.count)
         XCTAssertTrue(restored.hidden.contains("說文"))
