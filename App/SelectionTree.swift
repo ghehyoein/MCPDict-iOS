@@ -99,11 +99,12 @@ struct LanguageDropdown: View {
     }
     private func refresh(prune: Bool, updateRegion: Bool = false) {
         eligible = treeScope.eligible(tables.filter(state.flags.matches), grouping: state.grouping, roles: state.roles)
-        let transitions = DictionaryTransitions(tables: model.availableTables)
-        let includesTransitions = state.grouping == .dictionary && state.includeTransitions
-        if includesTransitions { eligible = eligible.filter(transitions.hasTransition) }
-        additionalPaths = includesTransitions ? transitions.additionalPaths(eligible) : [:]
-        inferredTransitionIDs = includesTransitions ? Set(eligible.filter { transitions.needsAsterisk($0) }.map(\.id)) : []
+        if state.grouping == .dictionary && state.includeTransitions {
+            let transitions = DictionaryTransitions(tables: model.availableTables)
+            eligible = eligible.filter(transitions.hasTransition)
+            additionalPaths = transitions.additionalPaths(eligible)
+            inferredTransitionIDs = Set(eligible.filter { transitions.needsAsterisk($0) }.map(\.id))
+        } else { additionalPaths = [:]; inferredTransitionIDs = [] }
         if prune { names = names.intersection(Set(eligible.map(\.name))) }
         if updateRegion, state.scope == .terminalGroups, let region = state.region {
             let index = SelectionIndex(tables: eligible, grouping: state.grouping, roles: state.roles, additionalPaths: additionalPaths)
@@ -173,7 +174,7 @@ struct LanguageDropdown: View {
                 }
             }.buttonStyle(.borderless)
         }
-        .onAppear { refresh(prune: state.flags.island || state.flags.history) }
+        .onAppear { refresh(prune: state.flags.island || state.flags.history || (state.grouping == .dictionary && state.includeTransitions)) }
         .onChange(of: tables) { _, _ in refresh(prune: true) }
         .onChange(of: state.grouping) { _, _ in refresh(prune: true) }
         .onChange(of: state.includeTransitions) { _, _ in refresh(prune: true, updateRegion: true) }

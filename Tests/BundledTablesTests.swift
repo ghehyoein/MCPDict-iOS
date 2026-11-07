@@ -79,6 +79,16 @@ final class BundledTablesTests: XCTestCase {
         let catalog = try JSONDecoder().decode(TableCatalog.self, from: Data(contentsOf: root.appendingPathComponent("catalog.json")))
         try catalog.validate()
         XCTAssertGreaterThan(catalog.tables.count, 1000)
+        let transitions = DictionaryTransitions(tables: catalog.tables)
+        let eligible = catalog.tables.filter(transitions.hasTransition)
+        let index = SelectionIndex(tables: eligible, grouping: .dictionary, additionalPaths: transitions.additionalPaths(eligible))
+        XCTAssertNil(index.nodes["g:域外方音"])
+        for name in ["南通", "贊皇", "贛榆", "繁峙", "阿拉善"] {
+            let table = try XCTUnwrap(catalog.tables.first { $0.name == name })
+            XCTAssertTrue(transitions.hasTransition(table), name)
+            XCTAssertFalse(transitions.destinations(table).isEmpty, name)
+        }
+        XCTAssertTrue(eligible.allSatisfy { Set(TableColors.hexes($0.dictionaryColor)).count > 1 })
         let db = try SQLiteConnection(url: root.appendingPathComponent("bundled.db"))
         try db.validate()
         let counts = try db.rows("SELECT 語言, count(*) AS n FROM langs GROUP BY 語言")

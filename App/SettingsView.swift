@@ -45,7 +45,7 @@ struct SettingsView: View {
                 }
                 MapSettingsSection()
                 Section {
-                    Button(ui("還原預設設定"), role: .destructive) { model.resetSettings() }
+                    Button(ui("還原默認設定"), role: .destructive) { model.resetSettings() }
                         .foregroundStyle(.red).accessibilityIdentifier("resetSettings")
                 }
             }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
