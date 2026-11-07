@@ -228,6 +228,9 @@ private final class MapTextGestureGate: NSObject, UIGestureRecognizerDelegate {
         var parent = view.superview
         while let ancestor = parent {
             for gesture in ancestor.gestureRecognizers ?? [] where !(gesture.delegate is MapTextGestureGate) {
+                // UIScrollView requires ownership of its built-in gesture delegates.
+                if let scroll = ancestor as? UIScrollView,
+                   gesture === scroll.panGestureRecognizer || gesture === scroll.pinchGestureRecognizer { continue }
                 let gate = MapTextGestureGate(original: gesture.delegate)
                 objc_setAssociatedObject(gesture, &associationKey, gate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
                 gesture.delegate = gate
