@@ -59,7 +59,7 @@ struct LanguageSelectionPanel: View {
             .alert(ui("顯示顏色"), isPresented: $paletteInfo) {
                 Button(ui("好"), role: .cancel) {}
             } message: { Text(ui("此開關切換語言點顯示顏色。「地」使用地圖集二分區配色，「音」使用音典分區配色")) }
-            if state.kind == .custom { Text(ui("自選功能後續待更新，目前與語言模式相同")).font(.caption).foregroundStyle(.secondary) }
+            if state.kind == .custom { SystemText(ui("自選功能後續待更新，目前與語言模式相同"), color: .secondaryLabel).font(.caption) }
             LanguageDropdown(tables: tables, names: chosen, state: state, inspect: inspect, palette: palette == "dictionary" ? .dictionary : .atlas, showsDone: !alwaysExpanded) {
                 state.expanded = false; finished()
             }.id(state.key)
