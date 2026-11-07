@@ -83,7 +83,8 @@ private struct NativePaletteSwitch: UIViewRepresentable {
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UISwitch, context: Context) -> CGSize? { uiView.intrinsicContentSize }
     func updateUIView(_ control: UISwitch, context: Context) {
         context.coordinator.parent = self
-        control.setOn(isOn, animated: false)
+        // Let the native switch finish its gesture before applying external state.
+        if !control.isTracking && control.isOn != isOn { control.setOn(isOn, animated: false) }
         control.accessibilityIdentifier = "paletteSwitch"
         control.accessibilityLabel = ui("地圖集二／音典分區配色")
         control.accessibilityValue = ui(isOn ? "音典分區" : "地圖集二")
