@@ -1,25 +1,9 @@
-name: Revision 0.9.2 interaction diagnostics
+name: Revision 0.9.2 native switch stress test
 on: [push, workflow_dispatch]
 permissions:
   contents: write
   actions: read
 jobs:
-  screenshots:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Make fixture screenshots inspectable
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh run download 42385495633 --repo ghehyoein/MCPDict-iOS --name focused-interaction-results --dir review
-          find review -name "*.xcresult" -type d -prune -exec rm -rf {} +
-          git switch --orphan "codex/diagnostic-092-${GITHUB_RUN_ID}"
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add review
-          git commit -m 'Capture fixture screenshots for interaction diagnosis'
-          git push origin HEAD
   focus:
     runs-on: macos-15
     permissions:
@@ -36,11 +20,11 @@ jobs:
           brew install xcodegen
           python3 tools/prepare_assets.py
           xcodegen generate
-      - name: Check revised interactions on both iOS generations
+      - name: Repeat native palette interaction on iOS 26.2
         run: |
-          for runtime in 18-5 26-2; do
+          for runtime in 26-2; do
             device=$(xcrun simctl create "MCPDict-focus-$runtime" com.apple.CoreSimulator.SimDeviceType.iPhone-13 "com.apple.CoreSimulator.SimRuntime.iOS-$runtime")
-            xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath "Focus-$runtime" CODE_SIGNING_ALLOWED=NO -only-testing:MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput -only-testing:MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders -only-testing:MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails -only-testing:MCPDictIOSUITests/NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery test
+            xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath "Focus-$runtime" CODE_SIGNING_ALLOWED=NO -only-testing:MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads -test-iterations 5 test
           done
       - name: Export diagnostics
         if: always()
