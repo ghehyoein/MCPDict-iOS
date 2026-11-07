@@ -12,6 +12,7 @@ struct SelectionTree: View {
     var selectedRegion: Binding<String?> = .constant(nil)
     var filterQuery = ""
     var additionalPaths = [String: [[String]]]()
+    var inferredTransitionIDs = Set<String>()
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
     @Binding var expanded: Set<String>
@@ -33,8 +34,9 @@ struct SelectionTree: View {
                         .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
                     if let table = row.node.table {
                         Button { if let inspect { inspect(table) } else { model.tableDetail = table } } label: {
-                            LanguageBadge(name: table.name, table: table, grouping: badgeGrouping ?? grouping).frame(minHeight: 44).contentShape(Rectangle())
+                            LanguageBadge(name: table.name, table: table, grouping: badgeGrouping ?? grouping, transitionAsterisk: inferredTransitionIDs.contains(table.id)).frame(minHeight: 44).contentShape(Rectangle())
                         }.buttonStyle(.plain)
+                            .accessibilityValue(inferredTransitionIDs.contains(table.id) ? "*" : "")
                         Spacer()
                         if let state = downloadStates[table.id] {
                             Text(ui(state.rawValue)).font(.caption).foregroundStyle(state == .update ? Color.orange : Color.secondary)
@@ -91,12 +93,16 @@ struct LanguageDropdown: View {
     let done: () -> Void
     @State private var eligible = [TablePackage]()
     @State private var additionalPaths = [String: [[String]]]()
+    @State private var inferredTransitionIDs = Set<String>()
     private var treeScope: LanguageSelectionScope {
         state.grouping == .administrative && state.scope == .points ? .administrativeGroups : state.scope
     }
     private func refresh(prune: Bool, updateRegion: Bool = false) {
         eligible = treeScope.eligible(tables.filter(state.flags.matches), grouping: state.grouping, roles: state.roles)
-        additionalPaths = state.grouping == .dictionary && state.includeTransitions ? DictionaryTransitions(tables: model.availableTables).additionalPaths(eligible) : [:]
+        let transitions = DictionaryTransitions(tables: model.availableTables)
+        let includesTransitions = state.grouping == .dictionary && state.includeTransitions
+        additionalPaths = includesTransitions ? transitions.additionalPaths(eligible) : [:]
+        inferredTransitionIDs = includesTransitions ? Set(eligible.filter { transitions.needsAsterisk($0) }.map(\.id)) : []
         if prune { names = names.intersection(Set(eligible.map(\.name))) }
         if updateRegion, state.scope == .terminalGroups, let region = state.region {
             let index = SelectionIndex(tables: eligible, grouping: state.grouping, roles: state.roles, additionalPaths: additionalPaths)
@@ -151,7 +157,7 @@ struct LanguageDropdown: View {
             }
             ScrollView {
                 SelectionTree(tables: eligible, grouping: state.grouping, roles: state.roles, badgeGrouping: palette,
-                              scope: treeScope, selectedRegion: $state.region, filterQuery: state.filter, additionalPaths: additionalPaths,
+                              scope: treeScope, selectedRegion: $state.region, filterQuery: state.filter, additionalPaths: additionalPaths, inferredTransitionIDs: inferredTransitionIDs,
                               selection: selection, inspect: inspect, expanded: $state.expandedNodes)
                     .frame(maxWidth: .infinity).id(state.grouping.rawValue)
             }.frame(height: 200).accessibilityIdentifier("languageTreeScroll")

@@ -108,17 +108,32 @@ final class DictionaryTransitionTests: XCTestCase {
         XCTAssertEqual(extra["滿洲里"], [["華北", "膠東", "過渡色"]])
         XCTAssertEqual(extra["泰順莒江"], [["浙南", "處州", "過渡色"]])
     }
-    func testUnknownAndCollidingColorsDoNotInventARegion() {
+    func testExactSharedColorsUseLargestRegionsAndUnknownColorsStayUnassigned() {
         let tables = tables, transitions = DictionaryTransitions(tables: tables)
         let extra = transitions.additionalPaths(tables)
         XCTAssertNil(extra["道縣"])
-        XCTAssertNil(extra["昌化浙川"])
-        XCTAssertNil(transitions.regionsByColor["#184E32"])
+        XCTAssertEqual(extra["昌化浙川"], [["兩浙", "杭嚴", "過渡色"], ["湘贛", "不分類"]])
+        XCTAssertEqual(transitions.regionsByColor["#184E32"], [["兩浙", "杭嚴"], ["湘贛", "不分類"]])
+        XCTAssertTrue(transitions.needsAsterisk(tables.first { $0.name == "昌化浙川" }!))
         let unknown = tables.first { $0.name == "道縣" }!
         XCTAssertEqual(transitions.description(unknown), "#719729")
+        XCTAssertTrue(transitions.needsAsterisk(unknown))
         var explicit = tables.first { $0.name == "昌化浙川" }!
         explicit.metadata = ["音典過渡色": "兩浙－杭嚴"]
         XCTAssertEqual(transitions.destinations(explicit), [["兩浙", "杭嚴"]])
+        XCTAssertFalse(transitions.needsAsterisk(explicit))
+    }
+    func testAsterisksDistinguishBroadColorMembershipsFromUniqueTerminalRecords() {
+        let tables = tables, transitions = DictionaryTransitions(tables: tables)
+        for name in ["南通", "南通唐閘", "通州金沙", "滿洲里", "泰順莒江", "博羅郭前"] {
+            XCTAssertTrue(transitions.needsAsterisk(tables.first { $0.name == name }!), name)
+        }
+        for name in ["贊皇", "贛榆", "繁峙", "阿拉善", "通東呂四"] {
+            XCTAssertFalse(transitions.needsAsterisk(tables.first { $0.name == name }!), name)
+        }
+        // Input order must not choose an arbitrary region or change the marker.
+        let reversed = DictionaryTransitions(tables: tables.reversed())
+        XCTAssertEqual(reversed.regionsByColor, transitions.regionsByColor)
     }
     func testRegionSelectionAndSearchIncludeAddedMembersWithoutDuplicates() throws {
         let tables = tables, transitions = DictionaryTransitions(tables: tables)
