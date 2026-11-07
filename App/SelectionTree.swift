@@ -108,24 +108,27 @@ struct LanguageDropdown: View {
         VStack(alignment: .leading) {
             TextField(ui("搜尋語言或分區"), text: $state.filter).textFieldStyle(.roundedBorder)
             if state.kind != .administrative {
-                if state.kind == .region {
-                    Picker(ui("分區方式"), selection: $state.grouping) {
-                        ForEach([TableGrouping.atlas, .dictionary]) { Text(ui($0.rawValue)).tag($0) }
-                    }.pickerStyle(.segmented).accessibilityIdentifier("regionClassification")
-                } else {
-                    Picker(ui("分類方式"), selection: $state.grouping) {
-                        ForEach(state.groupingChoices) { Text(ui($0.rawValue)).tag($0) }
-                    }.pickerStyle(.navigationLink).accessibilityIdentifier("classificationPickerToggle")
-                }
-                if state.grouping == .person {
-                    HStack {
+                HStack(spacing: 8) {
+                    if state.grouping == .person {
                         ForEach(PersonRole.allCases, id: \.self) { role in
                             Button { if !state.roles.insert(role).inserted { state.roles.remove(role) } } label: {
-                                Label(ui(role.rawValue), systemImage: state.roles.contains(role) ? "checkmark.square.fill" : "square")
-                                    .contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
-                            }.accessibilityIdentifier("personRole-" + role.rawValue)
+                                HStack(spacing: 0) {
+                                    Image(systemName: state.roles.contains(role) ? "checkmark.square.fill" : "square")
+                                    Text(ui(role.rawValue))
+                                }.fixedSize().contentTransition(.identity)
+                                    .transaction { $0.animation = nil; $0.disablesAnimations = true }
+                            }.buttonStyle(.borderless).accessibilityIdentifier("personRole-" + role.rawValue)
                         }
-                    }.buttonStyle(.borderless)
+                    }
+                    if state.kind == .region {
+                        Picker(ui("分區方式"), selection: $state.grouping) {
+                            ForEach([TableGrouping.atlas, .dictionary]) { Text(ui($0.rawValue)).tag($0) }
+                        }.pickerStyle(.segmented).accessibilityIdentifier("regionClassification")
+                    } else {
+                        Picker(ui("分類方式"), selection: $state.grouping) {
+                            ForEach(state.groupingChoices) { Text(ui($0.rawValue)).tag($0) }
+                        }.pickerStyle(.navigationLink).accessibilityIdentifier("classificationPickerToggle")
+                    }
                 }
             }
             ScrollView {
@@ -167,8 +170,8 @@ struct FavoriteButton: View {
                 guard !ids.isEmpty else { model.error = "請先在設定中選擇預設生字表"; return }
                 model.save(reading, to: ids)
             } else { choosing = true }
-        } label: { Image(systemName: saved ? "star.fill" : "star") }
-            .buttonStyle(.borderless).tint(.orange).accessibilityLabel(ui(saved ? "已收藏" : "加入生字本"))
+        } label: { Image(systemName: saved ? "star.fill" : "star").foregroundStyle(.orange).contentShape(Rectangle()) }
+            .buttonStyle(.plain).accessibilityLabel(ui(saved ? "已收藏" : "加入生字本"))
             .sheet(isPresented: $choosing) { BookPicker(reading: reading) }
     }
 }

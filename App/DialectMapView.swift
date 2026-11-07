@@ -75,12 +75,20 @@ struct DialectMapView: View {
             Picker(ui("查詢方式"), selection: $mode) {
                 ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).padding(.horizontal)
-            SelectionMenuButton(count: names.count, entryID: "", expanded: $selector.expanded).hidden().accessibilityHidden(true).padding(.horizontal)
+            SelectionMenuButton(count: names.count, entryID: "mapLanguageSelection", expanded: $selector.expanded).opacity(menuOpen ? 0 : 1).allowsHitTesting(!menuOpen).accessibilityHidden(menuOpen).padding(.horizontal)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }
         }
-        .overlay(alignment: .top) { VStack(spacing: 8) { Picker(ui("查詢方式"), selection: $mode) { ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) } }.pickerStyle(.segmented).hidden().accessibilityHidden(true); menu }.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal) }
+        .overlay(alignment: .top) {
+            if menuOpen {
+                VStack(spacing: 8) {
+                    Picker(ui("查詢方式"), selection: $mode) { ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) } }
+                        .pickerStyle(.segmented).hidden().allowsHitTesting(false).accessibilityHidden(true)
+                    menu
+                }.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal)
+            }
+        }
         .onAppear { rebuildMapTables(); receiveHandoff() }
         .onChange(of: menuOpen) { _, open in if open { inputFocused = false } }
         .onChange(of: model.mapHandoff?.id) { _, _ in receiveHandoff() }

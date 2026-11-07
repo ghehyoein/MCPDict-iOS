@@ -35,14 +35,17 @@ struct LanguageSelectionPanel: View {
         }
         .onAppear { restoreInitial() }
         .onChange(of: tables) { _, _ in restoreInitial() }
-        .onChange(of: state.kind) { old, new in
-            guard restored, old != new else { return }
-            restoreMode()
-        }
     }
     private var controls: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Picker(ui("檢索選項"), selection: $state.kind) {
+            Picker(ui("檢索選項"), selection: Binding(get: { state.kind }, set: { mode in
+                // Read the destination cache before changing shared controls. Child
+                // refreshes must not overwrite it with the previous mode's names.
+                let saved = cache.load(state.namespace + "." + mode.rawValue) ?? []
+                state.kind = mode
+                names = saved.intersection(Set(state.scope.eligible(tables, grouping: state.grouping).map(\.name)))
+                cache.save(names, for: state.key)
+            })) {
                 ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).labelsHidden()
             HStack(spacing: 10) {
