@@ -39,7 +39,7 @@ struct SelectionTree: View {
                             .accessibilityValue(inferredTransitionIDs.contains(table.id) ? "*" : "")
                         Spacer()
                         if let state = downloadStates[table.id] {
-                            Text(ui(state.rawValue)).font(.caption).foregroundStyle(state == .update ? Color.orange : Color.secondary)
+                            SystemText(ui(state.rawValue), color: state == .update ? .systemOrange : .secondaryLabel).font(.caption)
                                 .accessibilityIdentifier("downloadState-" + table.id)
                         }
                     } else if row.expandable {
