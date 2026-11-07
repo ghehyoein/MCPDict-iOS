@@ -394,12 +394,12 @@ final class NavigationTests: XCTestCase {
         app.tabBars.buttons["地圖"].tap()
         XCTAssertTrue(app.segmentedControls.buttons["分區"].isSelected)
         XCTAssertEqual(app.buttons["check-漢語"].value as? String, "checked")
-        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "1")
+        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "音典分區")
         let picture = XCTAttachment(screenshot: app.screenshot()); picture.name = "共用語言選單及原生地音開關"; picture.lifetime = .keepAlways; add(picture)
         app.buttons["finishLanguages"].tap()
         app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
         XCTAssertTrue(app.segmentedControls.buttons["語言"].isSelected)
-        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "1")
+        XCTAssertEqual(app.switches["paletteSwitch"].value as? String, "音典分區")
         XCTAssertFalse(app.buttons["finishLanguages"].exists)
     }
     @MainActor func testNativeTextSelectionAndDefaultBookNavigation() throws {

@@ -60,6 +60,9 @@ final class PresentationRevisionTests: XCTestCase {
             data["dictionaryColor"] = "#808080,#AABBCC"
             return try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: data))
         }
+        data["metadata"] = ["是否為語言歷史音": "0", "歷史音": "#808080"]
+        let explicitUnmarked = try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: data))
+        XCTAssertFalse(LanguageFlags(history: true).matches(explicitUnmarked))
         XCTAssertTrue(try LanguageFlags(history: true).matches(table("FF808080")))
         XCTAssertTrue(try LanguageFlags(history: true).matches(table("#BFBFBF")))
         for marker in ["0", "#000000", "#FFFFFF", "#7FDDE6", "true"] {

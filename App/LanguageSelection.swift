@@ -7,7 +7,7 @@ struct LanguageFlags: Equatable {
     var history = false
     static func historicalMarker(_ table: TablePackage) -> String? {
         let fields = ["是否為語言歷史音", "是否为语言历史音", "是否為方言歷史音", "歷史音"]
-        guard let raw = fields.compactMap({ table.metadata?[$0] }).first(where: { !["", "0", "null"].contains($0) }) else { return nil }
+        guard let raw = fields.lazy.compactMap({ table.metadata?[$0] }).first else { return nil }
         let value = raw.trimmingCharacters(in: .whitespacesAndNewlines).uppercased().replacingOccurrences(of: "#", with: "")
         let rgb = value.count == 8 ? String(value.suffix(6)) : value
         guard rgb.range(of: "^[0-9A-F]{6}$", options: .regularExpression) != nil,
