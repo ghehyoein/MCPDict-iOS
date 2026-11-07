@@ -89,7 +89,7 @@ final class NavigationTests: XCTestCase {
         app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
         XCTAssertFalse(app.buttons["downloadLanguageSelection"].exists)
         app.buttons["selectAllLanguages"].tap()
-        XCTAssertTrue(app.buttons["downloadTables"].isEnabled)
+        XCTAssertFalse(app.buttons["downloadTables"].isEnabled)
         for key in ["漢語", "官話", "北京"] {
             let expand = app.buttons["expand-" + key]
             XCTAssertTrue(expand.waitForExistence(timeout: 5))
