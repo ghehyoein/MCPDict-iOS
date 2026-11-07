@@ -1,15 +1,20 @@
-name: iOS runtime inventory
+name: Revision 0.9.2 compile diagnostics
 on: [push, workflow_dispatch]
 permissions:
   contents: read
 jobs:
-  inventory:
+  compile:
     runs-on: macos-15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
-      - name: Installed Xcodes and simulators
+      - uses: actions/checkout@v4
+        with:
+          ref: codex/revision-092
+      - name: Compile app and test targets
         run: |
-          ls -d /Applications/Xcode*.app
-          for xcode in /Applications/Xcode*.app; do
-            echo "$xcode"
-            DEVELOPER_DIR="$xcode/Contents/Developer" xcrun simctl list runtimes
-          done
+          mkdir -p App/BundledTables
+          brew install xcodegen
+          python3 tools/prepare_assets.py
+          xcodegen generate
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -sdk iphonesimulator -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build-for-testing
