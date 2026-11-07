@@ -1,0 +1,117 @@
+Application, 0x1013589d0, pid: 6657, label: '汉字音典' <App element pid: 6657>
+  Window (Main), 0x101362db0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4322444400.4>
+    Other, 0x10114f8a0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4883623600.218>
+    Other, 0x10114ffe0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4322656416.5>
+      Other, 0x101146830, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4321231088.6>
+        Other, 0x10114c100, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4321269488.7>
+          Other, 0x101152700, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 105553169811168.8>
+            Other, 0x101152820, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4321436288.9>
+              Other, 0x1011182e0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4320354528.10>
+                Other, 0x101118400, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4322359232.12>
+                  Other, 0x1011512a0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4320380960.75>
+                    Other, 0x1011513c0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 105553170102336.77>
+                      Other, 0x1011514e0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 105553170102496.78>
+                        Other, 0x101157180, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4320751312.79>
+                          NavigationBar, 0x1011572a0, {{0.0, 47.0}, {390.0, 44.0}}, identifier: '語言地圖' <AX element pid: 6657, elementOrHash.elementID: 4320738864.80>
+                            StaticText, 0x1011573c0, {{159.0, 58.7}, {67.7, 20.3}}, label: '語言地圖' <AX element pid: 6657, elementOrHash.elementID: 4846564944.82>
+                            Other, 0x1011574e0, {{232.7, 52.7}, {43.7, 33.0}}, label: '顯示地圖' <AX element pid: 6657, elementOrHash.elementID: 4846712608.83>
+                              Other, 0x101157600, {{232.7, 52.7}, {43.7, 33.0}} <AX element pid: 6657, elementOrHash.elementID: 105553170072992.87>
+                                Button, 0x101157720, {{232.7, 52.7}, {43.7, 33.0}}, label: '顯示地圖' <AX element pid: 6657, elementOrHash.elementID: 105553170072832.89>
+                                  Button, 0x101157840, {{232.7, 52.7}, {43.7, 33.0}} <AX element pid: 6657, elementOrHash.elementID: 4321789328.91>
+                                    Other, 0x101157960, {{232.7, 52.7}, {43.7, 33.0}} <AX element pid: 6657, elementOrHash.elementID: 105553170072672.100>
+                                      Image, 0x101157a80, {{232.7, 52.7}, {43.7, 33.0}}, identifier: 'map', label: '顯示地圖' <AX element pid: 6657, elementOrHash.elementID: 105553170072352.113>
+                            Button, 0x101157ba0, {{284.3, 47.0}, {47.7, 44.0}}, label: '全覽' <AX element pid: 6657, elementOrHash.elementID: 4846859392.84>
+                            Button, 0x101157cc0, {{340.0, 47.0}, {42.0, 44.0}}, label: '更新' <AX element pid: 6657, elementOrHash.elementID: 4322222544.85>
+                          Other, 0x101157de0, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4320751744.81>
+                            Other, 0x101157f00, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4846676192.86>
+                              Other, 0x101158020, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4320734176.88>
+                                Other, 0x101158140, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 105553170103136.90>
+                                  SegmentedControl, 0x101158260, {{16.0, 91.0}, {358.0, 31.0}} <AX element pid: 6657, elementOrHash.elementID: 4323253184.92>
+                                    Button, 0x101158380, {{16.0, 91.0}, {118.0, 32.0}}, label: '漢字', Selected <AX element pid: 6657, elementOrHash.elementID: 4323254288.101>
+                                    Button, 0x1011584a0, {{135.0, 91.0}, {119.0, 32.0}}, label: '讀音' <AX element pid: 6657, elementOrHash.elementID: 4323260352.102>
+                                    Button, 0x1011585c0, {{255.0, 91.0}, {119.0, 32.0}}, label: '註釋' <AX element pid: 6657, elementOrHash.elementID: 4323265136.103>
+                                  TextField, 0x1011586e0, {{16.0, 130.0}, {274.0, 34.0}}, placeholderValue: '請輸入漢字', value: 输 <AX element pid: 6657, elementOrHash.elementID: 4347858944.93>
+                                  Button, 0x101158800, {{298.0, 137.0}, {34.0, 20.3}}, label: '查字' <AX element pid: 6657, elementOrHash.elementID: 105553170101536.94>
+                                  Button, 0x101158920, {{340.0, 137.0}, {34.0, 20.3}}, label: '清除' <AX element pid: 6657, elementOrHash.elementID: 105553170090976.95>
+                                  ScrollView, 0x101158a40, {{0.0, 200.3}, {390.0, 34.3}} <AX element pid: 6657, elementOrHash.elementID: 4340383744.198>
+                                    Other, 0x101158b60, {{0.0, 200.3}, {122.0, 34.3}} <AX element pid: 6657, elementOrHash.elementID: 4883735840.199>
+                                      Button, 0x101158c80, {{16.0, 200.3}, {41.0, 34.3}}, label: '输' <AX element pid: 6657, elementOrHash.elementID: 105553170128544.201>
+                                      Button, 0x101158da0, {{65.0, 200.3}, {41.0, 34.3}}, label: '輸' <AX element pid: 6657, elementOrHash.elementID: 105553170135904.202>
+                                    Other, 0x101158ec0, {{0.0, 214.5}, {390.0, 17.2}}, label: 'Horizontal scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4883833392.200>
+                                      Other, 0x101158fe0, {{380.0, 228.7}, {7.0, 3.0}} <AX element pid: 6657, elementOrHash.elementID: 4883819568.203>
+                                    Other, 0x101159100, {{0.0, 214.5}, {390.0, 17.2}}, label: 'Horizontal scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4883833392.200>
+                                      Other, 0x101159220, {{380.0, 228.7}, {7.0, 3.0}} <AX element pid: 6657, elementOrHash.elementID: 4883819568.203>
+                                  TextView, 0x101159340, {{103.7, 242.7}, {183.0, 15.0}}, identifier: 'mapPointStatus', label: '1 個語言點 ·「输」僅查已下載字表', value: 1 個語言點 ·「输」僅查已下載字表 <AX element pid: 6657, elementOrHash.elementID: 4338822144.96>
+                                    Other, 0x101159460, {{253.7, 242.7}, {30.0, 15.0}}, label: 'Vertical scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4322137744.104>
+                                      Other, 0x101159580, {{280.7, 218.7}, {3.0, 36.0}} <AX element pid: 6657, elementOrHash.elementID: 4322138176.114>
+                                    Other, 0x1011596a0, {{103.7, 247.2}, {183.0, 7.5}}, label: 'Horizontal scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4322133456.105>
+                                      Other, 0x1011597c0, {{106.7, 251.7}, {51.0, 3.0}} <AX element pid: 6657, elementOrHash.elementID: 4322135616.115>
+                                  Other, 0x1011598e0, {{0.0, 265.7}, {390.0, 495.3}} <AX element pid: 6657, elementOrHash.elementID: 4337725440.97>
+                                    Button, 0x101159a00, {{149.0, 511.3}, {92.0, 32.0}}, label: '示例語言點' <AX element pid: 6657, elementOrHash.elementID: 4322147856.106>
+                                      StaticText, 0x101159b20, {{155.0, 517.3}, {80.0, 20.0}}, label: '示例語言點' <AX element pid: 6657, elementOrHash.elementID: 4846804480.116>
+                                    TextView, 0x101159c40, {{178.5, 483.3}, {33.0, 28.0}}, identifier: 'map-reading-aaaaaaaaaaaaaaaaaaaaaaaa', label: 'su1', value: su1 <AX element pid: 6657, elementOrHash.elementID: 4347479552.107>
+                                      Other, 0x101159d60, {{192.0, 483.3}, {16.5, 28.0}}, label: 'Vertical scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4322193056.117>
+                                        Other, 0x101159e80, {{205.5, 444.3}, {3.0, 36.0}} <AX element pid: 6657, elementOrHash.elementID: 4322193488.204>
+                                      Other, 0x101159fa0, {{178.5, 494.3}, {33.0, 14.0}}, label: 'Horizontal scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4322191632.118>
+                                        Other, 0x10115a0c0, {{144.5, 505.3}, {36.0, 3.0}} <AX element pid: 6657, elementOrHash.elementID: 4322192064.205>
+                                    Other, 0x10115a1e0, {{0.0, 265.7}, {390.0, 495.3}} <AX element pid: 6657, elementOrHash.elementID: 4321659632.108>
+                                      Map, 0x10115a300, {{0.0, 265.7}, {390.0, 495.3}} <AX element pid: 6657, elementOrHash.elementID: 4322854288.119>
+                                        Other, 0x10115a420, {{309.3, 379.8}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Chengde' <AX element pid: 6657, elementOrHash.elementID: 105553166863456.206>
+                                        Other, 0x10115a540, {{48.5, 393.3}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Zhangjiakou' <AX element pid: 6657, elementOrHash.elementID: 105553166861728.207>
+                                        Other, 0x10115a660, {{195.6, 479.0}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Beijing' <AX element pid: 6657, elementOrHash.elementID: 105553166879984.208>
+                                        Other, 0x10115a780, {{180.1, 498.1}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Beijing' <AX element pid: 6657, elementOrHash.elementID: 105553166908752.209>
+                                        Other, 0x10115a8a0, {{329.6, 528.1}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Tangshan' <AX element pid: 6657, elementOrHash.elementID: 105553166887184.210>
+                                        Other, 0x10115a9c0, {{204.8, 541.1}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Langfang' <AX element pid: 6657, elementOrHash.elementID: 105553166877536.211>
+                                        Other, 0x101334910, {{123.2, 580.0}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Hebei' <AX element pid: 6657, elementOrHash.elementID: 105553166886464.212>
+                                        Other, 0x101368f90, {{245.5, 581.2}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Tianjin' <AX element pid: 6657, elementOrHash.elementID: 105553166867776.213>
+                                        Other, 0x101368040, {{102.5, 612.4}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Baoding' <AX element pid: 6657, elementOrHash.elementID: 105553166881136.214>
+                                        Other, 0x1013777d0, {{19.4, 700.0}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Shijiazhuang' <AX element pid: 6657, elementOrHash.elementID: 105553166883728.215>
+                                        Other, 0x10136fd10, {{120.6, 733.5}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Hengshui' <AX element pid: 6657, elementOrHash.elementID: 105553166878976.216>
+                                      Other, 0x10136f4d0, {{0.0, 265.7}, {390.0, 495.3}}, identifier: 'AnnotationContainer' <AX element pid: 6657, elementOrHash.elementID: 4323216704.120>
+                                        Other, 0x10136f8f0, {{149.0, 483.3}, {92.0, 60.0}}, label: '示例語言點, su1' <AX element pid: 6657, elementOrHash.elementID: 4346749952.129>
+                                          TextView, 0x101370d90, {{178.5, 483.3}, {33.0, 28.0}}, identifier: 'map-reading-aaaaaaaaaaaaaaaaaaaaaaaa', label: 'su1', value: su1 <AX element pid: 6657, elementOrHash.elementID: 4347479552.107>
+                                            Other, 0x101370970, {{192.0, 483.3}, {16.5, 28.0}}, label: 'Vertical scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4322193056.117>
+                                              Other, 0x101372a70, {{205.5, 444.3}, {3.0, 36.0}} <AX element pid: 6657, elementOrHash.elementID: 4322193488.204>
+                                            Other, 0x101371e10, {{178.5, 494.3}, {33.0, 14.0}}, label: 'Horizontal scroll bar, 1 page', value: 0% <AX element pid: 6657, elementOrHash.elementID: 4322191632.118>
+                                              Other, 0x1013693b0, {{144.5, 505.3}, {36.0, 3.0}} <AX element pid: 6657, elementOrHash.elementID: 4322192064.205>
+                                          Button, 0x101370130, {{149.0, 511.3}, {92.0, 32.0}}, label: '示例語言點' <AX element pid: 6657, elementOrHash.elementID: 4322147856.106>
+                                            StaticText, 0x1013715d0, {{155.0, 517.3}, {80.0, 20.0}}, label: '示例語言點' <AX element pid: 6657, elementOrHash.elementID: 4846804480.116>
+                                    Link, 0x1013719f0, {{69.9, 740.3}, {28.6, 10.7}}, label: 'Legal' <AX element pid: 6657, elementOrHash.elementID: 4321961424.109>
+                                  Button, 0x101372650, {{16.0, 172.0}, {358.0, 20.3}}, identifier: 'mapLanguageSelection', label: '已選 1 個語言點' <AX element pid: 6657, elementOrHash.elementID: 105553170092416.98>
+                                    StaticText, 0x1013732b0, {{16.0, 172.0}, {117.3, 20.3}}, label: '已選 1 個語言點' <AX element pid: 6657, elementOrHash.elementID: 105553170100896.110>
+                                    Image, 0x1013711b0, {{357.3, 178.0}, {14.7, 8.3}}, identifier: 'chevron.down', label: '往下' <AX element pid: 6657, elementOrHash.elementID: 105553170088576.111>
+              TabBar, 0x101370550, {{0.0, 761.0}, {390.0, 83.0}}, label: 'Tab Bar' <AX element pid: 6657, elementOrHash.elementID: 4320425248.11>
+                Button, 0x10136cf10, {{2.0, 762.0}, {94.0, 48.0}}, label: '字典' <AX element pid: 6657, elementOrHash.elementID: 4321437968.13>
+                Button, 0x10136d030, {{100.0, 762.0}, {93.0, 48.0}}, identifier: 'star', label: '生字本' <AX element pid: 6657, elementOrHash.elementID: 4322837168.14>
+                Button, 0x1013764b0, {{197.0, 762.0}, {94.0, 48.0}}, identifier: 'map', label: '地圖', Selected <AX element pid: 6657, elementOrHash.elementID: 4321473088.15>
+                  Image, 0x1013765d0, {{229.0, 766.3}, {29.7, 26.3}}, identifier: 'map.fill', label: 'show map' <AX element pid: 6657, elementOrHash.elementID: 4321477712.76>
+                Button, 0x1013766f0, {{295.0, 762.0}, {93.0, 48.0}}, identifier: 'gearshape', label: '設定' <AX element pid: 6657, elementOrHash.elementID: 4320323696.16>
+    Other, 0x101376810, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4883420320.219>
+  Window, 0x101376930, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4354245632.130>
+    Other, 0x101376a50, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4883561264.132>
+      Other, 0x101376b70, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4883569728.134>
+      Other, 0x101375210, {{0.0, 844.0}, {390.0, 233.0}} <AX element pid: 6657, elementOrHash.elementID: 4883562816.135>
+    Other, 0x101375330, {{0.0, 0.0}, {390.0, 844.0}} <AX element pid: 6657, elementOrHash.elementID: 4883497824.220>
+      Other, 0x101375450, {{52.0, 432.3}, {285.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4883424128.221>
+        Other, 0x101375570, {{52.0, 432.3}, {285.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 5032388784.222>
+        Other, 0x101375690, {{52.0, 432.3}, {285.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890475648.223>
+          Other, 0x1013757b0, {{52.0, 432.3}, {285.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890476160.224>
+          Other, 0x1013758d0, {{52.0, 432.3}, {285.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890476976.225>
+            Other, 0x1013759f0, {{52.0, 432.3}, {252.0, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890476592.226>
+              CollectionView, 0x101375b10, {{52.0, 432.3}, {252.0, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4350240768.228>
+                MenuItem, 0x101375c30, {{52.0, 432.3}, {68.0, 48.0}}, label: 'Copy' <AX element pid: 6657, elementOrHash.elementID: 4883404768.217>
+                  Other, 0x101375d50, {{68.0, 443.3}, {36.0, 18.0}} <AX element pid: 6657, elementOrHash.elementID: 4883607632.233>
+                    StaticText, 0x1013736d0, {{68.0, 443.3}, {36.0, 18.0}}, label: 'Copy' <AX element pid: 6657, elementOrHash.elementID: 4883374480.238>
+                Other, 0x1013737f0, {{120.0, 432.3}, {0.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890497712.229>
+                  Other, 0x101373910, {{120.0, 432.3}, {0.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890511920.234>
+                    Other, 0x101373a30, {{120.0, 432.3}, {0.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890512432.239>
+                MenuItem, 0x101373b50, {{120.0, 432.3}, {89.0, 48.0}}, label: 'Look Up' <AX element pid: 6657, elementOrHash.elementID: 4883364320.230>
+                  Other, 0x101373c70, {{136.0, 443.3}, {57.0, 18.0}} <AX element pid: 6657, elementOrHash.elementID: 4883351968.235>
+                    StaticText, 0x101373d90, {{136.0, 443.3}, {57.0, 18.0}}, label: 'Look Up' <AX element pid: 6657, elementOrHash.elementID: 4883349344.240>
+                Other, 0x101373eb0, {{209.0, 432.3}, {0.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890514224.231>
+                  Other, 0x101373fd0, {{209.0, 432.3}, {0.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890515792.236>
+                    Other, 0x1013740f0, {{209.0, 432.3}, {0.3, 48.0}} <AX element pid: 6657, elementOrHash.elementID: 4890514688.241>
+                MenuItem, 0x101374210, {{209.0, 432.3}, {95.0, 48.0}}, label: 'Translate' <AX element pid: 6657, elementOrHash.elementID: 4890499856.232>
+                  Other, 0x101374330, {{225.0, 443.3}, {63.0, 18.0}} <AX element pid: 6657, elementOrHash.elementID: 4890502752.237>
+                    StaticText, 0x101374450, {{225.0, 443.3}, {63.0, 18.0}}, label: 'Translate' <AX element pid: 6657, elementOrHash.elementID: 4890501488.242>
+            Button, 0x101374570, {{304.0, 432.3}, {33.7, 48.0}}, label: 'Forward' <AX element pid: 6657, elementOrHash.elementID: 4883397440.227>

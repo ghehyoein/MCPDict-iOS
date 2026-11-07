@@ -1,0 +1,126 @@
+XCTAssertTrue failed - Attributes: Application, 0x10136f070, pid: 6657, label: '汉字音典'
+Element subtree:
+ →Application, 0x10136f070, pid: 6657, label: '汉字音典'
+    Window (Main), 0x10136f190, {{0.0, 0.0}, {390.0, 844.0}}
+      Other, 0x101377f40, {{0.0, 0.0}, {390.0, 844.0}}
+      Other, 0x101464470, {{0.0, 0.0}, {390.0, 844.0}}
+        Other, 0x101377df0, {{0.0, 0.0}, {390.0, 844.0}}
+          Other, 0x10136ad70, {{0.0, 0.0}, {390.0, 844.0}}
+            Other, 0x10136ae90, {{0.0, 0.0}, {390.0, 844.0}}
+              Other, 0x101378060, {{0.0, 0.0}, {390.0, 844.0}}
+                Other, 0x101378180, {{0.0, 0.0}, {390.0, 844.0}}
+                  Other, 0x1013782a0, {{0.0, 0.0}, {390.0, 844.0}}
+                    Other, 0x1013783c0, {{0.0, 0.0}, {390.0, 844.0}}
+                      Other, 0x1013784e0, {{0.0, 0.0}, {390.0, 844.0}}
+                        Other, 0x101378600, {{0.0, 0.0}, {390.0, 844.0}}
+                          Other, 0x101378720, {{0.0, 0.0}, {390.0, 844.0}}
+                            NavigationBar, 0x101378840, {{0.0, 47.0}, {390.0, 44.0}}, identifier: '語言地圖'
+                              StaticText, 0x101378960, {{159.0, 58.7}, {67.7, 20.3}}, label: '語言地圖'
+                              Other, 0x101378a80, {{232.7, 52.7}, {43.7, 33.0}}, label: '顯示地圖'
+                                Other, 0x101378ba0, {{232.7, 52.7}, {43.7, 33.0}}
+                                  Button, 0x101378cc0, {{232.7, 52.7}, {43.7, 33.0}}, label: '顯示地圖'
+                                    Button, 0x101378de0, {{232.7, 52.7}, {43.7, 33.0}}
+                                      Other, 0x101378f00, {{232.7, 52.7}, {43.7, 33.0}}
+                                        Image, 0x101379020, {{232.7, 52.7}, {43.7, 33.0}}, identifier: 'map', label: '顯示地圖'
+                              Button, 0x101379140, {{284.3, 47.0}, {47.7, 44.0}}, label: '全覽'
+                              Button, 0x101379260, {{340.0, 47.0}, {42.0, 44.0}}, label: '更新'
+                            Other, 0x101379380, {{0.0, 0.0}, {390.0, 844.0}}
+                              Other, 0x1013794a0, {{0.0, 0.0}, {390.0, 844.0}}
+                                Other, 0x1013795c0, {{0.0, 0.0}, {390.0, 844.0}}
+                                  Other, 0x1013796e0, {{0.0, 0.0}, {390.0, 844.0}}
+                                    SegmentedControl, 0x101379800, {{16.0, 91.0}, {358.0, 31.0}}
+                                      Button, 0x101379920, {{16.0, 91.0}, {118.0, 32.0}}, label: '漢字', Selected
+                                      Button, 0x101379a40, {{135.0, 91.0}, {119.0, 32.0}}, label: '讀音'
+                                      Button, 0x101379b60, {{255.0, 91.0}, {119.0, 32.0}}, label: '註釋'
+                                    TextField, 0x101379c80, {{16.0, 130.0}, {274.0, 34.0}}, placeholderValue: '請輸入漢字', value: 输
+                                    Button, 0x101379da0, {{298.0, 137.0}, {34.0, 20.3}}, label: '查字'
+                                    Button, 0x101379ec0, {{340.0, 137.0}, {34.0, 20.3}}, label: '清除'
+                                    ScrollView, 0x101379fe0, {{0.0, 200.3}, {390.0, 34.3}}
+                                      Other, 0x10137a100, {{0.0, 200.3}, {122.0, 34.3}}
+                                        Button, 0x10144e850, {{16.0, 200.3}, {41.0, 34.3}}, label: '输'
+                                        Button, 0x10144c060, {{65.0, 200.3}, {41.0, 34.3}}, label: '輸'
+                                      Other, 0x10144c3d0, {{0.0, 214.5}, {390.0, 17.2}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x101460700, {{380.0, 228.7}, {7.0, 3.0}}
+                                      Other, 0x101467cb0, {{0.0, 214.5}, {390.0, 17.2}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x101458000, {{380.0, 228.7}, {7.0, 3.0}}
+                                    TextView, 0x101462160, {{103.7, 242.7}, {183.0, 15.0}}, identifier: 'mapPointStatus', label: '1 個語言點 ·「输」僅查已下載字表', value: 1 個語言點 ·「输」僅查已下載字表
+                                      Other, 0x10144a6f0, {{253.7, 242.7}, {30.0, 15.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x101464110, {{280.7, 218.7}, {3.0, 36.0}}
+                                      Other, 0x10145d6c0, {{103.7, 247.2}, {183.0, 7.5}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x101456820, {{106.7, 251.7}, {51.0, 3.0}}
+                                    Other, 0x10144c740, {{0.0, 265.7}, {390.0, 495.3}}
+                                      Button, 0x101445630, {{149.0, 511.3}, {92.0, 32.0}}, label: '示例語言點'
+                                        StaticText, 0x101443d90, {{155.0, 517.3}, {80.0, 20.0}}, label: '示例語言點'
+                                      TextView, 0x101443150, {{178.5, 483.3}, {33.0, 28.0}}, identifier: 'map-reading-aaaaaaaaaaaaaaaaaaaaaaaa', label: 'su1', value: su1
+                                        Other, 0x101455d30, {{192.0, 483.3}, {16.5, 28.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                          Other, 0x10147d970, {{205.5, 444.3}, {3.0, 36.0}}
+                                        Other, 0x10147eb20, {{178.5, 494.3}, {33.0, 14.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                          Other, 0x1014593b0, {{144.5, 505.3}, {36.0, 3.0}}
+                                      Other, 0x10147eea0, {{0.0, 265.7}, {390.0, 495.3}}
+                                        Map, 0x10147a060, {{0.0, 265.7}, {390.0, 495.3}}
+                                          Other, 0x10147a3e0, {{309.3, 379.8}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Chengde'
+                                          Other, 0x101476380, {{48.5, 393.3}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Zhangjiakou'
+                                          Other, 0x101473710, {{195.6, 479.0}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Beijing'
+                                          Other, 0x10146e850, {{180.1, 498.1}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Beijing'
+                                          Other, 0x10146c620, {{329.6, 528.1}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Tangshan'
+                                          Other, 0x10146a010, {{204.8, 541.1}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Langfang'
+                                          Other, 0x1014667d0, {{123.2, 580.0}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Hebei'
+                                          Other, 0x101442ba0, {{245.5, 581.2}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Tianjin'
+                                          Other, 0x10143f100, {{102.5, 612.4}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Baoding'
+                                          Other, 0x10143ab70, {{19.4, 700.0}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Shijiazhuang'
+                                          Other, 0x10143e590, {{120.6, 733.5}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Hengshui'
+                                        Other, 0x10143bfa0, {{0.0, 265.7}, {390.0, 495.3}}, identifier: 'AnnotationContainer'
+                                          Other, 0x10143c310, {{149.0, 483.3}, {92.0, 60.0}}, label: '示例語言點, su1'
+                                            TextView, 0x101438a30, {{178.5, 483.3}, {33.0, 28.0}}, identifier: 'map-reading-aaaaaaaaaaaaaaaaaaaaaaaa', label: 'su1', value: su1
+                                              Other, 0x101438d90, {{192.0, 483.3}, {16.5, 28.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                                Other, 0x101439100, {{205.5, 444.3}, {3.0, 36.0}}
+                                              Other, 0x101439480, {{178.5, 494.3}, {33.0, 14.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                Other, 0x101439810, {{144.5, 505.3}, {36.0, 3.0}}
+                                            Button, 0x1014380f0, {{149.0, 511.3}, {92.0, 32.0}}, label: '示例語言點'
+                                              StaticText, 0x101405d20, {{155.0, 517.3}, {80.0, 20.0}}, label: '示例語言點'
+                                      Link, 0x101404fe0, {{69.9, 740.3}, {28.6, 10.7}}, label: 'Legal'
+                                    Button, 0x101437940, {{16.0, 172.0}, {358.0, 20.3}}, identifier: 'mapLanguageSelection', label: '已選 1 個語言點'
+                                      StaticText, 0x10143b6c0, {{16.0, 172.0}, {117.3, 20.3}}, label: '已選 1 個語言點'
+                                      Image, 0x10143ba20, {{357.3, 178.0}, {14.7, 8.3}}, identifier: 'chevron.down', label: '往下'
+                TabBar, 0x10143eae0, {{0.0, 761.0}, {390.0, 83.0}}, label: 'Tab Bar'
+                  Button, 0x1014412e0, {{2.0, 762.0}, {94.0, 48.0}}, label: '字典'
+                  Button, 0x101444a90, {{100.0, 762.0}, {93.0, 48.0}}, identifier: 'star', label: '生字本'
+                  Button, 0x1014470a0, {{197.0, 762.0}, {94.0, 48.0}}, identifier: 'map', label: '地圖', Selected
+                    Image, 0x101451930, {{229.0, 766.3}, {29.7, 26.3}}, identifier: 'map.fill', label: 'show map'
+                  Button, 0x10145ad60, {{295.0, 762.0}, {93.0, 48.0}}, identifier: 'gearshape', label: '設定'
+      Other, 0x10146c0b0, {{0.0, 0.0}, {390.0, 844.0}}
+    Window, 0x10146fc40, {{0.0, 0.0}, {390.0, 844.0}}
+      Other, 0x10146ffb0, {{0.0, 0.0}, {390.0, 844.0}}
+        Other, 0x10147f470, {{0.0, 0.0}, {390.0, 844.0}}
+        Other, 0x10147f7f0, {{0.0, 844.0}, {390.0, 233.0}}
+      Other, 0x10147fb90, {{0.0, 0.0}, {390.0, 844.0}}
+        Other, 0x10147ff10, {{52.0, 432.3}, {285.3, 48.0}}
+          Other, 0x101480260, {{52.0, 432.3}, {285.3, 48.0}}
+          Other, 0x1014805d0, {{52.0, 432.3}, {285.3, 48.0}}
+            Other, 0x101480950, {{52.0, 432.3}, {285.3, 48.0}}
+            Other, 0x101480cd0, {{52.0, 432.3}, {285.3, 48.0}}
+              Other, 0x101481020, {{52.0, 432.3}, {252.0, 48.0}}
+                CollectionView, 0x101481380, {{52.0, 432.3}, {252.0, 48.0}}
+                  MenuItem, 0x101481710, {{52.0, 432.3}, {68.0, 48.0}}, label: 'Copy'
+                    Other, 0x101481a80, {{68.0, 443.3}, {36.0, 18.0}}
+                      StaticText, 0x101481de0, {{68.0, 443.3}, {36.0, 18.0}}, label: 'Copy'
+                  Other, 0x101482120, {{120.0, 432.3}, {0.3, 48.0}}
+                    Other, 0x101482490, {{120.0, 432.3}, {0.3, 48.0}}
+                      Other, 0x1014827e0, {{120.0, 432.3}, {0.3, 48.0}}
+                  MenuItem, 0x101482b30, {{120.0, 432.3}, {89.0, 48.0}}, label: 'Look Up'
+                    Other, 0x101482e80, {{136.0, 443.3}, {57.0, 18.0}}
+                      StaticText, 0x1014831e0, {{136.0, 443.3}, {57.0, 18.0}}, label: 'Look Up'
+                  Other, 0x101483540, {{209.0, 432.3}, {0.3, 48.0}}
+                    Other, 0x1014838c0, {{209.0, 432.3}, {0.3, 48.0}}
+                      Other, 0x101483c50, {{209.0, 432.3}, {0.3, 48.0}}
+                  MenuItem, 0x101483fb0, {{209.0, 432.3}, {95.0, 48.0}}, label: 'Translate'
+                    Other, 0x101484350, {{225.0, 443.3}, {63.0, 18.0}}
+                      StaticText, 0x1014846a0, {{225.0, 443.3}, {63.0, 18.0}}, label: 'Translate'
+              Button, 0x101484a30, {{304.0, 432.3}, {33.7, 48.0}}, label: 'Forward'
+Path to element:
+ →Application, 0x10136f070, pid: 6657, label: '汉字音典'
+Query chain:
+ →Find: Target Application 'io.github.ghehyoein.MCPDictIOS'
+  Output: {
+    Application, 0x101391340, pid: 6657, label: '汉字音典'
+  }

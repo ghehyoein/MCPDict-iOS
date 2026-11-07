@@ -1,0 +1,5 @@
+Query chain:
+ →Find: Target Application 'io.github.ghehyoein.MCPDictIOS'
+  ↪︎Find: Descendants matching type Button
+    ↪︎Find: Elements matching predicate 'label IN {"Copy", "拷貝", "拷贝", "複製", "复制"}'
+      ↪︎Find: First Match
