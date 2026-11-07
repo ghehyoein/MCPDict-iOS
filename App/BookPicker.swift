@@ -35,7 +35,7 @@ struct BookPicker: View {
                         }
                     }
                     Button(ui("新建生字表"), systemImage: "plus") { editID = nil; name = ""; editing = true }
-                } footer: { if reading != nil { SystemText(ui("點「完成」儲存勾選的生字表；不勾選任何表會取消收藏。"), color: .secondaryLabel) } }
+                } footer: { if reading != nil { SystemText(ui("點「完成」儲存勾選的生字表；不勾選任何表會取消收藏。")) } }
 
             }.navigationTitle(ui("生字表")).navigationBarTitleDisplayMode(.inline)
             .toolbar {

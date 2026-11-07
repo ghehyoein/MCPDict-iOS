@@ -11,6 +11,7 @@ struct SelectionTree: View {
     var scope: LanguageSelectionScope = .points
     var selectedRegion: Binding<String?> = .constant(nil)
     var filterQuery = ""
+    var additionalPaths = [String: [[String]]]()
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
     @Binding var expanded: Set<String>
@@ -58,10 +59,11 @@ struct SelectionTree: View {
             .onChange(of: grouping) { _, _ in expanded = []; rebuild() }
             .onChange(of: roles) { _, _ in expanded = []; rebuild() }
             .onChange(of: expanded) { _, _ in refreshRows() }
+            .onChange(of: additionalPaths) { _, _ in rebuild() }
             .onChange(of: filterQuery) { _, _ in matching = index.matches(filterQuery); refreshRows() }
     }
     private func rebuild() {
-        index = SelectionIndex(tables: tables, grouping: grouping, roles: roles)
+        index = SelectionIndex(tables: tables, grouping: grouping, roles: roles, additionalPaths: additionalPaths)
         matching = index.matches(filterQuery)
         refreshRows()
     }
@@ -79,6 +81,7 @@ struct SelectionTree: View {
 }
 
 struct LanguageDropdown: View {
+    @EnvironmentObject var model: AppModel
     let tables: [TablePackage]
     @Binding var names: Set<String>
     @ObservedObject var state: LanguageSelectionState
@@ -87,17 +90,23 @@ struct LanguageDropdown: View {
     var showsDone = true
     let done: () -> Void
     @State private var eligible = [TablePackage]()
+    @State private var additionalPaths = [String: [[String]]]()
     private var treeScope: LanguageSelectionScope {
         state.grouping == .administrative && state.scope == .points ? .administrativeGroups : state.scope
     }
-    private func refresh(prune: Bool) {
+    private func refresh(prune: Bool, updateRegion: Bool = false) {
         eligible = treeScope.eligible(tables.filter(state.flags.matches), grouping: state.grouping, roles: state.roles)
+        additionalPaths = state.grouping == .dictionary && state.includeTransitions ? DictionaryTransitions(tables: model.availableTables).additionalPaths(eligible) : [:]
         if prune { names = names.intersection(Set(eligible.map(\.name))) }
+        if updateRegion, state.scope == .terminalGroups, let region = state.region {
+            let index = SelectionIndex(tables: eligible, grouping: state.grouping, roles: state.roles, additionalPaths: additionalPaths)
+            if let ids = index.nodes["g:" + region]?.ids { names = Set(eligible.filter { ids.contains($0.id) }.map(\.name)) }
+        }
         restoreRegion()
     }
     private func restoreRegion() {
         guard state.scope == .terminalGroups else { return }
-        state.region = RegionSelection.restore(tables: eligible, grouping: state.grouping, names: names, saved: state.region, roles: state.roles)
+        state.region = RegionSelection.restore(tables: eligible, grouping: state.grouping, names: names, saved: state.region, roles: state.roles, additionalPaths: additionalPaths)
         if state.region == nil, !names.isEmpty { names = [] }
     }
     private var selection: Binding<Set<String>> {
@@ -109,6 +118,15 @@ struct LanguageDropdown: View {
             TextField(ui("搜尋語言或分區"), text: $state.filter).textFieldStyle(.roundedBorder)
             if state.kind != .administrative {
                 HStack(spacing: 8) {
+                    if state.grouping == .dictionary {
+                        Button { state.includeTransitions.toggle() } label: {
+                            HStack(spacing: 0) {
+                                Image(systemName: state.includeTransitions ? "checkmark.square.fill" : "square")
+                                Text(ui("過渡色"))
+                            }.fixedSize().contentTransition(.identity)
+                                .transaction { $0.animation = nil; $0.disablesAnimations = true }
+                        }.buttonStyle(.borderless).accessibilityIdentifier("includeDictionaryTransitions")
+                    }
                     if state.grouping == .person {
                         ForEach(PersonRole.allCases, id: \.self) { role in
                             Button { if !state.roles.insert(role).inserted { state.roles.remove(role) } } label: {
@@ -133,7 +151,7 @@ struct LanguageDropdown: View {
             }
             ScrollView {
                 SelectionTree(tables: eligible, grouping: state.grouping, roles: state.roles, badgeGrouping: palette,
-                              scope: treeScope, selectedRegion: $state.region, filterQuery: state.filter,
+                              scope: treeScope, selectedRegion: $state.region, filterQuery: state.filter, additionalPaths: additionalPaths,
                               selection: selection, inspect: inspect, expanded: $state.expandedNodes)
                     .frame(maxWidth: .infinity).id(state.grouping.rawValue)
             }.frame(height: 200).accessibilityIdentifier("languageTreeScroll")
@@ -152,6 +170,8 @@ struct LanguageDropdown: View {
         .onAppear { refresh(prune: state.flags.island || state.flags.history) }
         .onChange(of: tables) { _, _ in refresh(prune: true) }
         .onChange(of: state.grouping) { _, _ in refresh(prune: true) }
+        .onChange(of: state.includeTransitions) { _, _ in refresh(prune: false, updateRegion: true) }
+        .onChange(of: model.availableTables) { _, _ in refresh(prune: false, updateRegion: true) }
         .onChange(of: state.flags) { _, _ in refresh(prune: true) }
         .onChange(of: state.roles) { _, _ in refresh(prune: true) }
         .onChange(of: names) { _, _ in restoreRegion() }

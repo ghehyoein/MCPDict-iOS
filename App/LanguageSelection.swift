@@ -60,11 +60,11 @@ enum RegionSelection {
         guard let region, let selected else { return false }
         return selected.hasPrefix(region + "\u{0}")
     }
-    static func restore(tables: [TablePackage], grouping: TableGrouping, names: Set<String>, saved: String?, roles: Set<PersonRole> = Set(PersonRole.allCases)) -> String? {
+    static func restore(tables: [TablePackage], grouping: TableGrouping, names: Set<String>, saved: String?, roles: Set<PersonRole> = Set(PersonRole.allCases), additionalPaths: [String: [[String]]] = [:]) -> String? {
         guard !names.isEmpty else { return nil }
         var members = [[String]: Set<String>]()
         for table in tables {
-            for path in grouping.paths(table, roles: roles) where !path.isEmpty {
+            for path in grouping.paths(table, roles: roles) + (grouping == .dictionary ? additionalPaths[table.id] ?? [] : []) where !path.isEmpty {
             for length in 1...path.count { members[Array(path.prefix(length)), default: []].insert(table.name) }
             }
         }

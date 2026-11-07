@@ -21,12 +21,12 @@ struct SelectionIndex {
     private(set) var roots = [String]()
     private var searchText = [String: String]()
     private(set) var membershipInsertions = 0
-    init(tables: [TablePackage] = [], grouping: TableGrouping = .atlas, roles: Set<PersonRole> = Set(PersonRole.allCases)) {
+    init(tables: [TablePackage] = [], grouping: TableGrouping = .atlas, roles: Set<PersonRole> = Set(PersonRole.allCases), additionalPaths: [String: [[String]]] = [:]) {
         for table in tables.sorted(by: { $0.name < $1.name }) {
-            let paths = grouping.paths(table, roles: roles)
+            let paths = grouping.paths(table, roles: roles) + (grouping == .dictionary ? additionalPaths[table.id] ?? [] : [])
             var terms = [table.name]
             for path in [table.atlas, table.dictionary, table.administrative] { terms.append(contentsOf: path) }
-            if grouping == .person { terms.append(contentsOf: paths.flatMap { $0 }) }
+            if grouping == .person || grouping == .dictionary { terms.append(contentsOf: paths.flatMap { $0 }) }
             searchText[table.id] = terms.joined(separator: "\n")
             for path in paths {
             var parent: String?
@@ -41,7 +41,7 @@ struct SelectionIndex {
                 membershipInsertions += 1
                 parent = key
             }
-            let leaf = "t:" + (grouping == .person ? (parent ?? "") + ":" : "") + table.id
+            let leaf = "t:" + (grouping == .person || !additionalPaths.isEmpty ? (parent ?? "") + ":" : "") + table.id
             nodes[leaf] = Node(id: leaf, title: table.name, depth: path.count, region: nil, table: table, ids: [table.id])
             if let parent { nodes[parent]!.children.append(leaf) } else { roots.append(leaf) }
             }

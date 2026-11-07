@@ -27,6 +27,20 @@ enum UITestFixtures {
                 TablePackage(id: String(repeating: String(index + 1), count: 24), name: root + "測試點", fullName: root + "測試點", atlas: [root, root + "子區"], dictionary: [root, root + "子區"], administrative: [root], source: "UI test", sourceCommit: commit, recordCount: 1, size: 100, sha256: String(repeating: "b", count: 64), url: table.url)
             }
         }
+        if ProcessInfo.processInfo.arguments.contains("--transition-fixture") {
+            // Exact public path/color samples, including terminal and branching destinations.
+            let rows = [
+                ["南通", "下江－通泰－南通", "#CB1D7A,#7FDDE6"],
+                ["如皋", "下江－通泰－如北", "#CB1D7A"],
+                ["通州金沙", "兩浙－潤州－金沙", "#7FDDE6,#CB1D7A"],
+                ["通東呂四", "兩浙－潤州－通東", "#7FDDE6"],
+                ["贊皇", "華北－河北－冀西", "#D92E59,#FF2929"],
+                ["沙河橋西", "華北－邯彰", "#FF2929"]
+            ]
+            tables = rows.enumerated().map { index, row in
+                TablePackage(id: String(format: "%024x", index + 1), name: row[0], fullName: row[0], atlas: ["測試"], dictionary: row[1].components(separatedBy: "－"), administrative: [], source: "osfans/MCPDict", sourceCommit: commit, recordCount: 1, size: 100, sha256: table.sha256, url: table.url, dictionaryColor: row[2])
+            }
+        }
         return TableCatalog(schemaVersion: 1, version: "ui-test", sourceRepository: UpstreamTables.repository, sourceCommit: commit, scope: "", tables: tables)
     }
 }

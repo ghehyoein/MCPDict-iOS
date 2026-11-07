@@ -13,7 +13,7 @@ struct TableInfoView: View {
         if let value = statistics[key] { return value }
         if key == "地點" { return current.administrative.joined(separator: "/") }
         if key == "地圖集二分區" { return current.atlas.joined(separator: "－") }
-        if key == "音典分區過渡色" { return TableColors.hexes(current.dictionaryColor).dropFirst().joined(separator: "、") }
+        if key == "音典分區過渡色" { return DictionaryTransitions(tables: model.availableTables).description(current) }
         if key == "音典分區" { return current.dictionary.joined(separator: "－") }
         if key == "解析日志" { return log }
         if ["字數", "□數", "音節數", "不帶調音節數"].contains(key) { return ui("下載字表後統計") }
