@@ -59,7 +59,13 @@ final class DictionaryTransitionTests: XCTestCase {
         ["縉雲", "浙南－處州－縉雲", "#139E8D"],
         ["遂昌", "浙南－處州－西處", "#139E8D"],
         ["龍泉", "浙南－處州－南處", "#139E8D"],
-        ["東方付馬", "湘贛－不分類", "#184E32"]
+        ["東方付馬", "湘贛－不分類", "#184E32"],
+        ["博羅郭前", "閩－閩西－方言島", "#9B982C,#BFB465"],
+        ["會昌", "閩－閩西－北", "#BFB465,#CCB983"],
+        ["清流長校", "閩－閩西－中", "#BFB465"],
+        ["清流林畲", "閩－閩西－東", "#BFB465,#DCA491"],
+        ["瑞金", "閩－閩西－西南", "#BFB465,#CCB983"],
+        ["臺灣海陸腔", "閩－閩西－嘉應", "#BFB465"]
     ]
     private var tables: [TablePackage] {
         records.map { row in
@@ -126,4 +132,18 @@ final class DictionaryTransitionTests: XCTestCase {
         XCTAssertTrue(all.allSatisfy { $0.node.table == nil })
         XCTAssertEqual(all.first { $0.node.region == region }?.ids, members)
     }
+    func testTransitionToAnExistingAncestorStillGetsItsOwnSubmenuWithoutDoubleCounting() throws {
+        let tables = tables, transitions = DictionaryTransitions(tables: tables)
+        let extra = transitions.additionalPaths(tables)
+        XCTAssertEqual(extra["博羅郭前"], [["閩", "閩西", "過渡色"]])
+        let index = SelectionIndex(tables: tables, grouping: .dictionary, additionalPaths: extra)
+        XCTAssertTrue(index.nodes["g:閩\u{0}閩西\u{0}方言島"]!.ids.contains("博羅郭前"))
+        XCTAssertTrue(index.nodes["g:閩\u{0}閩西\u{0}過渡色"]!.ids.contains("博羅郭前"))
+        let expected = Set(tables.filter { $0.dictionary.starts(with: ["閩", "閩西"]) }.map(\.id))
+        XCTAssertEqual(index.nodes["g:閩\u{0}閩西"]!.ids, expected)
+        var sameLeaf = tables.first { $0.name == "通州金沙" }!
+        sameLeaf.metadata = ["音典過渡色": "兩浙－潤州－金沙"]
+        XCTAssertNil(transitions.additionalPaths([sameLeaf])[sameLeaf.id])
+    }
+
 }
