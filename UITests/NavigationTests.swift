@@ -82,8 +82,14 @@ final class NavigationTests: XCTestCase {
         other.adjust(toNormalizedSliderPosition: 0.6)
         XCTAssertEqual(map.value as? String, mapValue)
         let reset = app.buttons["resetSettings"]
-        for _ in 0..<8 { if reset.isHittable { break }; app.swipeUp() }
-        XCTAssertTrue(reset.isHittable); reset.tap()
+        // Drag in the list margin: after resizing, an app-wide swipe can start
+        // on a slider and adjust/intercept that control instead of scrolling.
+        for _ in 0..<12 {
+            if reset.exists && reset.isHittable { break }
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.75)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.3)))
+        }
+        guard reset.exists && reset.isHittable else { XCTFail("Reset row was not reached: \(app.debugDescription)"); return }
+        reset.tap()
         XCTAssertTrue(map.waitForExistence(timeout: 5))
         XCTAssertEqual(map.value as? String, originalMap)
         XCTAssertEqual(reading.value as? String, oldReading)
