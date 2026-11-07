@@ -1,0 +1,172 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "4EAACCA8-ED1C-4B5A-BD53-94E33D8F926C.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖文字原生選取_0_3A993339-5BE1-44F6-9147-7058F1BEAFD1.png",
+        "timestamp" : 1794065453.348
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "A8CA8EE2-76B4-4ABE-857C-09C6FF2BDCE0.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_72A6A018-B017-4830-9912-7FED11951461.MCPDictIOS",
+        "timestamp" : 1794065450.784
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "44CD9682-E270-472A-BB07-8AF13A2E2DA6",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-07 at 03.30.50 PM",
+        "timestamp" : 1794065450.784
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "ED3402E4-AC61-4B5D-9D09-5A0611F498E5.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Button (First Match)`_0_14C3357B-0C8C-4F0F-93D3-770F31EA4740.txt",
+        "timestamp" : 1794065448.402
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "B984F768-98C8-4BD3-A936-E000E888A0D2.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Button (First Match)`_0_2ACD9C5F-F2A2-40C8-8AB2-C75556B537CC.txt",
+        "timestamp" : 1794065447.316
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "52D654F2-4550-404B-961F-627951491468.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Button (First Match)`_0_D808CE09-BFD7-4C00-A5EE-A18DBF72788E.txt",
+        "timestamp" : 1794065446.285
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "F465725C-42FA-4B58-86B4-58E98C9C8EA8.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `Button (First Match)`_0_48D6930D-0432-4F21-B8D5-144D3332FE1D.txt",
+        "timestamp" : 1794065445.102
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "D47FF2EF-A9A6-414B-99D0-DB455E099F5F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 03.30.43 PM",
+        "timestamp" : 1794065443.007
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "2BF3EA95-FB23-43E7-9F6A-A3C7A1704AA3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 03.30.39 PM",
+        "timestamp" : 1794065439.624
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "427B99C0-9EE8-4EF6-AEFF-B3B26C081A8D",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 03.30.39 PM",
+        "timestamp" : 1794065439.022
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "A86D90A2-E487-4E01-94BB-47BC205C1939",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 03.30.35 PM",
+        "timestamp" : 1794065435.444
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "BF323876-7ED6-44CC-853A-80C69E93E262",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-07 at 03.30.30 PM",
+        "timestamp" : 1794065430.571
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "C095574D-8B10-477C-81A1-129924B933BE.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-07 at 03.30.05 PM.mp4",
+        "timestamp" : 1794065405.934
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "826DF2EA-808F-48F6-B3B9-FF2412591227.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "5ECFBE7D-A9AC-4A5A-97AA-187369CD5A52.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "生字本滾動後浮動操作_0_23BB2153-B881-41E6-B5E6-433DFF2A8F6C.png",
+        "timestamp" : 1794065479.352
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "B951473A-5724-4394-A030-2A5623498C73.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_F510D40A-2CB8-4772-A7E4-36B314A7C197.png",
+        "timestamp" : 1794065535.847
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "B6795088-AAEB-47B8-BB8A-F597C15F5533",
+        "deviceName" : "MCPDict-focus-18-5",
+        "exportedFileName" : "1C7FA89C-0B0F-4863-86DC-B038E57F1AEB.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_2DFE7D3D-69F9-4D4A-86C1-49FB2800ECFE.png",
+        "timestamp" : 1794065534.694
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  }
+]
