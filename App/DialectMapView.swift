@@ -36,6 +36,17 @@ struct DialectMapView: View {
         tableByName = Dictionary(uniqueKeysWithValues: tables.map { ($0.name, $0) })
         rebuildPoints()
     }
+    private func recolorPoints() {
+        // A palette change reuses submitted readings and tone parts, including
+        // long notes, instead of joining and parsing the complete results again.
+        points = points.map { existing in
+            guard let table = tableByName[existing.name],
+                  var point = DialectPoint.make(table, grouping: colorGrouping, reading: existing.reading) else { return existing }
+            point.copyText = existing.copyText; point.toneParts = existing.toneParts
+            return point
+        }
+        pointsRevision = UUID()
+    }
     private func rebuildPoints() {
         pointsRevision = UUID()
         let group = result?.groups[activeCharacter] ?? [:]
@@ -96,7 +107,7 @@ struct DialectMapView: View {
         .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
         .onChange(of: toneStyle) { _, _ in rebuildPoints() }
         .onChange(of: pitchStyle) { _, _ in rebuildPoints() }
-        .onChange(of: colorScheme) { _, _ in rebuildPoints() }
+        .onChange(of: colorScheme) { _, _ in recolorPoints() }
     }
     private var menu: some View {
         LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: namesBinding, state: selector, entryID: "mapLanguageSelection",
