@@ -41,10 +41,9 @@ final class NavigationTests: XCTestCase {
         XCTAssertEqual(person.value as? String, "checked")
         app.buttons["personRole-維護人"].tap()
         XCTAssertFalse(person.exists); XCTAssertTrue(blank.exists)
-        app.buttons["personRole-錄入人"].tap()
-        XCTAssertFalse(blank.exists)
-        // Reset this persisted classification for other independent fixture launches.
-        app.buttons["personRole-錄入人"].tap(); app.buttons["personRole-維護人"].tap()
+        XCTAssertFalse(app.buttons["personRole-錄入人"].exists)
+        XCTAssertTrue(blank.exists)
+        app.buttons["personRole-維護人"].tap()
         chooseClassification(app, "行政區劃")
         app.buttons["expand-北京"].tap()
         XCTAssertTrue(app.buttons["check-東城"].exists)
@@ -455,6 +454,8 @@ final class NavigationTests: XCTestCase {
         }
         XCTAssertFalse(app.buttons["check-贊皇"].exists)
         include.tap()
+        let branchButton = app.buttons["expand-邯彰"]; reveal(branchButton)
+        if branchButton.value as? String != "expanded" { branchButton.tap() }
         let terminal = app.buttons["check-贊皇"]; reveal(terminal)
         XCTAssertTrue(terminal.exists)
         XCTAssertNotEqual(app.buttons["贊皇"].value as? String, "*")
@@ -469,6 +470,24 @@ final class NavigationTests: XCTestCase {
         }
         XCTAssertTrue(app.buttons["南通"].exists)
         XCTAssertNotEqual(app.buttons["南通"].value as? String, "*")
+    }
+
+    @MainActor func testMapTextSupportsNativeSelectionAndMenuFollowsInput() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]; app.launch()
+        app.tabBars.buttons["地圖"].tap()
+        let input = app.textFields["請輸入漢字"]
+        XCTAssertTrue(input.waitForExistence(timeout: 5))
+        XCTAssertGreaterThan(app.buttons["mapLanguageSelection"].frame.minY, input.frame.maxY)
+        input.tap(); input.typeText("输")
+        app.buttons["查字"].tap()
+        let text = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
+        XCTAssertTrue(text.waitForExistence(timeout: 8))
+        text.press(forDuration: 1.2)
+        let copy = app.buttons.matching(NSPredicate(format: "label IN %@", ["Copy", "拷貝", "拷贝", "複製", "复制"])).firstMatch
+        XCTAssertTrue(copy.waitForExistence(timeout: 5), app.debugDescription)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "地圖文字原生選取"; shot.lifetime = .keepAlways; add(shot)
+        XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].exists)
     }
 
 }

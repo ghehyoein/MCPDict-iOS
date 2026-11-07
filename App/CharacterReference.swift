@@ -50,11 +50,11 @@ struct CharacterReferenceHeader: View {
                 let collapsed = settings.fieldOrder.filter { settings.mode($0) == "collapsed" && settings.value($0, data: data) != nil }
                 WrappingInformationLayout {
                         ForEach(expanded, id: \.self) { field in
-                            SystemText(settings.value(field, data: data) ?? "", color: field == "Unicode" ? AppAccent.uiColor : .label)
+                            SystemText(settings.value(field, data: data) ?? "", color: .label)
                                 .accessibilityIdentifier(field == "Unicode" ? "characterUnicode" : "characterInfo-" + field)
                         }
                         if !collapsed.isEmpty {
-                            Button { moreInformation = true } label: { Image(systemName: "ellipsis") }
+                            Button { moreInformation = true } label: { Text("⋯") }
                                 .accessibilityLabel(ui("更多字形資料"))
                                 .popover(isPresented: $moreInformation) {
                                     ScrollView {

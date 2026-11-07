@@ -291,7 +291,12 @@ actor TableStore {
         try prepare()
         let previous = try await restore()
         var retained = Dictionary(uniqueKeysWithValues: (previous?.tables ?? []).map { ($0.id, $0) })
-        let requested = catalog.tables.filter { selected.contains($0.id) }.sorted { $0.id < $1.id }
+        let requested = catalog.tables.filter {
+            selected.contains($0.id) && (previous?.databaseFile == nil || retained[$0.id]?.sha256 != $0.sha256)
+        }.sorted { $0.id < $1.id }
+        if requested.isEmpty, let previous {
+            return TableDownloadResult(installation: previous, cancelled: false, failure: nil, completed: 0)
+        }
         let bytes = requested.reduce(Int64(0)) { $0 + $1.size }
         let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
         guard available > bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請先釋放儲存空間") }

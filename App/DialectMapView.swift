@@ -30,12 +30,14 @@ struct DialectMapView: View {
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
     private var colorGrouping: TableGrouping { colorScheme == "dictionary" ? .dictionary : .atlas }
     @State private var points = [DialectPoint]()
+    @State private var pointsRevision = UUID()
     @State private var tableByName = [String: TablePackage]()
     private func rebuildMapTables() {
         tableByName = Dictionary(uniqueKeysWithValues: tables.map { ($0.name, $0) })
         rebuildPoints()
     }
     private func rebuildPoints() {
+        pointsRevision = UUID()
         let group = result?.groups[activeCharacter] ?? [:]
         let ranks = ResultOrdering.ranks(tables, namespace: "dictionary")
         points = (result == nil ? names : submittedNames).sorted { (ranks[$0] ?? Int.max) < (ranks[$1] ?? Int.max) }.compactMap { name in
@@ -75,18 +77,14 @@ struct DialectMapView: View {
             Picker(ui("查詢方式"), selection: $mode) {
                 ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).padding(.horizontal)
-            SelectionMenuButton(count: names.count, entryID: menuOpen ? "" : "mapLanguageSelection", expanded: $selector.expanded).opacity(menuOpen ? 0 : 1).allowsHitTesting(!menuOpen).accessibilityHidden(menuOpen).padding(.horizontal)
+            searchBar
+            SelectionMenuButton(count: names.count, entryID: menuOpen ? "" : "mapLanguageSelection", expanded: $selector.expanded)
+                .opacity(menuOpen ? 0 : 1).allowsHitTesting(!menuOpen).accessibilityHidden(menuOpen)
+                .overlay(alignment: .top) {
+                    if menuOpen { menu.fixedSize(horizontal: false, vertical: true).environment(\.mapLabelSize, min(25, max(5, mapSize))) }
+                }.padding(.horizontal).zIndex(1)
             mapContent.overlay {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
-            }
-        }
-        .overlay(alignment: .top) {
-            if menuOpen {
-                VStack(spacing: 8) {
-                    Picker(ui("查詢方式"), selection: $mode) { ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) } }
-                        .pickerStyle(.segmented).hidden().allowsHitTesting(false).accessibilityHidden(true)
-                    menu
-                }.environment(\.mapLabelSize, min(25, max(5, mapSize))).padding(.horizontal)
             }
         }
         .onAppear { rebuildMapTables(); receiveHandoff() }
@@ -106,11 +104,10 @@ struct DialectMapView: View {
     }
     private var mapContent: some View {
         VStack(spacing: 8) {
-            searchBar
             if result?.mode == .note { NoteVariantPicker(query: Binding(get: { result?.query ?? "" }, set: { character = $0; mode = .note })) { Task { await query() } }.padding(.horizontal) }
             variantBar
             statusLabel
-            NativeDialectMap(points: points, fit: fit, fontSize: min(25, max(5, mapSize)), readingSize: readingSize, mapStyle: baseMapStyle,
+            NativeDialectMap(points: points, fit: fit, revision: pointsRevision, fontSize: min(25, max(5, mapSize)), readingSize: readingSize, mapStyle: baseMapStyle,
                              centerChanged: { center = $0 }, choose: choose)
             if querying { ProgressView() }
         }
@@ -118,7 +115,7 @@ struct DialectMapView: View {
     private var searchBar: some View {
                 HStack {
                     TextField(ui(mode == .character ? "請輸入漢字" : mode == .pronunciation ? "請輸入讀音" : "請輸入註釋"), text: $character).textFieldStyle(.roundedBorder).focused($inputFocused).onSubmit { Task { await query() } }
-                    Button(ui("查字")) { Task { await query() } }.disabled(querying || model.updating)
+                    Button(ui("查字")) { Task { await query() } }.disabled(querying)
                     Button(ui("清除")) { character = ""; resetResults() }
                 }.padding(.horizontal)
     }
