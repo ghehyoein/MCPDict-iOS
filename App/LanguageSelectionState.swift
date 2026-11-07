@@ -54,14 +54,15 @@ struct PaletteSwitch: View {
     private var enabled: Binding<Bool> { Binding(get: { palette == "dictionary" }, set: { palette = $0 ? "dictionary" : "atlas" }) }
     var body: some View {
         NativePaletteSwitch(isOn: enabled)
-            .frame(width: 51, height: 31)
+            .fixedSize()
             .overlay {
-                HStack(spacing: 0) {
-                    Text("地").foregroundStyle(palette == "atlas" ? Color.blue : .white).frame(width: 25.5)
-                    Text("音").foregroundStyle(palette == "dictionary" ? Color.orange : .white).frame(width: 25.5)
-                }.font(.system(size: 12, weight: .semibold)).frame(width: 51)
-                    .environment(\.layoutDirection, .leftToRight)
-                    .allowsHitTesting(false).accessibilityHidden(true)
+                GeometryReader { geometry in
+                    HStack(spacing: 0) {
+                        Text("地").foregroundStyle(palette == "atlas" ? Color.blue : .white).frame(width: geometry.size.width / 2)
+                        Text("音").foregroundStyle(palette == "dictionary" ? Color.orange : .white).frame(width: geometry.size.width / 2)
+                    }.font(.system(size: 12, weight: .semibold)).frame(height: geometry.size.height)
+                        .environment(\.layoutDirection, .leftToRight)
+                }.allowsHitTesting(false).accessibilityHidden(true)
             }
             .accessibilityLabel(ui("地圖集二／音典分區配色"))
     }
@@ -72,10 +73,11 @@ private struct NativePaletteSwitch: UIViewRepresentable {
     func makeUIView(context: Context) -> UISwitch {
         let control = UISwitch()
         control.onTintColor = .systemOrange; control.tintColor = .systemBlue
-        control.backgroundColor = .systemBlue; control.layer.cornerRadius = 15.5
+        control.backgroundColor = .systemBlue; control.layer.cornerRadius = control.intrinsicContentSize.height / 2
         control.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .valueChanged)
         return control
     }
+    func sizeThatFits(_ proposal: ProposedViewSize, uiView: UISwitch, context: Context) -> CGSize? { uiView.intrinsicContentSize }
     func updateUIView(_ control: UISwitch, context: Context) {
         context.coordinator.parent = self
         control.setOn(isOn, animated: false)

@@ -28,7 +28,9 @@ struct LanguageSelectionPanel: View {
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !alwaysExpanded { SelectionMenuButton(count: names.count, entryID: entryID, expanded: $state.expanded) }
+            if alwaysExpanded {
+                Text(ui("已選 \(names.count) 個語言點")).foregroundStyle(AppAccent.color).accessibilityIdentifier(entryID)
+            } else { SelectionMenuButton(count: names.count, entryID: entryID, expanded: $state.expanded) }
             if alwaysExpanded || state.expanded { controls }
         }
         .onAppear { restoreInitial() }

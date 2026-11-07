@@ -87,7 +87,7 @@ struct FavoritesView: View {
                     choiceBar
                     if selecting {
                         HStack {
-                            Button(ui("全選")) { selection = Set(model.visibleFavorites.map(\.id)) }
+                            Button(ui("全選")) { selection = Set(shown.map(\.id)) }
                             Spacer()
                             Text(ui("已選 ") + String(selection.count))
                             Menu(ui("加入生字表")) {
@@ -143,7 +143,8 @@ struct FavoritesView: View {
                     stored = old.split(separator: "|").compactMap { NotebookCategory(rawValue: String($0)) }.first?.rawValue ?? NotebookCategory.hidden.rawValue
                 }
             }
-            .onChange(of: stored) { _, _ in selectedKey = "" }
+            .onChange(of: stored) { _, _ in selectedKey = ""; selection = [] }
+            .onChange(of: selectedKey) { _, _ in selection.formIntersection(Set(shown.map(\.id))) }
             .sheet(isPresented: $showBooks) { BookPicker() }
              .onChange(of: model.notebook.selected) { _, _ in selection = [] }
              .navigationTitle(ui("生字本")).toolbar {
