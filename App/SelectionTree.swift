@@ -153,8 +153,8 @@ struct LanguageDropdown: View {
                 }
             }
             if state.grouping == .dictionary && state.includeTransitions {
-                Text(ui("* 表示過渡分區按相同色值推定，或尚無對應分區記錄。"))
-                    .font(.caption).foregroundStyle(.secondary).accessibilityIdentifier("transitionExplanation")
+                SystemText(ui("* 表示過渡分區按相同色值推定，或尚無對應分區記錄。"), color: .secondaryLabel)
+                    .font(.caption).accessibilityIdentifier("transitionExplanation")
             }
             ScrollView {
                 SelectionTree(tables: eligible, grouping: state.grouping, roles: state.roles, badgeGrouping: palette,
