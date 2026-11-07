@@ -38,7 +38,7 @@ enum UITestFixtures {
                 ["沙河橋西", "華北－邯彰", "#FF2929"]
             ]
             tables = rows.enumerated().map { index, row in
-                TablePackage(id: String(format: "%024x", index + 1), name: row[0], fullName: row[0], atlas: ["測試"], dictionary: row[1].components(separatedBy: "－"), administrative: [], source: "osfans/MCPDict", sourceCommit: commit, recordCount: 1, size: 100, sha256: table.sha256, url: table.url, dictionaryColor: row[2])
+                TablePackage(id: String(format: "%024x", index + 1), name: row[0], fullName: row[0], atlas: ["測試"], dictionary: row[1].components(separatedBy: "－"), administrative: [], source: "osfans/MCPDict", sourceCommit: commit, recordCount: 1, size: 100, sha256: table.sha256, url: table.url, metadata: ["簡稱": row[0]], dictionaryColor: row[2])
             }
         }
         return TableCatalog(schemaVersion: 1, version: "ui-test", sourceRepository: UpstreamTables.repository, sourceCommit: commit, scope: "", tables: tables)
