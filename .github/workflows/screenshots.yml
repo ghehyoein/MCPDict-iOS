@@ -1,0 +1,22 @@
+name: Inspect native map selection screenshots
+on: [push, workflow_dispatch]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Export fixture attachments for review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 42385495633 --repo ghehyoein/MCPDict-iOS --name focused-interaction-results --dir review
+          find review -name 'Focus-*.xcresult' -type d -prune -exec rm -rf {} +
+          git switch --orphan "codex/native-selection-review-${GITHUB_RUN_ID}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add review
+          git commit -m 'Capture native text selection and font separator fixtures'
+          git push origin HEAD
