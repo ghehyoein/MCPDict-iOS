@@ -1,20 +1,57 @@
-name: Revision 0.9.2 compile diagnostics
+name: Revision 0.9.2 interaction diagnostics
 on: [push, workflow_dispatch]
 permissions:
-  contents: read
+  contents: write
+  actions: read
 jobs:
-  compile:
+  screenshots:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make fixture screenshots inspectable
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 42383405424 --repo ghehyoein/MCPDict-iOS --name simulator-screenshots-iPhone-13-18.5 --dir review
+          git switch --orphan "codex/diagnostic-092-${GITHUB_RUN_ID}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add review
+          git commit -m 'Capture fixture screenshots for interaction diagnosis'
+          git push origin HEAD
+  focus:
     runs-on: macos-15
+    permissions:
+      contents: read
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
       - uses: actions/checkout@v4
         with:
           ref: codex/revision-092
-      - name: Compile app and test targets
+      - name: Generate project
         run: |
           mkdir -p App/BundledTables
           brew install xcodegen
           python3 tools/prepare_assets.py
           xcodegen generate
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -sdk iphonesimulator -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build-for-testing
+      - name: Check revised interactions on both iOS generations
+        run: |
+          for runtime in 18-5 26-2; do
+            device=$(xcrun simctl create "MCPDict-focus-$runtime" com.apple.CoreSimulator.SimDeviceType.iPhone-13 "com.apple.CoreSimulator.SimRuntime.iOS-$runtime")
+            xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath "Focus-$runtime" CODE_SIGNING_ALLOWED=NO -only-testing:MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput -only-testing:MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders -only-testing:MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails -only-testing:MCPDictIOSUITests/NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery test
+          done
+      - name: Export diagnostics
+        if: always()
+        run: |
+          for result in Focus-*.xcresult; do
+            test -d "$result" || continue
+            xcrun xcresulttool export attachments --path "$result" --output-path "Attachments-$result"
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: focused-interaction-results
+          path: |
+            Focus-*.xcresult
+            Attachments-*
