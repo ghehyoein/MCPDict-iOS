@@ -89,7 +89,7 @@ struct FavoritesView: View {
                         HStack {
                             Button(ui("全選")) { selection = Set(shown.map(\.id)) }
                             Spacer()
-                            Text(ui("已選 ") + String(selection.count))
+                            SystemText(ui("已選 ") + String(selection.count))
                             Menu(ui("加入生字表")) {
                                 ForEach(model.notebook.books) { book in Button(book.title) { model.addFavorites(selection, to: book.id) } }
                             }.disabled(selection.isEmpty)
@@ -97,9 +97,9 @@ struct FavoritesView: View {
                         }.buttonStyle(.borderless)
                     }
                 }
-                if model.notebook.books.isEmpty { Text(ui("請先新建生字表。")) }
-                else if model.notebook.selected.isEmpty { Text(ui("請選擇要查看的生字表。")) }
-                else if model.visibleFavorites.isEmpty { Text(ui("點擊查詢結果旁的星號，即可加入所選生字表。")) }
+                if model.notebook.books.isEmpty { SystemText(ui("請先新建生字表。")) }
+                else if model.notebook.selected.isEmpty { SystemText(ui("請選擇要查看的生字表。")) }
+                else if model.visibleFavorites.isEmpty { SystemText(ui("點擊查詢結果旁的星號，即可加入所選生字表。")) }
                 ForEach(groups) { group in
                     Section {
                         ForEach(group.entries) { saved in

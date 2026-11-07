@@ -30,7 +30,7 @@ struct SettingsView: View {
                     sizeSlider("顯示介面", $fontSize, range: 14...26, identifier: "fontSizeSlider", sample: 2)
                 }
                 Section(ui("聲調顯示")) {
-                    HStack { Text(ui("聲調預覽：")); Spacer(); Text("好"); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) }
+                    HStack { SystemText(ui("聲調預覽：")); Spacer(); SystemText("好"); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) }
                     Picker("", selection: $toneStyle) {
                         ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
                     }.pickerStyle(.inline).labelsHidden()
@@ -50,7 +50,7 @@ struct SettingsView: View {
     private func sizeSlider(_ label: String, _ size: Binding<Double>, range: ClosedRange<Double>, identifier: String, sample: Int) -> some View {
         VStack(alignment: .leading) {
             HStack {
-                Text(ui(label)).font(.system(size: fontSize))
+                SystemText(ui(label), pointSize: CGFloat(fontSize))
                 Spacer()
                 if sample == 0 {
                     let table = model.availableTables.first { $0.name == "通東呂四" }
@@ -58,8 +58,8 @@ struct SettingsView: View {
                         LanguageBadge(name: "通東呂四", table: table).environment(\.mapLabelSize, mapSize)
                     }.buttonStyle(.plain).disabled(table == nil)
                 } else if sample == 1 {
-                    HStack(spacing: 4) { Text("好").font(.system(size: readingSize)); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false) }
-                } else { Text(ui("漢字音典")).font(.system(size: fontSize)).textSelection(.enabled) }
+                    HStack(spacing: 4) { SystemText("好", pointSize: CGFloat(readingSize)); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false) }
+                } else { SystemText(ui("漢字音典"), pointSize: CGFloat(fontSize)) }
             }
             Slider(value: size, in: range) { Text(ui(label)) }.accessibilityIdentifier(identifier)
         }
