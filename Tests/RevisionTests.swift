@@ -83,7 +83,21 @@ final class RevisionTests: XCTestCase {
         XCTAssertEqual(Set(state?.tables.map(\.id) ?? []), [old.id, first.id])
         let rows = try await restoredRepo.search("中", mode: .character, language: "")
         XCTAssertEqual(Set(rows.map(\.language)), ["原有", "第一"])
-        let removed = try await reopened.remove(selected: [first.id])
+        let noOp = try await reopened.download(catalog, selected: [old.id, first.id], localFiles: [:]) { _ in }
+        XCTAssertEqual(noOp.completed, 0)
+        XCTAssertEqual(noOp.installation.databaseFile, state?.databaseFile)
+        let queriedDuringRemoval = CompletedCounts()
+        let removed = try await reopened.remove(selected: [first.id]) { phase in
+            if phase > 0 && phase < 1 {
+                do {
+                    let found = try await restoredRepo.search("中", mode: .character, language: "")
+                    XCTAssertEqual(Set(found.map(\.language)), ["原有", "第一"])
+                    await queriedDuringRemoval.append(found.count)
+                } catch { XCTFail("Query during removal failed: \(error)") }
+            }
+        }
+        let concurrentQueries = await queriedDuringRemoval.values
+        XCTAssertGreaterThanOrEqual(concurrentQueries.count, 3)
         XCTAssertEqual(removed.tables.map(\.id), [old.id])
         let next = try await reopened.download(catalog, selected: [second.id], localFiles: files) { _ in }
         XCTAssertEqual(Set(next.installation.tables.map(\.id)), [old.id, second.id])

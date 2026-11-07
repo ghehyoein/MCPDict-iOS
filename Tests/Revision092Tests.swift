@@ -76,4 +76,22 @@ final class Revision092Tests: XCTestCase {
         XCTAssertTrue(map.annotations.first as AnyObject === annotation)
         XCTAssertEqual(annotation.point.color, "#AABBCC")
     }
+    @MainActor func testDenseMapCameraUpdatesDoNotReplaceAnnotations() throws {
+        let points = (0..<2000).map { i in
+            DialectPoint(id: String(i), name: "點\(i)", longitude: 113 + Double(i % 100) / 1000,
+                         latitude: 23 + Double(i / 100) / 1000, color: "#008080", reading: String(repeating: "長注釋", count: 40))
+        }
+        let map = MKMapView(frame: CGRect(x: 0, y: 0, width: 390, height: 600))
+        let coordinator = NativeDialectMap.Coordinator { _ in }
+        let revision = UUID()
+        coordinator.update(map, points: points, fit: 0, revision: revision)
+        let original = Set(map.annotations.map { ObjectIdentifier($0 as AnyObject) })
+        let start = Date()
+        for _ in 0..<200 { coordinator.update(map, points: points, fit: 0, revision: revision) }
+        let elapsed = Date().timeIntervalSince(start)
+        XCTAssertEqual(original, Set(map.annotations.map { ObjectIdentifier($0 as AnyObject) }))
+        XCTAssertEqual(map.annotations.count, 2000)
+        print("MAP_CAMERA_BENCH points=2000 repeated_updates=200 seconds=\(elapsed)")
+    }
+
 }
