@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import ObjectiveC
 
 struct NativeDialectMap: UIViewRepresentable {
     let points: [DialectPoint]
