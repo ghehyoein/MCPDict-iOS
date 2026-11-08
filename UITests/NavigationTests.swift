@@ -276,7 +276,10 @@ final class NavigationTests: XCTestCase {
         app.navigationBars.buttons["完成"].tap()
         app.buttons["中"].tap()
         app.buttons["characterMap"].tap()
-        XCTAssertTrue(tab(app, "地圖").isSelected)
+        // iPad's floating tab child does not expose the selected trait.
+        // Verify the destination itself and the transferred reading below.
+        XCTAssertTrue(app.buttons["mapLanguageSelection"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.maps.firstMatch.exists)
         let mark = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
         XCTAssertTrue(mark.waitForExistence(timeout: 8))
         XCTAssertEqual(mark.label, "tɕiɔŋ1")
