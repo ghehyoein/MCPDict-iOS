@@ -13,7 +13,7 @@ struct NativeDialectMap: UIViewRepresentable {
     let choose: (String) -> Void
     func makeCoordinator() -> Coordinator { Coordinator(choose: choose) }
     func makeUIView(context: Context) -> MKMapView {
-        let map = MKMapView()
+        let map = CachedAccessibilityMapView()
         map.delegate = context.coordinator
         map.pointOfInterestFilter = .excludingAll
         map.setRegion(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: 34, longitude: 108), span: MKCoordinateSpan(latitudeDelta: 38, longitudeDelta: 48)), animated: false)
@@ -43,6 +43,7 @@ struct NativeDialectMap: UIViewRepresentable {
         var choose: (String) -> Void
         init(choose: @escaping (String) -> Void) { self.choose = choose }
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+            (mapView as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
             let center = TableLocation(longitude: mapView.centerCoordinate.longitude, latitude: mapView.centerCoordinate.latitude)
             DispatchQueue.main.async { [weak self] in self?.centerChanged(center) }
         }
@@ -68,6 +69,7 @@ struct NativeDialectMap: UIViewRepresentable {
                 if !removed.isEmpty { map.removeAnnotations(removed) }
                 let added = points.filter { !retained.contains($0.id) }.map(PointAnnotation.init)
                 if !added.isEmpty { map.addAnnotations(added) }
+                (map as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
             }
             if self.fit != fit {
                 self.fit = fit
@@ -92,6 +94,12 @@ struct NativeDialectMap: UIViewRepresentable {
             let width = height * aspect
             return MKMapRect(x: center.x - width / 2, y: center.y - height / 2, width: width, height: height)
         }
+        func mapView(_ mapView: MKMapView, didAdd views: [MKAnnotationView]) {
+            (mapView as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
+        }
+        func mapView(_ mapView: MKMapView, regionWillChangeAnimated animated: Bool) {
+            (mapView as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
+        }
         func mapView(_ mapView: MKMapView, viewFor annotation: MKAnnotation) -> MKAnnotationView? {
             guard let point = annotation as? PointAnnotation else { return nil }
             let view = (mapView.dequeueReusableAnnotationView(withIdentifier: "dialect-label") as? LabelAnnotationView) ?? LabelAnnotationView(annotation: annotation, reuseIdentifier: "dialect-label")
@@ -107,6 +115,35 @@ struct NativeDialectMap: UIViewRepresentable {
     }
 }
 
+
+// MapKit rebuilds its native accessibility array for every element-at-index
+// request. With thousands of labels, one traversal repeats that full scan
+// thousands of times. Reuse the exact native elements until the map changes.
+final class CachedAccessibilityMapView: MKMapView {
+    private var accessibilitySnapshot: [Any]?
+    private var hasAccessibilitySnapshot = false
+    override var accessibilityElements: [Any]? {
+        get {
+            if !hasAccessibilitySnapshot {
+                accessibilitySnapshot = super.accessibilityElements
+                hasAccessibilitySnapshot = true
+            }
+            return accessibilitySnapshot
+        }
+        set {
+            super.accessibilityElements = newValue
+            invalidateAccessibilitySnapshot()
+        }
+    }
+    func invalidateAccessibilitySnapshot() {
+        hasAccessibilitySnapshot = false
+        accessibilitySnapshot = nil
+    }
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        invalidateAccessibilitySnapshot()
+    }
+}
 
 final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     let nameButton = UIButton(type: .system)
