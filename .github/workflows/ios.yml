@@ -1,4 +1,4 @@
-name: Export device validation screenshots
+name: Export compact-screen diagnostic evidence
 on:
   push:
     branches: [codex/performance-release-actions]
@@ -6,20 +6,27 @@ permissions:
   actions: read
   contents: write
 jobs:
-  screenshots:
+  export:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
       - uses: actions/checkout@v4
-      - name: Download small-screen and tablet screenshots
+      - name: Extract simulator failure evidence
         run: |
-          mkdir -p /tmp/device-images
-          gh run download 42444678770 -n simulator-screenshots-iPhone-SE-3rd-generation-18.5 -D /tmp/device-images/se
-          gh run download 42444678770 -n simulator-screenshots-iPad-9th-generation-18.5 -D /tmp/device-images/ipad
-          git switch --orphan codex/device-validation-images
-          cp -R /tmp/device-images/* .
-          git add se ipad
-          git -c user.name=github-actions -c user.email=github-actions@github.com commit -m 'Export simulator diagnostics for device coverage review'
-          git push origin HEAD:refs/heads/codex/device-validation-images
+          gh run download 42444678770 -n simulator-test-results-iPhone-SE-3rd-generation-26.2 -D /tmp/se26
+          mkdir -p /tmp/review
+          python3 - <<'PY'
+          from pathlib import Path
+          import shutil
+          for folder in Path('/tmp/se26').rglob('TestAttachments'):
+              for p in folder.rglob('*'):
+                  if p.is_file() and p.suffix in ['.txt', '.png', '.json']:
+                      shutil.copy2(p, Path('/tmp/review') / p.name)
+          PY
+          git switch --orphan codex/compact-screen-evidence
+          cp -R /tmp/review .
+          git add review
+          git -c user.name=github-actions -c user.email=github-actions@github.com commit -m 'Export compact-screen interaction evidence'
+          git push origin HEAD:refs/heads/codex/compact-screen-evidence
