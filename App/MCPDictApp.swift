@@ -79,6 +79,21 @@ final class AppModel: ObservableObject {
     private var generation = 0
     private var started = false
     private var updateTask: Task<Void, Never>?
+    private var latestDownloadedCount = 0
+    private var lastDownloadProgress = -Double.infinity
+    private var lastDownloadStatus = -Double.infinity
+    private func reportDownloadCount(_ count: Int, total: Int) {
+        latestDownloadedCount = count
+        let now = ProcessInfo.processInfo.systemUptime
+        guard count == total || now - lastDownloadProgress >= 0.1 else { return }
+        lastDownloadProgress = now
+        downloadedCount = count; tableProgress = 0.9 * Double(count) / Double(max(1, total))
+    }
+    private func reportDownloadStatus(_ message: String) {
+        let now = ProcessInfo.processInfo.systemUptime
+        guard message.hasPrefix("正在") || now - lastDownloadStatus >= 0.1 else { return }
+        lastDownloadStatus = now; status = message
+    }
     private let favoritesURL: URL
     private let selectionCache: LanguageSelectionCache
     init(defaults: UserDefaults = .standard, favoritesURL: URL? = nil) {
@@ -97,9 +112,10 @@ final class AppModel: ObservableObject {
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("--ui-fixture") {
             UserDefaults.standard.set("hant", forKey: "uiLanguage")
-            catalog = UITestFixtures.catalog
-            installed = TableInstallation(catalogVersion: "ui-test", tables: UITestFixtures.catalog.tables, databaseFile: nil)
-            languages = UITestFixtures.catalog.tables.map(\.name)
+            let fixture = UITestFixtures.catalog
+            catalog = fixture
+            installed = TableInstallation(catalogVersion: "ui-test", tables: fixture.tables, databaseFile: nil)
+            languages = fixture.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
                 for key in ["favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
                 for namespace in ["dictionary", "map", "downloads"] {
@@ -215,13 +231,17 @@ final class AppModel: ObservableObject {
         guard !updating, !selection.isEmpty, let catalog else { return }
         updating = true; downloading = true; downloadedCount = 0; tableProgress = 0
         status = "正在下載字表…"
+        latestDownloadedCount = 0; lastDownloadProgress = -Double.infinity; lastDownloadStatus = -Double.infinity
         updateTask = Task {
-            defer { updating = false; downloading = false; updateTask = nil }
+            defer {
+                downloadedCount = latestDownloadedCount
+                updating = false; downloading = false; updateTask = nil
+            }
             do {
                 let result = try await tableStore.download(catalog, selected: selection, completedCount: { count in
-                    await MainActor.run { self.downloadedCount = count; self.tableProgress = 0.9 * Double(count) / Double(max(1, selection.count)) }
+                    await MainActor.run { self.reportDownloadCount(count, total: selection.count) }
                 }) { message in
-                    await MainActor.run { self.status = message }
+                    await MainActor.run { self.reportDownloadStatus(message) }
                 }
                 installed = result.installation
                 try await refreshAfterTables()

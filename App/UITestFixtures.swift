@@ -41,6 +41,16 @@ enum UITestFixtures {
                 TablePackage(id: String(format: "%024x", index + 1), name: row[0], fullName: row[0], atlas: ["測試"], dictionary: row[1].components(separatedBy: "－"), administrative: [], source: "osfans/MCPDict", sourceCommit: commit, recordCount: 1, size: 100, sha256: table.sha256, url: table.url, metadata: ["簡稱": row[0]], dictionaryColor: row[2])
             }
         }
+        if ProcessInfo.processInfo.arguments.contains("--dense-map-fixture") {
+            tables = (0..<3306).map { index in
+                TablePackage(id: String(format: "%024x", index), name: "點\(index)", fullName: "點\(index)",
+                             atlas: ["根\(index / 100)", "區\(index / 10)"], dictionary: ["測試"], administrative: [],
+                             source: "UI test", sourceCommit: commit, recordCount: 1, size: 100,
+                             sha256: table.sha256, url: table.url,
+                             location: TableLocation(longitude: 105 + Double(index % 100) / 10, latitude: 25 + Double(index / 100) / 10),
+                             atlasColor: "#008080", dictionaryColor: "#008080")
+            }
+        }
         return TableCatalog(schemaVersion: 1, version: "ui-test", sourceRepository: UpstreamTables.repository, sourceCommit: commit, scope: "", tables: tables)
     }
 }
