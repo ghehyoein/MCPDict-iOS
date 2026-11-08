@@ -1,37 +1,48 @@
-name: Inspect final full-screen and Home-button iPads
+name: Verify published 0.9.3 IPA
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
-  actions: read
-  contents: write
+  contents: read
 jobs:
-  evidence:
+  verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
       - uses: actions/checkout@v4
-      - name: Export both iPad interface screenshots
+        with:
+          ref: 7901d90264cb772f87d25a7002fb360d833cba45
+      - name: Download published assets and verify device IPA
         run: |
-          gh run download 42462394616 --name simulator-screenshots-iPad-9th-generation-26.2 --dir download/home
-          gh run download 42462394616 --name simulator-screenshots-iPad-Air-11-inch-M3-26.2 --dir download/full
+          gh release view iphone-dev-67-5ecd9cd --json tagName,targetCommitish,isDraft,isPrerelease,url
+          gh release download iphone-dev-67-5ecd9cd --pattern '*.ipa' --pattern '*.json' --pattern '*.sha256' --dir release-verify
           python3 - <<'PYCODE'
           from pathlib import Path
-          import shutil
-          for kind in ['home','full']:
-              target=Path('evidence') / kind
-              target.mkdir(parents=True)
-              for path in (Path('download') / kind).rglob('*'):
-                  if path.is_file() and path.suffix in {'.png','.jpg','.json'}:
-                      shutil.copy2(path, target / path.name)
+          import urllib.request, sys, hashlib, json, plistlib, zipfile
+          sys.path.insert(0, 'tools')
+          from package_ipa import validate_device_binary
+          build = '67'
+          root = Path('release-verify')
+          report = json.loads((root / 'MCPDict-iPhone-unsigned.json').read_text())
+          ipa = root / 'MCPDict-iPhone-unsigned.ipa'
+          with ipa.open('rb') as stream: digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+          assert digest == report['sha256'] == (root / 'MCPDict-iPhone-unsigned.sha256').read_text().split()[0]
+          assert report['version'] == '0.9.3' and report['build'] == build
+          assert report['platform'] == 'iPhoneOS' and report['architecture'] == 'arm64'
+          assert report['size'] == ipa.stat().st_size
+          with zipfile.ZipFile(ipa) as z:
+              assert z.testzip() is None
+              info_path = next(n for n in z.namelist() if n.count('/') == 2 and n.endswith('/Info.plist'))
+              info = plistlib.loads(z.read(info_path))
+              assert info['CFBundleShortVersionString'] == '0.9.3' and info['CFBundleVersion'] == build
+              assert info['CFBundleSupportedPlatforms'] == ['iPhoneOS']
+              assert set(info['UIDeviceFamily']) == {1, 2}
+              app = info_path.rsplit('/', 1)[0]
+              executable = root / 'verified-device-executable'
+              executable.write_bytes(z.read(app + '/' + info['CFBundleExecutable']))
+              validate_device_binary(executable)
+          print(json.dumps(report, ensure_ascii=False))
           PYCODE
-          cd evidence
-          git init -b codex/performance-093-final-ipads-review
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m 'Final full-screen and Home-button iPad interface verification'
-          git remote add origin https://github.com/ghehyoein/MCPDict-iOS.git
-          git -c http.https://github.com/.extraheader="$(git -C .. config http.https://github.com/.extraheader)" push origin HEAD:refs/heads/codex/performance-093-final-ipads-review
