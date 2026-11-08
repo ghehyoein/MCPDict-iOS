@@ -83,6 +83,28 @@ final class OptimizationTests: XCTestCase {
         XCTAssertEqual(try indexed.rows("SELECT 簡稱 FROM info").map { $0["簡稱"] }, ["甲 乙"])
         print("DELETE_BENCH rows=30004 scan_seconds=\(scanTime) indexed_seconds=\(indexTime)")
     }
+    func testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let valid = root.appendingPathComponent("valid.db")
+        let db = try SQLiteConnection(url: valid, readOnly: false)
+        _ = try db.rows("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋)")
+        _ = try db.rows("INSERT INTO langs VALUES ('中', '甲', 'a1', '')")
+        let repository = DictionaryRepository()
+        try await repository.open(valid)
+        let invalid = root.appendingPathComponent("invalid.db")
+        let broken = try SQLiteConnection(url: invalid, readOnly: false)
+        _ = try broken.rows("CREATE TABLE langs(wrong TEXT)")
+        var committed = false
+        do {
+            try await repository.activate(invalid, requireSample: false, checkIntegrity: false) { committed = true }
+            XCTFail("Invalid prepared schema must not become active")
+        } catch { }
+        XCTAssertFalse(committed)
+        let rows = try await repository.search("中", mode: .character, language: "甲")
+        XCTAssertEqual(rows.map(\.pronunciation), ["a1"])
+    }
     func testUnchangedCatalogOnlyRequestsHead() async throws {
         let cached = UITestFixtures.catalog
         let requests = RequestProbe()

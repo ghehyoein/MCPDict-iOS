@@ -129,9 +129,11 @@ final class SQLiteConnection {
         }
     }
 
-    func validate(requireSample: Bool = true) throws {
-        guard try rows("PRAGMA quick_check").first?.values.first == "ok" else {
-            throw DictionaryFailure(message: "資料庫完整性檢查失敗")
+    func validate(requireSample: Bool = true, checkIntegrity: Bool = true) throws {
+        if checkIntegrity {
+            guard try rows("PRAGMA quick_check").first?.values.first == "ok" else {
+                throw DictionaryFailure(message: "資料庫完整性檢查失敗")
+            }
         }
         for (table, fields) in ["langs": ["字組", "語言", "讀音", "註釋"], "info": ["簡稱", "語言"], "mcpdict": ["漢字"]] {
             let actual = Set(try rows("PRAGMA table_info(\(table))").compactMap { $0["name"] })
@@ -155,10 +157,10 @@ actor DictionaryRepository {
     }
 
     // Validate before touching the active connection; failed activation preserves it.
-    func activate(_ url: URL, requireSample: Bool = true, commitPointer: () throws -> Void) async throws {
+    func activate(_ url: URL, requireSample: Bool = true, checkIntegrity: Bool = true, commitPointer: () throws -> Void) async throws {
         try await Task.detached(priority: .utility) {
             let candidate = try SQLiteConnection(url: url)
-            try candidate.validate(requireSample: requireSample)
+            try candidate.validate(requireSample: requireSample, checkIntegrity: checkIntegrity)
         }.value
         try Task.checkCancellation()
         let candidate = try SQLiteConnection(url: url)
