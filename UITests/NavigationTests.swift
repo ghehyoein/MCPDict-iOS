@@ -16,6 +16,18 @@ final class NavigationTests: XCTestCase {
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.75)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.96, dy: 0.35)))
         }
     }
+    @MainActor private func scrollVisibleTree(_ scroll: XCUIElement, in app: XCUIApplication) {
+        // A nested scroll view can extend behind the floating iOS 26 tab bar.
+        // Limit the gesture to its visible content instead of the full AX frame.
+        let frame = scroll.frame.intersection(app.frame)
+        let top = max(frame.minY, app.navigationBars.firstMatch.frame.maxY)
+        let bar = app.tabBars.firstMatch
+        let bottom = min(frame.maxY, bar.exists ? bar.frame.minY : app.frame.maxY)
+        guard bottom - top > 30 else { XCTFail("Language tree has no exposed scroll area: \(app.debugDescription)"); return }
+        let start = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX, dy: bottom - 12))
+        let end = app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX, dy: max(top + 12, bottom - 112)))
+        start.press(forDuration: 0.01, thenDragTo: end)
+    }
     @MainActor func testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
@@ -309,7 +321,7 @@ final class NavigationTests: XCTestCase {
         let rootX = app.buttons["check-吳語"].frame.minX
         for root in ["吳語", "歷史音", "民族語", "粵語"].sorted() {
             let checkbox = app.buttons["check-" + root]
-            for _ in 0..<5 { if checkbox.isHittable { break }; scroll.swipeUp() }
+            for _ in 0..<5 { if checkbox.isHittable { break }; scrollVisibleTree(scroll, in: app) }
             XCTAssertTrue(checkbox.isHittable)
             XCTAssertEqual(checkbox.frame.minX, rootX, accuracy: 2, "Every root must remain at depth zero")
             checkbox.tap()
@@ -317,7 +329,7 @@ final class NavigationTests: XCTestCase {
             if let previous { XCTAssertEqual(app.buttons["check-" + previous].value as? String, "unchecked") }
             app.buttons["expand-" + root].tap()
             let child = app.buttons["check-" + root + "子區"]
-            for _ in 0..<5 { if child.isHittable { break }; scroll.swipeUp() }
+            for _ in 0..<5 { if child.isHittable { break }; scrollVisibleTree(scroll, in: app) }
             XCTAssertTrue(child.isHittable, "Lazy rows must appear when scrolled into view")
             XCTAssertGreaterThan(child.frame.minX, rootX)
             previous = root
