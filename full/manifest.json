@@ -1,0 +1,140 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "5402876B-DE2E-4207-B2DD-70BC6FC98BD7.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "3306語言點完整地圖_0_DFF88529-9F6F-4610-8681-A8E13DC9171F.png",
+        "timestamp" : 1794127697.217
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "F9AE83BF-0B9E-4AFB-901B-B1E45593190A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖文字原生選取_0_4B71EFF8-DD4C-4040-9E91-F4A0243F1352.png",
+        "timestamp" : 1794127977.953
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "D3E419F9-0DF1-4B53-814B-FE49A2E3E414.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "原生文字選區及系統選單_0_9392E846-63F0-4FAE-A7FC-D050F3164AA5.png",
+        "timestamp" : 1794127999.847
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "B5B9A14A-9D38-498C-90B8-35DA49FD002B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "生字本滾動後浮動操作_0_F24E46F8-EA34-44F6-A19E-FA5F1800AF70.png",
+        "timestamp" : 1794128037.995
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "47CFCEEE-511E-4169-9C64-9943FCD72395.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "滾動後固定選字區及頂部遮罩_0_03B865A6-A775-4104-83E2-AAF2D1900933.png",
+        "timestamp" : 1794128060.855
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "468AB6B2-F128-4C2A-808F-EDB02DEB6AF8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "末級邯彰直接補入贊皇_0_11A791EF-87A7-4BF6-AE46-757B1CAA53F0.png",
+        "timestamp" : 1794128103.677
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "F99DCC93-13B3-457D-89A9-3EC50C7AC322.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "南通補入潤州過渡色子目錄_0_4A275327-FE6E-4680-9C62-D478263F69BA.png",
+        "timestamp" : 1794128077.149
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "8AED07B9-AB33-4BF4-AAD1-2E2D796EBC8D.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "共用語言選單及原生地音開關_0_CC1E6C3B-2FEA-4B8F-ABBF-8FAC146B2370.png",
+        "timestamp" : 1794128171.83
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "B523B86F-909B-4AB7-8A95-C0C847A0282B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_0FF686FE-2A59-4B83-AD71-CF1673FCA787.png",
+        "timestamp" : 1794128226.964
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+        "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+        "exportedFileName" : "62092E71-890E-466B-BB48-C095DFD227EA.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_92AF7EC6-3CBF-45DC-AD6C-3A8B44220294.png",
+        "timestamp" : 1794128223.599
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  }
+]

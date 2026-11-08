@@ -1,0 +1,1149 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "BCAA84B1-1FE3-4265-BDEB-1792D3CD9D1B",
+      "deviceName" : "MCPDict-iPad-Air-11-inch-M3-26.2",
+      "modelName" : "iPad Air 11-inch (M3)",
+      "osBuildNumber" : "23C54",
+      "osVersion" : "26.2",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "duration" : "0.11s",
+                  "durationInSeconds" : 0.10760807991027832,
+                  "name" : "testManualUpdateSurvivesRelaunchAndUpgrade()",
+                  "nodeIdentifier" : "BundledTablesTests/testManualUpdateSurvivesRelaunchAndUpgrade()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testManualUpdateSurvivesRelaunchAndUpgrade",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.063s",
+                  "durationInSeconds" : 0.06315505504608154,
+                  "name" : "testOfflineInstallRemovalRelaunchAndRestore()",
+                  "nodeIdentifier" : "BundledTablesTests/testOfflineInstallRemovalRelaunchAndRestore()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testOfflineInstallRemovalRelaunchAndRestore",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "53s",
+                  "durationInSeconds" : 53.85812592506409,
+                  "name" : "testPackagedCatalogContainsEveryBundledTable()",
+                  "nodeIdentifier" : "BundledTablesTests/testPackagedCatalogContainsEveryBundledTable()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testPackagedCatalogContainsEveryBundledTable",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.016s",
+                  "durationInSeconds" : 0.016084909439086914,
+                  "name" : "testReferenceIndexMatchesAndroidUnicodePopup()",
+                  "nodeIdentifier" : "BundledTablesTests/testReferenceIndexMatchesAndroidUnicodePopup()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testReferenceIndexMatchesAndroidUnicodePopup",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "BundledTablesTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.076s",
+                  "durationInSeconds" : 0.07556402683258057,
+                  "name" : "testFailedActivationKeepsOldConnection()",
+                  "nodeIdentifier" : "DictionaryTests/testFailedActivationKeepsOldConnection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testFailedActivationKeepsOldConnection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.038s",
+                  "durationInSeconds" : 0.038491010665893555,
+                  "name" : "testIndexedLanguageRestrictionPreservesExactNamesAndSubstringPriority()",
+                  "nodeIdentifier" : "DictionaryTests/testIndexedLanguageRestrictionPreservesExactNamesAndSubstringPriority()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testIndexedLanguageRestrictionPreservesExactNamesAndSubstringPriority",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0018s",
+                  "durationInSeconds" : 0.0017870664596557617,
+                  "name" : "testManifestRejectsIncompatibleSchema()",
+                  "nodeIdentifier" : "DictionaryTests/testManifestRejectsIncompatibleSchema()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testManifestRejectsIncompatibleSchema",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.034s",
+                  "durationInSeconds" : 0.03363800048828125,
+                  "name" : "testMapUsesDictionarySearchAcrossModes()",
+                  "nodeIdentifier" : "DictionaryTests/testMapUsesDictionarySearchAcrossModes()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testMapUsesDictionarySearchAcrossModes",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.013s",
+                  "durationInSeconds" : 0.013327956199645996,
+                  "name" : "testSearchContract()",
+                  "nodeIdentifier" : "DictionaryTests/testSearchContract()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testSearchContract",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.065s",
+                  "durationInSeconds" : 0.06497907638549805,
+                  "name" : "testTableDownloadContractRestoreAndRemoval()",
+                  "nodeIdentifier" : "DictionaryTests/testTableDownloadContractRestoreAndRemoval()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testTableDownloadContractRestoreAndRemoval",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DictionaryTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.011s",
+                  "durationInSeconds" : 0.010598063468933105,
+                  "name" : "testAsterisksDistinguishBroadColorMembershipsFromUniqueTerminalRecords()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testAsterisksDistinguishBroadColorMembershipsFromUniqueTerminalRecords()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testAsterisksDistinguishBroadColorMembershipsFromUniqueTerminalRecords",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0016s",
+                  "durationInSeconds" : 0.0015619993209838867,
+                  "name" : "testExactSharedColorsUseLargestRegionsAndUnknownColorsStayUnassigned()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testExactSharedColorsUseLargestRegionsAndUnknownColorsStayUnassigned()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testExactSharedColorsUseLargestRegionsAndUnknownColorsStayUnassigned",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.01s",
+                  "durationInSeconds" : 0.010113954544067383,
+                  "name" : "testNantongReciprocalTransitionsKeepOriginalsAndAddSubmenus()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testNantongReciprocalTransitionsKeepOriginalsAndAddSubmenus()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testNantongReciprocalTransitionsKeepOriginalsAndAddSubmenus",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0072s",
+                  "durationInSeconds" : 0.0072029829025268555,
+                  "name" : "testRegionSelectionAndSearchIncludeAddedMembersWithoutDuplicates()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testRegionSelectionAndSearchIncludeAddedMembersWithoutDuplicates()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testRegionSelectionAndSearchIncludeAddedMembersWithoutDuplicates",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0092s",
+                  "durationInSeconds" : 0.00919497013092041,
+                  "name" : "testTerminalRegionsReceivePointsDirectlyAcrossSeveralRegions()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testTerminalRegionsReceivePointsDirectlyAcrossSeveralRegions()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testTerminalRegionsReceivePointsDirectlyAcrossSeveralRegions",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.006s",
+                  "durationInSeconds" : 0.005973935127258301,
+                  "name" : "testTransitionToAnExistingAncestorStillGetsItsOwnSubmenuWithoutDoubleCounting()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testTransitionToAnExistingAncestorStillGetsItsOwnSubmenuWithoutDoubleCounting()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testTransitionToAnExistingAncestorStillGetsItsOwnSubmenuWithoutDoubleCounting",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DictionaryTransitionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.015s",
+                  "durationInSeconds" : 0.014647960662841797,
+                  "name" : "testBundledVariantsMatchUpstreamReverseLookup()",
+                  "nodeIdentifier" : "DisplaySearchTests/testBundledVariantsMatchUpstreamReverseLookup()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testBundledVariantsMatchUpstreamReverseLookup",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.004s",
+                  "durationInSeconds" : 0.003957986831665039,
+                  "name" : "testExternalMapURLsPreserveCoordinatesAndEscapeNames()",
+                  "nodeIdentifier" : "DisplaySearchTests/testExternalMapURLsPreserveCoordinatesAndEscapeNames()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testExternalMapURLsPreserveCoordinatesAndEscapeNames",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.11s",
+                  "durationInSeconds" : 0.11088895797729492,
+                  "name" : "testSubstringPriorityLiteralSymbolsAndRegionAcrossPages()",
+                  "nodeIdentifier" : "DisplaySearchTests/testSubstringPriorityLiteralSymbolsAndRegionAcrossPages()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testSubstringPriorityLiteralSymbolsAndRegionAcrossPages",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0074s",
+                  "durationInSeconds" : 0.007380008697509766,
+                  "name" : "testToneModesAndUnknownPreservation()",
+                  "nodeIdentifier" : "DisplaySearchTests/testToneModesAndUnknownPreservation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testToneModesAndUnknownPreservation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0014s",
+                  "durationInSeconds" : 0.001374959945678711,
+                  "name" : "testTwoColorPreservationAndFontRange()",
+                  "nodeIdentifier" : "DisplaySearchTests/testTwoColorPreservationAndFontRange()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testTwoColorPreservationAndFontRange",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DisplaySearchTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "4s",
+                  "durationInSeconds" : 4.024510979652405,
+                  "name" : "testUpstreamMandarinDownloadsAndQueries()",
+                  "nodeIdentifier" : "DownloadIntegrationTests/testUpstreamMandarinDownloadsAndQueries()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DownloadIntegrationTests/testUpstreamMandarinDownloadsAndQueries",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DownloadIntegrationTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DownloadIntegrationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0044s",
+                  "durationInSeconds" : 0.004445910453796387,
+                  "name" : "testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.019s",
+                  "durationInSeconds" : 0.019055962562561035,
+                  "name" : "testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0037s",
+                  "durationInSeconds" : 0.0037419795989990234,
+                  "name" : "testPersonUnionBlankBucketAndFlagIntersection()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testPersonUnionBlankBucketAndFlagIntersection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testPersonUnionBlankBucketAndFlagIntersection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0019s",
+                  "durationInSeconds" : 0.0018769502639770508,
+                  "name" : "testRegionGroupsIncludeAllDescendantsAtEveryDepth()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testRegionGroupsIncludeAllDescendantsAtEveryDepth()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testRegionGroupsIncludeAllDescendantsAtEveryDepth",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "LanguageSelectionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0056s",
+                  "durationInSeconds" : 0.0055609941482543945,
+                  "name" : "testAutomaticMapFitLimitsDenseResultsAndKeepsSpreadOutPointsVisible()",
+                  "nodeIdentifier" : "MapTests/testAutomaticMapFitLimitsDenseResultsAndKeepsSpreadOutPointsVisible()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testAutomaticMapFitLimitsDenseResultsAndKeepsSpreadOutPointsVisible",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.00063s",
+                  "durationInSeconds" : 0.0006279945373535156,
+                  "name" : "testCoordinateOrderAndValidation()",
+                  "nodeIdentifier" : "MapTests/testCoordinateOrderAndValidation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testCoordinateOrderAndValidation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.41s",
+                  "durationInSeconds" : 0.410425066947937,
+                  "name" : "testLongNoteKeepsAllTextInScrollableSelectableViewport()",
+                  "nodeIdentifier" : "MapTests/testLongNoteKeepsAllTextInScrollableSelectableViewport()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testLongNoteKeepsAllTextInScrollableSelectableViewport",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.044s",
+                  "durationInSeconds" : 0.043763041496276855,
+                  "name" : "testMapNamesReadingsAndInterfaceUseIndependentSizes()",
+                  "nodeIdentifier" : "MapTests/testMapNamesReadingsAndInterfaceUseIndependentSizes()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testMapNamesReadingsAndInterfaceUseIndependentSizes",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.17s",
+                  "durationInSeconds" : 0.16705501079559326,
+                  "name" : "testMapNoteSearchKeepsEveryCompleteNote()",
+                  "nodeIdentifier" : "MapTests/testMapNoteSearchKeepsEveryCompleteNote()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testMapNoteSearchKeepsEveryCompleteNote",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.11s",
+                  "durationInSeconds" : 0.107308030128479,
+                  "name" : "testMapQueryDoesNotStopAtOneHundred()",
+                  "nodeIdentifier" : "MapTests/testMapQueryDoesNotStopAtOneHundred()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testMapQueryDoesNotStopAtOneHundred",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.65s",
+                  "durationInSeconds" : 0.6466829776763916,
+                  "name" : "testSystemMapUpdatesCoordinatesReadingsAndSelection()",
+                  "nodeIdentifier" : "MapTests/testSystemMapUpdatesCoordinatesReadingsAndSelection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testSystemMapUpdatesCoordinatesReadingsAndSelection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "MapTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.11s",
+                  "durationInSeconds" : 0.11424601078033447,
+                  "name" : "testLegacyFavoritesAndSharedBookMembershipSurviveRestart()",
+                  "nodeIdentifier" : "NotebookTests/testLegacyFavoritesAndSharedBookMembershipSurviveRestart()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests/testLegacyFavoritesAndSharedBookMembershipSurviveRestart",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0015s",
+                  "durationInSeconds" : 0.0015499591827392578,
+                  "name" : "testParallelClassificationsKeepOneIdentityPerSavedEntry()",
+                  "nodeIdentifier" : "NotebookTests/testParallelClassificationsKeepOneIdentityPerSavedEntry()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests/testParallelClassificationsKeepOneIdentityPerSavedEntry",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0059s",
+                  "durationInSeconds" : 0.005908012390136719,
+                  "name" : "testStarAssignmentIsIndependentOfBookFilter()",
+                  "nodeIdentifier" : "NotebookTests/testStarAssignmentIsIndependentOfBookFilter()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests/testStarAssignmentIsIndependentOfBookFilter",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "NotebookTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.039s",
+                  "durationInSeconds" : 0.038735032081604004,
+                  "name" : "testBulkRemovalRebuildsRetainedTablesWithoutNetworkAndSurvivesRestart()",
+                  "nodeIdentifier" : "OptimizationTests/testBulkRemovalRebuildsRetainedTablesWithoutNetworkAndSurvivesRestart()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testBulkRemovalRebuildsRetainedTablesWithoutNetworkAndSurvivesRestart",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.28s",
+                  "durationInSeconds" : 0.2823230028152466,
+                  "name" : "testCachedTreeRestorationAt3306Points()",
+                  "nodeIdentifier" : "OptimizationTests/testCachedTreeRestorationAt3306Points()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testCachedTreeRestorationAt3306Points",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0023s",
+                  "durationInSeconds" : 0.0022619962692260742,
+                  "name" : "testDownloadBatchRespectsCountSizeAndOrder()",
+                  "nodeIdentifier" : "OptimizationTests/testDownloadBatchRespectsCountSizeAndOrder()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testDownloadBatchRespectsCountSizeAndOrder",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.21s",
+                  "durationInSeconds" : 0.21223807334899902,
+                  "name" : "testIndexedRemovalMatchesExactNamesAndRollsBack()",
+                  "nodeIdentifier" : "OptimizationTests/testIndexedRemovalMatchesExactNamesAndRollsBack()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testIndexedRemovalMatchesExactNamesAndRollsBack",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "1s",
+                  "durationInSeconds" : 1.4205700159072876,
+                  "name" : "testNameOnlyMapDoesNotAllocate3306TextViews()",
+                  "nodeIdentifier" : "OptimizationTests/testNameOnlyMapDoesNotAllocate3306TextViews()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testNameOnlyMapDoesNotAllocate3306TextViews",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.26s",
+                  "durationInSeconds" : 0.2634580135345459,
+                  "name" : "testParallelPrefetchRetainsEveryVerifiedTable()",
+                  "nodeIdentifier" : "OptimizationTests/testParallelPrefetchRetainsEveryVerifiedTable()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testParallelPrefetchRetainsEveryVerifiedTable",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.01s",
+                  "durationInSeconds" : 0.01022195816040039,
+                  "name" : "testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase()",
+                  "nodeIdentifier" : "OptimizationTests/testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.024s",
+                  "durationInSeconds" : 0.024241924285888672,
+                  "name" : "testRetainedCopyPreservesExactRowsMetadataReferencesAndRollback()",
+                  "nodeIdentifier" : "OptimizationTests/testRetainedCopyPreservesExactRowsMetadataReferencesAndRollback()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testRetainedCopyPreservesExactRowsMetadataReferencesAndRollback",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0035s",
+                  "durationInSeconds" : 0.0035140514373779297,
+                  "name" : "testUnchangedCatalogAndDatabasePathKeepMapMetadataRevision()",
+                  "nodeIdentifier" : "OptimizationTests/testUnchangedCatalogAndDatabasePathKeepMapMetadataRevision()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testUnchangedCatalogAndDatabasePathKeepMapMetadataRevision",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.00084s",
+                  "durationInSeconds" : 0.0008420944213867188,
+                  "name" : "testUnchangedCatalogOnlyRequestsHead()",
+                  "nodeIdentifier" : "OptimizationTests/testUnchangedCatalogOnlyRequestsHead()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testUnchangedCatalogOnlyRequestsHead",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "OptimizationTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.017s",
+                  "durationInSeconds" : 0.01663994789123535,
+                  "name" : "testBatchedMapQueriesAndStatisticsInvalidation()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testBatchedMapQueriesAndStatisticsInvalidation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testBatchedMapQueriesAndStatisticsInvalidation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.57s",
+                  "durationInSeconds" : 0.5739690065383911,
+                  "name" : "testIndexedTreeMatchesReferenceAndReusesMembership()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testIndexedTreeMatchesReferenceAndReusesMembership()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testIndexedTreeMatchesReferenceAndReusesMembership",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0021s",
+                  "durationInSeconds" : 0.0020829439163208008,
+                  "name" : "testResultAndFavoriteCachesInvalidate()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testResultAndFavoriteCachesInvalidate()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testResultAndFavoriteCachesInvalidate",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0031s",
+                  "durationInSeconds" : 0.0031260251998901367,
+                  "name" : "testToneCacheUsesContentAndPreservesStyles()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testToneCacheUsesContentAndPreservesStyles()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testToneCacheUsesContentAndPreservesStyles",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "PerformanceRegressionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0016s",
+                  "durationInSeconds" : 0.00156402587890625,
+                  "name" : "testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.002s",
+                  "durationInSeconds" : 0.0019960403442382812,
+                  "name" : "testSelectedNotebookTextExportExcludesOtherBooksAndMemberships()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testSelectedNotebookTextExportExcludesOtherBooksAndMemberships()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testSelectedNotebookTextExportExcludesOtherBooksAndMemberships",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.012s",
+                  "durationInSeconds" : 0.011822938919067383,
+                  "name" : "testSelectionStateSharesControlsAndKeepsDownloadsIndependent()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testSelectionStateSharesControlsAndKeepsDownloadsIndependent()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testSelectionStateSharesControlsAndKeepsDownloadsIndependent",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0092s",
+                  "durationInSeconds" : 0.009155035018920898,
+                  "name" : "testUnicodeMovesToInformationAndOnlyUnicodeExpandsByDefault()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testUnicodeMovesToInformationAndOnlyUnicodeExpandsByDefault()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testUnicodeMovesToInformationAndOnlyUnicodeExpandsByDefault",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "PresentationRevisionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0051s",
+                  "durationInSeconds" : 0.005127072334289551,
+                  "name" : "testDefaultFavoritesAreIndependentOfBrowsingAndAllowSeveralBooks()",
+                  "nodeIdentifier" : "RequestedChangesTests/testDefaultFavoritesAreIndependentOfBrowsingAndAllowSeveralBooks()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testDefaultFavoritesAreIndependentOfBrowsingAndAllowSeveralBooks",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.00099s",
+                  "durationInSeconds" : 0.000993967056274414,
+                  "name" : "testImportRejectsDanglingMembershipAndDuplicateIdentity()",
+                  "nodeIdentifier" : "RequestedChangesTests/testImportRejectsDanglingMembershipAndDuplicateIdentity()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testImportRejectsDanglingMembershipAndDuplicateIdentity",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0014s",
+                  "durationInSeconds" : 0.0013849735260009766,
+                  "name" : "testIndexedResultsPreserveOrderAndRepeatedReadings()",
+                  "nodeIdentifier" : "RequestedChangesTests/testIndexedResultsPreserveOrderAndRepeatedReadings()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testIndexedResultsPreserveOrderAndRepeatedReadings",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.24s",
+                  "durationInSeconds" : 0.24312198162078857,
+                  "name" : "testLargeResultIndexMatchesExistingGrouping()",
+                  "nodeIdentifier" : "RequestedChangesTests/testLargeResultIndexMatchesExistingGrouping()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testLargeResultIndexMatchesExistingGrouping",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0018s",
+                  "durationInSeconds" : 0.0017989873886108398,
+                  "name" : "testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot()",
+                  "nodeIdentifier" : "RequestedChangesTests/testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0015s",
+                  "durationInSeconds" : 0.0015410184860229492,
+                  "name" : "testPlainTextRoundTripAndMergePreserveNotesMembershipAndFilter()",
+                  "nodeIdentifier" : "RequestedChangesTests/testPlainTextRoundTripAndMergePreserveNotesMembershipAndFilter()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testPlainTextRoundTripAndMergePreserveNotesMembershipAndFilter",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0029s",
+                  "durationInSeconds" : 0.0029070377349853516,
+                  "name" : "testReferencePreferenceRoundTripKeepsOrderAndModes()",
+                  "nodeIdentifier" : "RequestedChangesTests/testReferencePreferenceRoundTripKeepsOrderAndModes()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testReferencePreferenceRoundTripKeepsOrderAndModes",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.00053s",
+                  "durationInSeconds" : 0.0005300045013427734,
+                  "name" : "testRegionAncestorsFollowPathRatherThanSharedMembership()",
+                  "nodeIdentifier" : "RequestedChangesTests/testRegionAncestorsFollowPathRatherThanSharedMembership()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testRegionAncestorsFollowPathRatherThanSharedMembership",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.00072s",
+                  "durationInSeconds" : 0.000716090202331543,
+                  "name" : "testTonePreviewUsesYinShangAnd51()",
+                  "nodeIdentifier" : "RequestedChangesTests/testTonePreviewUsesYinShangAnd51()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testTonePreviewUsesYinShangAnd51",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "RequestedChangesTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0035s",
+                  "durationInSeconds" : 0.0034900903701782227,
+                  "name" : "testBlankMaintainersDoNotCreateBlankEditorGroup()",
+                  "nodeIdentifier" : "Revision092Tests/testBlankMaintainersDoNotCreateBlankEditorGroup()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testBlankMaintainersDoNotCreateBlankEditorGroup",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.075s",
+                  "durationInSeconds" : 0.07483398914337158,
+                  "name" : "testDenseMapCameraUpdatesDoNotReplaceAnnotations()",
+                  "nodeIdentifier" : "Revision092Tests/testDenseMapCameraUpdatesDoNotReplaceAnnotations()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testDenseMapCameraUpdatesDoNotReplaceAnnotations",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.002s",
+                  "durationInSeconds" : 0.0020459890365600586,
+                  "name" : "testInstalledTablesAreNotDownloadableUnlessChanged()",
+                  "nodeIdentifier" : "Revision092Tests/testInstalledTablesAreNotDownloadableUnlessChanged()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testInstalledTablesAreNotDownloadableUnlessChanged",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.042s",
+                  "durationInSeconds" : 0.042282938957214355,
+                  "name" : "testMapRetainsAnnotationAndSelectionAcrossPaletteChanges()",
+                  "nodeIdentifier" : "Revision092Tests/testMapRetainsAnnotationAndSelectionAcrossPaletteChanges()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testMapRetainsAnnotationAndSelectionAcrossPaletteChanges",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.016s",
+                  "durationInSeconds" : 0.01600503921508789,
+                  "name" : "testResetPreservesNotebookAndTablesButRestoresControls()",
+                  "nodeIdentifier" : "Revision092Tests/testResetPreservesNotebookAndTablesButRestoresControls()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testResetPreservesNotebookAndTablesButRestoresControls",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0015s",
+                  "durationInSeconds" : 0.0015259981155395508,
+                  "name" : "testTransitionFilterExcludesSingleColorRoots()",
+                  "nodeIdentifier" : "Revision092Tests/testTransitionFilterExcludesSingleColorRoots()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testTransitionFilterExcludesSingleColorRoots",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Revision092Tests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.019s",
+                  "durationInSeconds" : 0.018949031829833984,
+                  "name" : "testBlankStartupAndFavoritePersistence()",
+                  "nodeIdentifier" : "RevisionSixTests/testBlankStartupAndFavoritePersistence()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionSixTests/testBlankStartupAndFavoritePersistence",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0019s",
+                  "durationInSeconds" : 0.0019050836563110352,
+                  "name" : "testOriginalDiagnosticsSelectsOnlyRequestedTable()",
+                  "nodeIdentifier" : "RevisionSixTests/testOriginalDiagnosticsSelectsOnlyRequestedTable()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionSixTests/testOriginalDiagnosticsSelectsOnlyRequestedTable",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "RevisionSixTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionSixTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0066s",
+                  "durationInSeconds" : 0.006649017333984375,
+                  "name" : "testAllMetadataFieldsAndSafeLinks()",
+                  "nodeIdentifier" : "RevisionTests/testAllMetadataFieldsAndSafeLinks()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testAllMetadataFieldsAndSafeLinks",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.083s",
+                  "durationInSeconds" : 0.08293700218200684,
+                  "name" : "testCancelKeepsCompletedAndUnselectedTablesAcrossRestart()",
+                  "nodeIdentifier" : "RevisionTests/testCancelKeepsCompletedAndUnselectedTablesAcrossRestart()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testCancelKeepsCompletedAndUnselectedTablesAcrossRestart",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0037s",
+                  "durationInSeconds" : 0.0036619901657104492,
+                  "name" : "testCatalogRefreshMarksOnlyChangedInstalledContent()",
+                  "nodeIdentifier" : "RevisionTests/testCatalogRefreshMarksOnlyChangedInstalledContent()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testCatalogRefreshMarksOnlyChangedInstalledContent",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.00073s",
+                  "durationInSeconds" : 0.0007330179214477539,
+                  "name" : "testScriptSwitchAndGroupedReadingsPreserveSource()",
+                  "nodeIdentifier" : "RevisionTests/testScriptSwitchAndGroupedReadingsPreserveSource()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testScriptSwitchAndGroupedReadingsPreserveSource",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "RevisionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.021s",
+                  "durationInSeconds" : 0.02084803581237793,
+                  "name" : "testTSVHashImportAndRollback()",
+                  "nodeIdentifier" : "UpstreamTests/testTSVHashImportAndRollback()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/UpstreamTests/testTSVHashImportAndRollback",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "UpstreamTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/UpstreamTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "MCPDictIOSTests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests",
+          "nodeType" : "Unit test bundle",
+          "result" : "Passed"
+        },
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "37s",
+                  "durationInSeconds" : 37.54977595806122,
+                  "name" : "testContributorGroupingDoesNotFollowColorTabs()",
+                  "nodeIdentifier" : "NavigationTests/testContributorGroupingDoesNotFollowColorTabs()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testContributorGroupingDoesNotFollowColorTabs",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "3m 52s",
+                  "durationInSeconds" : 232.26505994796753,
+                  "name" : "testDenseMapMenuRemainsInteractiveAfterLoading()",
+                  "nodeIdentifier" : "NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "35s",
+                  "durationInSeconds" : 35.781275033950806,
+                  "name" : "testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory()",
+                  "nodeIdentifier" : "NavigationTests/testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "30s",
+                  "durationInSeconds" : 30.90371000766754,
+                  "name" : "testDownloadsPushAndReferenceOptionsSheet()",
+                  "nodeIdentifier" : "NavigationTests/testDownloadsPushAndReferenceOptionsSheet()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDownloadsPushAndReferenceOptionsSheet",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "1m 7s",
+                  "durationInSeconds" : 67.58597004413605,
+                  "name" : "testFinishQueriesAndNewNotebookUsesAlert()",
+                  "nodeIdentifier" : "NavigationTests/testFinishQueriesAndNewNotebookUsesAlert()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testFinishQueriesAndNewNotebookUsesAlert",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "34s",
+                  "durationInSeconds" : 34.03691291809082,
+                  "name" : "testIndependentRootLevelsAndExclusiveRegions()",
+                  "nodeIdentifier" : "NavigationTests/testIndependentRootLevelsAndExclusiveRegions()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testIndependentRootLevelsAndExclusiveRegions",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "41s",
+                  "durationInSeconds" : 41.99255096912384,
+                  "name" : "testMapModesRefreshOpenDropdownAndSelectableText()",
+                  "nodeIdentifier" : "NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "35s",
+                  "durationInSeconds" : 35.149803042411804,
+                  "name" : "testMapSearchModeControlsAndVariantResults()",
+                  "nodeIdentifier" : "NavigationTests/testMapSearchModeControlsAndVariantResults()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapSearchModeControlsAndVariantResults",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "35s",
+                  "durationInSeconds" : 35.51735508441925,
+                  "name" : "testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+                  "nodeIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "35s",
+                  "durationInSeconds" : 35.410531997680664,
+                  "name" : "testNativeTextSelectionAndDefaultBookNavigation()",
+                  "nodeIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "24s",
+                  "durationInSeconds" : 24.330152988433838,
+                  "name" : "testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+                  "nodeIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "23s",
+                  "durationInSeconds" : 23.415747046470642,
+                  "name" : "testPinnedHeaderPreservesInputAndLanguageMenu()",
+                  "nodeIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "1m 3s",
+                  "durationInSeconds" : 63.39284706115723,
+                  "name" : "testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+                  "nodeIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "23s",
+                  "durationInSeconds" : 23.4640109539032,
+                  "name" : "testSelectorsChangeOnlyAfterSubmittedQuery()",
+                  "nodeIdentifier" : "NavigationTests/testSelectorsChangeOnlyAfterSubmittedQuery()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSelectorsChangeOnlyAfterSubmittedQuery",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "30s",
+                  "durationInSeconds" : 30.581663012504578,
+                  "name" : "testSharedLanguageStateAndIndependentDownloads()",
+                  "nodeIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "26s",
+                  "durationInSeconds" : 26.79860496520996,
+                  "name" : "testTableOperationDoesNotDisableSelectionOrMapQuery()",
+                  "nodeIdentifier" : "NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "47s",
+                  "durationInSeconds" : 47.08352196216583,
+                  "name" : "testThreeIndependentFontSliders()",
+                  "nodeIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "1m 12s",
+                  "durationInSeconds" : 72.87121903896332,
+                  "name" : "testTreeSelectionBlankStartAndSettings()",
+                  "nodeIdentifier" : "NavigationTests/testTreeSelectionBlankStartAndSettings()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testTreeSelectionBlankStartAndSettings",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "Update the Info.plist: Support for all orientations will soon be required.",
+                      "nodeType" : "Runtime Warning"
+                    }
+                  ],
+                  "duration" : "30s",
+                  "durationInSeconds" : 30.228997945785522,
+                  "name" : "testUnicodeReferenceAndMapHandoff()",
+                  "nodeIdentifier" : "NavigationTests/testUnicodeReferenceAndMapHandoff()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testUnicodeReferenceAndMapHandoff",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "NavigationTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "MCPDictIOSUITests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests",
+          "nodeType" : "UI test bundle",
+          "result" : "Passed"
+        }
+      ],
+      "name" : "MCPDictIOS",
+      "nodeType" : "Test Plan",
+      "result" : "Passed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}
