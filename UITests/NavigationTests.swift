@@ -528,6 +528,16 @@ final class NavigationTests: XCTestCase {
         }
         XCTAssertTrue(count.label.contains("3306"))
         print("DENSE_MAP_MENU_BENCH points=3306 warm_open_close_3_seconds=\(Date().timeIntervalSince(warmStart))")
+        // Exercise both removal and insertion after the native accessibility
+        // snapshot has already been read, so caching cannot retain stale controls.
+        for expected in ["3305", "3306"] {
+            app.buttons["mapLanguageSelection"].tap()
+            app.buttons["check-點0"].tap()
+            app.buttons["finishLanguages"].tap()
+            let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", expected), object: count)
+            XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
+            XCTAssertEqual(app.buttons["map-name-" + String(repeating: "0", count: 24)].exists, expected == "3306")
+        }
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "3306語言點完整地圖"; shot.lifetime = .keepAlways; add(shot)
     }
 
