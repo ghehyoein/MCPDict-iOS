@@ -1,4 +1,4 @@
-name: Diagnose iPadOS 26 menu and reset interactions
+name: Verify reset navigation on iOS 18 and 26
 on:
   push:
     branches: [codex/diagnose-dense-map]
@@ -6,6 +6,14 @@ permissions:
   contents: read
 jobs:
   diagnose:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: iPhone-16-Pro-Max
+            runtime: iOS-18-5
+          - device: iPad-9th-generation
+            runtime: iOS-26-2
     runs-on: macos-15
     timeout-minutes: 30
     env:
@@ -18,16 +26,16 @@ jobs:
           brew install xcodegen
           python3 tools/prepare_assets.py
           xcodegen generate
-      - name: Repeat reset checks with stable tab controller
+      - name: Repeat reset and language navigation checks
         timeout-minutes: 22
         run: |
-          device=$(xcrun simctl create iPad26Diagnosis com.apple.CoreSimulator.SimDeviceType.iPad-9th-generation com.apple.CoreSimulator.SimRuntime.iOS-26-2)
+          device=$(xcrun simctl create iPad26Diagnosis com.apple.CoreSimulator.SimDeviceType.${{ matrix.device }} com.apple.CoreSimulator.SimRuntime.${{ matrix.runtime }})
           xcrun simctl boot "$device"
           xcrun simctl bootstatus "$device" -b
           python3 tools/diagnose_map.py "$device" &
           sampler=$!
           trap 'kill "$sampler" 2>/dev/null || true' EXIT
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -test-iterations 3 -only-testing:MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders CODE_SIGNING_ALLOWED=NO test
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -test-iterations 3 -only-testing:MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders -only-testing:MCPDictIOSUITests/NavigationTests/testTreeSelectionBlankStartAndSettings CODE_SIGNING_ALLOWED=NO test
       - name: Export diagnostic samples and screenshots
         if: always()
         run: |
@@ -37,14 +45,19 @@ jobs:
               print(path.name)
               print("\n".join(path.read_text().splitlines()[:175]))
           PYLOG
+          mkdir -p CrashReports
+          cp "$HOME"/Library/Logs/DiagnosticReports/MCPDictIOS* CrashReports/ 2>/dev/null || true
           if [ -d TestResults.xcresult ]; then
+            xcrun xcresulttool export diagnostics --path TestResults.xcresult --output-path ResultDiagnostics || true
             xcrun xcresulttool export attachments --path TestResults.xcresult --output-path TestAttachments
           fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: ipad26-interaction-diagnostics
+          name: reset-diagnostics-${{ matrix.device }}-${{ matrix.runtime }}
           path: |
             dense-*.txt
             dense-*.png
             TestAttachments
+            CrashReports
+            ResultDiagnostics
