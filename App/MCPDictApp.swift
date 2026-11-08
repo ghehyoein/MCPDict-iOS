@@ -435,8 +435,8 @@ final class AppModel: ObservableObject {
 
 }
 
-// Keep the native tab controller alive while language/reset changes recreate page state.
-// Replacing the controller during alert dismissal can loop in iPadOS 26 tab layout.
+// iOS 26 needs a stable native tab controller during page resets.
+// Earlier navigation hosts must be replaced together with their page state.
 private struct ResettableTabContent<Content: View>: View {
     let revision: String
     @ViewBuilder let content: () -> Content
@@ -448,15 +448,25 @@ struct RootView: View {
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
+    private var settingsIdentity: String { uiLanguage + String(model.settingsRevision) }
+    private var pageIdentity: String {
+        if #available(iOS 26.0, *) { return settingsIdentity }
+        return "page"
+    }
+    private var rootIdentity: String {
+        if #available(iOS 26.0, *) { return "tabs" }
+        return settingsIdentity
+    }
     var body: some View {
         TabView(selection: $model.activeTab) {
-            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { SearchView() }.tag(0).tabItem { Label { Text(ui("字典")) } icon: { Image(uiImage: DictionaryTabIcon.image) } }
-            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { FavoritesView() }.tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
-            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { DialectMapView() }.tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
-            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { SettingsView() }.tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
+            ResettableTabContent(revision: pageIdentity) { SearchView() }.tag(0).tabItem { Label { Text(ui("字典")) } icon: { Image(uiImage: DictionaryTabIcon.image) } }
+            ResettableTabContent(revision: pageIdentity) { FavoritesView() }.tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
+            ResettableTabContent(revision: pageIdentity) { DialectMapView() }.tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
+            ResettableTabContent(revision: pageIdentity) { SettingsView() }.tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
         .environmentObject(model.languageSelection)
         .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
+        .id(rootIdentity)
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
         .dynamicTypeSize(AppTypography.size(fontSize))
         .tint(AppAccent.color)
