@@ -1,0 +1,1025 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "21BC7150-9157-4D90-9080-C7A850B2ACD1.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.04.53 AM.mp4",
+        "timestamp" : 1794110693.332
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "D0A183C2-A714-4408-86AA-12027F1F0356.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "CB8AC869-7E88-4CDA-A056-CB690587ADFC.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_C8819546-5F60-4250-86C3-01F8880D8C71.MCPDictIOS",
+        "timestamp" : 1794110701.106
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "2AEB4605-8EA3-41E6-8E54-E9C9C0ADB552",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.05.01 AM",
+        "timestamp" : 1794110701.106
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testContributorGroupingDoesNotFollowColorTabs()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testContributorGroupingDoesNotFollowColorTabs"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "C011544E-20A9-44F6-81CF-655E24273289.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.05.02 AM.mp4",
+        "timestamp" : 1794110702.07
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "A743E1A4-2169-4532-B832-2CE97657E46B.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "68CE242F-FA5B-42E2-A6C7-1EB528DC5AFB.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_48A1EA54-8FBC-44BC-BDEF-4FC84AB7A55F.MCPDictIOS",
+        "timestamp" : 1794110735.272
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "4F64B75E-8327-48D4-BB26-A2B6D39BD56B",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.05.35 AM",
+        "timestamp" : 1794110735.272
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "E4C71869-93E4-4DD3-8B72-8AB459149E09",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.43 AM",
+        "timestamp" : 1794110803.458
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "33A1C507-153B-4018-87F9-521774719126",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.42 AM",
+        "timestamp" : 1794110802.895
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "1F4EDE24-A31B-4F77-B703-D7A2218F6404",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.41 AM",
+        "timestamp" : 1794110801.277
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "7E5F552B-E9FB-4A0F-BFFD-793FEC2915AB",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.39 AM",
+        "timestamp" : 1794110799.204
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "328A3DA7-84CD-45A8-9A7C-6DC039E4C5B1",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.38 AM",
+        "timestamp" : 1794110798.532
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "439C0379-086E-49F0-BC90-DD736E0051FF",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.37 AM",
+        "timestamp" : 1794110797.478
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "459F075C-584F-44A5-9F18-1CDD45ADECE2",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.36 AM",
+        "timestamp" : 1794110796.289
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "E8ADE851-F1CC-4623-B531-07560785DB08",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.30 AM",
+        "timestamp" : 1794110790.087
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "D36A9EF9-3485-47A5-9CFB-C7B64E92F855",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.23 AM",
+        "timestamp" : 1794110783.995
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "050EC574-ABF6-4128-883D-D607CF7300AD",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.06.15 AM",
+        "timestamp" : 1794110775.141
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "152882F1-CCA0-4A11-8B3D-0A8CB304EFB3.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.05.35 AM.mp4",
+        "timestamp" : 1794110735.571
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "AEF61D27-9248-415B-8E5E-0AFCE7A4E573.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "D3D21D09-A5E8-41D2-BF52-966D0D8DA1FE.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_78F35324-990A-40E1-BBC4-690D47F8AC56.MCPDictIOS",
+        "timestamp" : 1794110806.654
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "DC6ECFA6-B1E3-4411-ADE2-451CCA81C38C",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.06.46 AM",
+        "timestamp" : 1794110806.654
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "415C002E-6DD8-4FE5-B010-4077B7883F62.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.06.47 AM.mp4",
+        "timestamp" : 1794110807.034
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "99E18E1B-1969-4675-9B05-5A73290D4BE1.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "3D8DE6DE-8E96-47F5-8354-8D0DCDD69667.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_DD545E4E-C7B1-4494-8CCF-C94BC1DDD436.MCPDictIOS",
+        "timestamp" : 1794110875.562
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "B18231B5-BD6E-41FD-AEE3-9A81BD067F44",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.07.55 AM",
+        "timestamp" : 1794110875.562
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testDownloadsPushAndReferenceOptionsSheet()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDownloadsPushAndReferenceOptionsSheet"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "EE229786-6196-4151-B8B2-6EFC755D400F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.08.06 AM",
+        "timestamp" : 1794110886.508
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "DD0D0FA5-E686-4562-A917-E10173026763",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.08.05 AM",
+        "timestamp" : 1794110885.978
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "04602E30-37C2-4B98-822C-8512230B9B95",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.08.05 AM",
+        "timestamp" : 1794110885.079
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "FF2A2263-59AA-4716-97D5-0BDDAFADFCCC",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.08.04 AM",
+        "timestamp" : 1794110884.232
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "1FDBCF75-6D5E-4D8E-98F3-D2AE8498E357",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.08.01 AM",
+        "timestamp" : 1794110881.39
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "406EED4E-A1B3-4D1B-82B4-4012C1F03BFD.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.07.55 AM.mp4",
+        "timestamp" : 1794110875.869
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "F3363AF1-E8F1-4455-835F-E0E1A487174B.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "E96B65D9-EF39-4E3F-8FEE-8CA69A62431A.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_4B4BA4B4-8B28-4599-AF83-0B016BA298FA.MCPDictIOS",
+        "timestamp" : 1794110890.419
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "A90E617C-E9EC-414F-BA5F-1AA4D6876BA7",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.08.10 AM",
+        "timestamp" : 1794110890.419
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testFinishQueriesAndNewNotebookUsesAlert()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testFinishQueriesAndNewNotebookUsesAlert"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "AFDE190B-74F2-49FB-882B-C20AC4ECBD17.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.08.31 AM.mp4",
+        "timestamp" : 1794110911.978
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "3FB54493-033D-45EF-A4B0-1B73F889BE5F.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "E3AA1B50-7CF6-4782-BC43-BC2E6FBB1915.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_600C84FE-2225-47C8-835C-591474737199.MCPDictIOS",
+        "timestamp" : 1794110920.172
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "96473117-9C61-4B24-9489-C5A5EE08E58A",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.08.40 AM",
+        "timestamp" : 1794110920.172
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "9074B163-F8A6-4FBD-9D80-1A847982403C.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.08.40 AM.mp4",
+        "timestamp" : 1794110920.45
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "B01E9EE8-2794-4FA4-BD59-EC00EAFAF598.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "2A36D5E2-B278-4AD4-9D84-D13C0D4F76E0.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_C9C87411-4869-4B6D-A4F8-A51A4AF6C1EC.MCPDictIOS",
+        "timestamp" : 1794110928.743
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "D79662DD-DB34-438E-89B7-2015A295F13D",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.08.48 AM",
+        "timestamp" : 1794110928.743
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapSearchModeControlsAndVariantResults()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapSearchModeControlsAndVariantResults"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "ECA1E6AF-D476-439C-8EA0-E426867A8B7C.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.08.49 AM.mp4",
+        "timestamp" : 1794110929.053
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "B348B5C7-14D1-404B-A1C4-63687D7EA6B7.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "EB684DBC-F215-4C39-A336-02A664FDA1AD.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_B6DE7A14-3CE7-46BA-9733-26C59FB7D5A7.MCPDictIOS",
+        "timestamp" : 1794110937.437
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "458F5A9F-BEFF-46AD-802F-1B794DD1BA99",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.08.57 AM",
+        "timestamp" : 1794110937.437
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "0DB7272C-245E-402B-A590-DBE9121EDCD8.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "原生文字選區及系統選單_0_1733E31B-6888-4A6D-B893-F9B48A13F09F.png",
+        "timestamp" : 1794110953.173
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "7EED34DD-78E3-4B07-B581-89C962065228",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.09.12 AM",
+        "timestamp" : 1794110952.142
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "93AF586E-38E8-444A-AADC-492EF07A58D3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.09.06 AM",
+        "timestamp" : 1794110946.673
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "8A28298C-A45D-428D-B396-1F3E89AC6FE0",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.09.06 AM",
+        "timestamp" : 1794110946.198
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "9D8F0A64-69E3-4975-9348-B85590D6EE95",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.09.04 AM",
+        "timestamp" : 1794110944.478
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "7E8E2589-F542-432E-A7FA-7A785191D89E.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.08.57 AM.mp4",
+        "timestamp" : 1794110937.729
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "59242EF5-2341-4348-B904-4518141953B2.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "7557375A-0357-440F-A9A5-1EB1228B6216.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_744CCDE1-393B-43F4-A2A1-FC40EC7F46EC.MCPDictIOS",
+        "timestamp" : 1794110957.648
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "4ECC71BD-2960-43E0-8A97-673FE39692E9",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.09.17 AM",
+        "timestamp" : 1794110957.648
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "AEDCACD4-8351-43C4-8179-FC07B743982E.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.09.17 AM.mp4",
+        "timestamp" : 1794110957.954
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "040BFAAF-CE2E-425A-B765-022A65EF4D80.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "3C266D83-B35F-40AE-ADC6-8F03735CE6FB.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_00FF05C6-6ADB-4F77-B602-B063293A4509.MCPDictIOS",
+        "timestamp" : 1794110965.718
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "06AAE078-C035-49A9-B94F-CF93DCD134EB",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.09.25 AM",
+        "timestamp" : 1794110965.718
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "1B6247C9-C4C6-4595-B9FF-23D431AB4143.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "滾動後固定選字區及頂部遮罩_0_BF641CA7-D857-4EC7-AD7B-3C4D498155DF.png",
+        "timestamp" : 1794110982.886
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "77E64489-A687-43AA-A044-AE92E5ECE536.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "末級邯彰直接補入贊皇_0_57D8764A-96C8-46DE-A440-ABB6A9A375DC.png",
+        "timestamp" : 1794111018.005
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "0B05420D-E8FE-4116-8172-F7E5202C3888.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "南通補入潤州過渡色子目錄_0_6AC32745-CCBB-45CC-A0EC-BE43F3A338DA.png",
+        "timestamp" : 1794110997.742
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "473446DA-9EE5-475D-B8BD-8511306817BF",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.10.53 AM",
+        "timestamp" : 1794111053.232
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "4376B514-6373-40D4-B93C-383D21D8E811",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.10.52 AM",
+        "timestamp" : 1794111052.358
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "3C0572FB-F4B0-4044-BFA8-A821532CE020",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.10.50 AM",
+        "timestamp" : 1794111050.851
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "6DECD2F1-4990-4536-B235-CFF131148C1D",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.10.50 AM",
+        "timestamp" : 1794111050.226
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "7638D2DE-28AD-4474-A5F2-49E336790A84",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.10.49 AM",
+        "timestamp" : 1794111049.804
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "554598EE-94EA-4794-898C-CAEFBC6112EF.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.10.45 AM.mp4",
+        "timestamp" : 1794111045.078
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "FFF55B48-BC40-4789-A57D-992440CC540C.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "73A97E64-CEF7-45D1-8C73-438B26918B53.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_F95FE48B-45FE-4EF0-A049-9F301DA1A45F.MCPDictIOS",
+        "timestamp" : 1794111055.741
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "B75CB305-86EB-4AFE-B4EF-BF0115B5A15E",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.10.55 AM",
+        "timestamp" : 1794111055.741
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "53630905-DF1C-48A1-B635-428F563997B6.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.10.56 AM.mp4",
+        "timestamp" : 1794111056.015
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "046BECA3-BDDD-4958-8271-B5F494E2203A.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "AB73484C-B667-4B5B-ACA7-BF5BAF631BD8.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_07690C67-E0EF-4A20-9D40-1A51D562C1AA.MCPDictIOS",
+        "timestamp" : 1794111062.719
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "E454B66A-9106-486F-A91D-7B25A0219931",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.11.02 AM",
+        "timestamp" : 1794111062.719
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "4A025FD0-D291-4CC9-9075-316B528F288A.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.11.02 AM.mp4",
+        "timestamp" : 1794111062.986
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "2C283608-9D8F-4F71-8E1B-42CF19537329.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "3A5F128C-3A48-43E2-81B0-4C885EB423B2.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_51C63C15-0383-4B65-8C7B-144581F58B0D.MCPDictIOS",
+        "timestamp" : 1794111069.192
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "795F5FF8-BF0E-4E5F-B42C-45BE3DE46A33",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.11.09 AM",
+        "timestamp" : 1794111069.192
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "341D2E84-25D8-47E0-8454-D9FABD92B419.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.11.09 AM.mp4",
+        "timestamp" : 1794111069.442
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "E0907154-C08B-4E29-9CCD-EFA258E2B754.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "686C0673-8CCA-4252-8245-4F0C17D1C7CF.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_C5338E71-54CE-4BC8-A23C-014869385480.MCPDictIOS",
+        "timestamp" : 1794111136.201
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "63A54F5D-8333-4CB0-9A1B-C7701ECBF9F5",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.16 AM",
+        "timestamp" : 1794111136.201
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testTreeSelectionBlankStartAndSettings()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testTreeSelectionBlankStartAndSettings"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "5D775F8A-62E0-4C0E-82F0-C16BDD7A8002.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_20DEEDD3-7C3A-43AA-845E-41BB40AA7EA5.MCPDictIOS",
+        "timestamp" : 1794111158.582
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "3E88B844-1172-4888-8DDF-F0E0942ADDF7",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.38 AM",
+        "timestamp" : 1794111158.582
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "E8D7F5B1-8295-4D13-A121-48F7CA5E5509",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.33 AM",
+        "timestamp" : 1794111153.067
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "9DCF641A-D682-4DAB-9506-E2756C5142AE",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.33 AM",
+        "timestamp" : 1794111153.363
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "3CAA5306-E5CF-45F3-96A8-E35C4A4A09AB",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.32 AM",
+        "timestamp" : 1794111152.651
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "7CECB96D-67F4-47BD-86DB-BB1171430B45",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.32 AM",
+        "timestamp" : 1794111152.945
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "A2EA2D39-F9E2-4039-993E-95F632DFABA2",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.31 AM",
+        "timestamp" : 1794111151.837
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "1C0C9C30-E531-4D00-B9AD-51210EF0FBA5",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.32 AM",
+        "timestamp" : 1794111152.131
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "A38AA575-3AD6-4961-8A4B-9CBB10397C71",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.30 AM",
+        "timestamp" : 1794111150.067
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "39485C32-49EA-4FA7-A1D7-A292EB9848AB",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.30 AM",
+        "timestamp" : 1794111150.361
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "0C96B39E-8EC7-4B37-84E3-1B92F144F9FE",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.28 AM",
+        "timestamp" : 1794111148.966
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "EAC117FA-B0B3-4226-890D-4F83F7202AB7",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.29 AM",
+        "timestamp" : 1794111149.405
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "B9F09F6B-E784-4CE7-BE9F-88D0F85A479C",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.27 AM",
+        "timestamp" : 1794111147.58
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "453B7646-3F35-47E7-AFE8-0EC7773B0F22",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.25 AM",
+        "timestamp" : 1794111145.629
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "CF8BBFBD-D75E-4729-AFF5-E258D3F22D2F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.25 AM",
+        "timestamp" : 1794111145.096
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "1D85F5C8-74CF-48E4-BD1D-3241106431EB",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 04.12.23 AM",
+        "timestamp" : 1794111143.328
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "BF2F2E2A-E93C-484A-8120-91ACD2D8FF0E.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 04.12.16 AM.mp4",
+        "timestamp" : 1794111136.523
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "AFA31726-DF4B-4461-AB1A-F6FBDF374D06.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "2239E751-831F-4C68-9A5A-AA15482BE4F3.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_832CC039-2988-4AB2-9D7D-F91A7BAEEC70.MCPDictIOS",
+        "timestamp" : 1794111158.765
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "CFED3A1C-0B96-42A2-836F-B138061786B2",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "113BCE8C-FEE9-4A86-A0A9-3E3FC8846644",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 04.12.38 AM",
+        "timestamp" : 1794111158.765
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testUnicodeReferenceAndMapHandoff()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testUnicodeReferenceAndMapHandoff"
+  }
+]
