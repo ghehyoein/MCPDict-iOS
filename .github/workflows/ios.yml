@@ -16,7 +16,7 @@ jobs:
       - name: Export reset crash evidence
         run: |
           gh run download 42458656173 --name simulator-test-results-iPhone-16-Pro-Max-18.5 --dir download
-          find download -type f | head -100
+          find download -type f | head -100 || true
           mkdir evidence
           python3 - <<'PYCODE'
           from pathlib import Path
