@@ -405,7 +405,7 @@ final class NavigationTests: XCTestCase {
             if map { tab(app, "地圖").tap() }
             app.segmentedControls.buttons["註釋"].tap()
             let field = app.textFields.firstMatch
-            field.tap(); field.typeText("运送")
+            field.tap(); field.typeText("运送貨物的完整註釋")
             app.buttons[map ? "查字" : "查詢"].tap()
             let picker = app.scrollViews["noteInputVariants"]
             XCTAssertTrue(picker.waitForExistence(timeout: 8))
@@ -418,11 +418,11 @@ final class NavigationTests: XCTestCase {
                 ? "map-reading-" + String(repeating: "a", count: 24)
                 : "dictionary-reading-示例語言點").firstMatch
             XCTAssertTrue(reading.waitForExistence(timeout: 8))
-            XCTAssertEqual(field.value as? String, "运送")
+            XCTAssertEqual(field.value as? String, "运送貨物的完整註釋")
             XCTAssertTrue(app.segmentedControls.buttons["漢字"].isSelected)
             for title in ["註釋", "讀音", "漢字"] {
                 app.segmentedControls.buttons[title].tap()
-                XCTAssertEqual(field.value as? String, "运送")
+                XCTAssertEqual(field.value as? String, "运送貨物的完整註釋")
             }
             app.terminate()
         }
