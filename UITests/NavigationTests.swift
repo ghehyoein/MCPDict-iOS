@@ -302,6 +302,7 @@ final class NavigationTests: XCTestCase {
         app.buttons["輸"].tap()
         XCTAssertEqual(mark.label, "su1")
         app.segmentedControls.buttons["讀音"].tap()
+        XCTAssertEqual(app.textFields.firstMatch.value as? String, "中输")
         XCTAssertEqual(mark.label, "su1")
         app.buttons["清除"].tap()
         query("請輸入讀音", "u1")
@@ -393,6 +394,37 @@ final class NavigationTests: XCTestCase {
                 context.draw(pixel, in: CGRect(x: 0, y: 0, width: 1, height: 1))
             }
             XCTAssertTrue(rgba.prefix(3).allSatisfy { $0 < 40 }, "Pinned header top must be black: \(rgba)")
+        }
+    }
+
+    @MainActor func testVariantSelectionPreservesTypedInputAndMode() throws {
+        for map in [false, true] {
+            let app = XCUIApplication()
+            app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]
+            app.launch()
+            if map { tab(app, "地圖").tap() }
+            app.segmentedControls.buttons["註釋"].tap()
+            let field = app.textFields.firstMatch
+            field.tap(); field.typeText("运送")
+            app.buttons[map ? "查字" : "查詢"].tap()
+            let picker = app.scrollViews["noteInputVariants"]
+            XCTAssertTrue(picker.waitForExistence(timeout: 8))
+            let variant = picker.buttons["運"]
+            XCTAssertTrue(variant.waitForExistence(timeout: 8))
+            // The previous result's selector remains available after changing mode.
+            app.segmentedControls.buttons["漢字"].tap()
+            variant.tap()
+            let reading = app.descendants(matching: .any).matching(identifier: map
+                ? "map-reading-" + String(repeating: "a", count: 24)
+                : "dictionary-reading-示例語言點").firstMatch
+            XCTAssertTrue(reading.waitForExistence(timeout: 8))
+            XCTAssertEqual(field.value as? String, "运送")
+            XCTAssertTrue(app.segmentedControls.buttons["漢字"].isSelected)
+            for title in ["註釋", "讀音", "漢字"] {
+                app.segmentedControls.buttons[title].tap()
+                XCTAssertEqual(field.value as? String, "运送")
+            }
+            app.terminate()
         }
     }
 

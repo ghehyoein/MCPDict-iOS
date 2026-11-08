@@ -159,12 +159,14 @@ final class AppModel: ObservableObject {
             status = "已下載 \(installed?.tables.count ?? 0) 份字表"
         } catch { self.error = error.localizedDescription }
     }
-    func search(more: Bool = false) async {
+    func search(more: Bool = false, queryOverride: String? = nil, modeOverride: SearchMode? = nil) async {
         generation += 1
         let token = generation
         searching = true
         defer { if token == generation { searching = false } }
-        let request = more ? (lastSearch ?? (query, mode, language, selectedLanguages)) : (query, mode, language, selectedLanguages)
+        // Selecting a result variant must never overwrite the editable input.
+        let input = (queryOverride ?? query, modeOverride ?? mode, language, selectedLanguages)
+        let request = more ? (lastSearch ?? input) : input
         let ranks = ResultOrdering.ranks(installed?.tables ?? [], namespace: "dictionary")
         do {
             let found: [Reading]
@@ -555,7 +557,10 @@ struct SearchView: View {
                         }
                     } header: {
                         VStack(alignment: .leading, spacing: 4) {
-                            if model.resultMode == .note { NoteVariantPicker(query: Binding(get: { model.resultQuery }, set: { model.query = $0; model.mode = .note }), submit: submitQuery) }
+                            if model.resultMode == .note { NoteVariantPicker(query: model.resultQuery) { variant in
+                                searchFocused = false
+                                Task { await model.search(queryOverride: variant, modeOverride: .note) }
+                            } }
                             if hasCharacters && !chars.isEmpty {
                                 ScrollView(.horizontal) {
                                     HStack {

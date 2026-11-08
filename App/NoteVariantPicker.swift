@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct NoteVariantPicker: View {
-    @Binding var query: String
-    let submit: () -> Void
+    let query: String
+    let select: (String) -> Void
     @State private var choices = [[String]]()
     var body: some View {
         let inputCharacters = Array(query)
@@ -14,7 +14,7 @@ struct NoteVariantPicker: View {
                             var characters = query.map(String.init)
                             guard characters.indices.contains(index) else { return }
                             characters[index] = variant
-                            query = characters.joined(); submit()
+                            select(characters.joined())
                         }.buttonStyle(.bordered)
                             .tint(inputCharacters.indices.contains(index) && String(inputCharacters[index]) == variant ? AppAccent.color : .gray)
                     }

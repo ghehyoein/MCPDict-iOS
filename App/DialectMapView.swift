@@ -115,7 +115,7 @@ struct DialectMapView: View {
     }
     private var mapContent: some View {
         VStack(spacing: 8) {
-            if result?.mode == .note { NoteVariantPicker(query: Binding(get: { result?.query ?? "" }, set: { character = $0; mode = .note })) { Task { await query() } }.padding(.horizontal) }
+            if result?.mode == .note { NoteVariantPicker(query: result?.query ?? "") { variant in Task { await query(queryOverride: variant, modeOverride: .note) } }.padding(.horizontal) }
             variantBar
             statusLabel
             NativeDialectMap(points: points, fit: fit, revision: pointsRevision, fontSize: min(25, max(5, mapSize)), readingSize: readingSize, mapStyle: baseMapStyle,
@@ -170,11 +170,11 @@ struct DialectMapView: View {
     private func resetResults() {
         generation += 1; querying = false; result = nil; activeCharacter = ""; rebuildPoints()
     }
-    @MainActor private func query() async {
+    @MainActor private func query(queryOverride: String? = nil, modeOverride: SearchMode? = nil) async {
         inputFocused = false
-        let text = character.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = (queryOverride ?? character).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !querying else { return }
-        let requestedNames = names, requestedMode = mode
+        let requestedNames = names, requestedMode = modeOverride ?? mode
         generation += 1
         let token = generation
         querying = true
