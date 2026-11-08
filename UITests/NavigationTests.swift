@@ -8,7 +8,8 @@ final class NavigationTests: XCTestCase {
         // iPadOS exposes its floating tab bar as cells rather than UITabBar.
         let tablet = app.cells.matching(identifier: title).firstMatch
         if tablet.exists { return tablet }
-        return app.buttons[title]
+        // The floating tab exposes both its cell and child as buttons.
+        return app.buttons[title].firstMatch
     }
     @MainActor private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
         for _ in 0..<10 {
