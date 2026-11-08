@@ -1,18 +1,37 @@
-name: Dispatch complete performance release validation
+name: Collect 0.9.3 device review evidence
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
-  actions: write
-  contents: read
+  actions: read
+  contents: write
 jobs:
-  validate:
+  evidence:
     runs-on: ubuntu-latest
+    timeout-minutes: 70
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
-      - name: Check candidate and start the ten-device-system matrix
+      - uses: actions/checkout@v4
+      - name: Wait for the exact candidate matrix
         run: |
-          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/codex/performance-selection-tables --jq .sha)" = a28c482421c0db34ac36ef390f41553ab611a7ea
-          gh workflow run ios.yml --ref codex/performance-selection-tables
+          for attempt in $(seq 1 120); do
+            status=$(gh run view 42448620536 --json status --jq .status)
+            if [ "$status" = completed ]; then exit 0; fi
+            sleep 30
+          done
+          exit 1
+      - name: Collect screenshots and test summaries
+        run: |
+          mkdir -p evidence
+          gh run download 42448620536 --pattern 'simulator-screenshots-*' --dir evidence
+          gh run view 42448620536 --json headSha,conclusion,jobs,url > evidence/run.json
+          cd evidence
+          git init -b codex/performance-093-evidence
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m 'Device review evidence for 0.9.3 candidate 35918ea'
+          git remote add origin https://github.com/ghehyoein/MCPDict-iOS.git
+          git -c http.https://github.com/.extraheader="$(git -C .. config http.https://github.com/.extraheader)" push origin HEAD:refs/heads/codex/performance-093-evidence
