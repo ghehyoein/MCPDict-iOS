@@ -290,7 +290,12 @@ final class AppModel: ObservableObject {
     private(set) var downloadStates = [String: TableDownloadState]()
     private var tableLookup = [String: TablePackage]()
     private(set) var tableRevision = 0
+    private var indexedInstalledTables: [TablePackage]?
+    private var indexedCatalogTables: [TablePackage]?
     private func rebuildTableLookup() {
+        let local = installed?.tables, online = catalog?.tables
+        guard local != indexedInstalledTables || online != indexedCatalogTables else { return }
+        indexedInstalledTables = local; indexedCatalogTables = online
         tableRevision += 1
         var lookup = [String: TablePackage]()
         for table in installed?.tables ?? [] { lookup[table.name] = table }
