@@ -1,34 +1,18 @@
-name: Inspect Home-button iPad interface
+name: Run final 0.9.3 device matrix
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
-  actions: read
-  contents: write
+  actions: write
+  contents: read
 jobs:
-  evidence:
+  regression:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
-      - uses: actions/checkout@v4
-      - name: Export Home-button iPad screenshots
+      - name: Verify candidate commit and dispatch complete simulator matrix
         run: |
-          gh run download 42451566636 --name simulator-screenshots-iPad-9th-generation-18.5 --dir download
-          mkdir evidence
-          python3 - <<'PYCODE'
-          from pathlib import Path
-          import shutil
-          for p in Path('download').rglob('*'):
-              if p.is_file() and p.suffix in {'.json','.txt','.png'}:
-                  shutil.copy2(p, Path('evidence') / p.name)
-          PYCODE
-          cd evidence
-          git init -b codex/performance-093-ipad9-review
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add .
-          git commit -m 'Home-button iPad interface verification'
-          git remote add origin https://github.com/ghehyoein/MCPDict-iOS.git
-          git -c http.https://github.com/.extraheader="$(git -C .. config http.https://github.com/.extraheader)" push origin HEAD:refs/heads/codex/performance-093-ipad9-review
+          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/codex/performance-selection-tables --jq .sha)" = 327c0328e2c68281acb506c47f223ac49551bbb9
+          gh workflow run ios.yml --ref codex/performance-selection-tables
