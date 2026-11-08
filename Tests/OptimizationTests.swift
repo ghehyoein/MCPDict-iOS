@@ -106,6 +106,69 @@ final class OptimizationTests: XCTestCase {
         XCTAssertEqual(try indexed.rows("SELECT 簡稱 FROM info").map { $0["簡稱"] }, ["甲 乙"])
         print("DELETE_BENCH rows=30004 scan_seconds=\(scanTime) indexed_seconds=\(indexTime)")
     }
+    func testRetainedCopyPreservesExactRowsMetadataReferencesAndRollback() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let source = root.appendingPathComponent("source.db")
+        let db = try SQLiteConnection(url: source, readOnly: false)
+        _ = try db.rows("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋)")
+        _ = try db.rows("CREATE TABLE info(簡稱 TEXT, 語言 TEXT, 額外 TEXT)")
+        _ = try db.rows("CREATE VIRTUAL TABLE mcpdict USING fts5(漢字, 資料)")
+        let names = ["甲", "甲 乙", "A\"B", "---"]
+        for (i, name) in names.enumerated() {
+            _ = try db.rows("INSERT INTO langs(rowid,字組,語言,讀音,註釋) VALUES (?, '中', ?, 'a1', '註釋')", [String(i + 50), name])
+            _ = try db.rows("INSERT INTO info(rowid,簡稱,語言,額外) VALUES (?, ?, ?, '保留')", [String(i + 20), name, name])
+        }
+        _ = try db.rows("INSERT INTO mcpdict(rowid,漢字,資料) VALUES (99, '中', '獨立參考資料')")
+        let output = try SQLiteConnection(url: root.appendingPathComponent("kept.db"), readOnly: false)
+        try output.copyRetainedLanguages(from: source, names: ["甲", "A\"B", "---"])
+        XCTAssertEqual(try output.rows("SELECT rowid,* FROM langs ORDER BY rowid"), try db.rows("SELECT rowid,* FROM langs WHERE 語言 != '甲 乙' ORDER BY rowid"))
+        XCTAssertEqual(try output.rows("SELECT rowid,* FROM info ORDER BY rowid"), try db.rows("SELECT rowid,* FROM info WHERE 簡稱 != '甲 乙' ORDER BY rowid"))
+        XCTAssertEqual(try output.rows("SELECT rowid,* FROM mcpdict"), try db.rows("SELECT rowid,* FROM mcpdict"))
+        try output.validate()
+        let broken = try SQLiteConnection(url: root.appendingPathComponent("broken.db"), readOnly: false)
+        _ = try broken.rows("CREATE TABLE info(conflict TEXT)")
+        XCTAssertThrowsError(try broken.copyRetainedLanguages(from: source, names: ["甲"]))
+        XCTAssertTrue(try broken.rows("SELECT name FROM sqlite_master WHERE name='langs'").isEmpty, "Failed staging copies must roll back")
+        XCTAssertEqual(try db.rows("SELECT count(*) AS n FROM langs").first?["n"], "4")
+    }
+    func testBulkRemovalRebuildsRetainedTablesWithoutNetworkAndSurvivesRestart() async throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let filename = UUID().uuidString + ".db"
+        let db = try SQLiteConnection(url: root.appendingPathComponent(filename), readOnly: false)
+        _ = try db.rows("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋)")
+        _ = try db.rows("CREATE VIRTUAL TABLE info USING fts5(簡稱, 語言)")
+        _ = try db.rows("CREATE VIRTUAL TABLE mcpdict USING fts5(漢字)")
+        let tables = (0..<5).map { table($0) }
+        for item in tables {
+            _ = try db.rows("INSERT INTO langs VALUES ('中', ?, 'a1', '')", [item.name])
+            _ = try db.rows("INSERT INTO info VALUES (?, ?)", [item.name, item.name])
+        }
+        _ = try db.rows("INSERT INTO mcpdict VALUES ('中')")
+        let original = TableInstallation(catalogVersion: "test", tables: tables, databaseFile: filename)
+        try JSONEncoder().encode(original).write(to: root.appendingPathComponent("index.json"))
+        let repository = DictionaryRepository()
+        let probe = RequestProbe()
+        let store = TableStore(repository: repository, root: root, bundledRoot: nil) { url in
+            await probe.record(url)
+            throw DictionaryFailure(message: "Removal must be offline")
+        }
+        let result = try await store.remove(selected: Set(tables.dropFirst().map(\.id)))
+        XCTAssertEqual(result.tables.map(\.id), [tables[0].id])
+        XCTAssertNotEqual(result.databaseFile, filename)
+        let rows = try await repository.search("中", mode: .character, language: "")
+        XCTAssertEqual(rows.map(\.language), [tables[0].name])
+        let copied = try SQLiteConnection(url: root.appendingPathComponent(try XCTUnwrap(result.databaseFile)))
+        XCTAssertEqual(try copied.rows("SELECT 漢字 FROM mcpdict").first?["漢字"], "中")
+        let requests = await probe.urls
+        XCTAssertTrue(requests.isEmpty)
+        let reopened = TableStore(repository: DictionaryRepository(), root: root, bundledRoot: nil)
+        let restored = try await reopened.restore()
+        XCTAssertEqual(restored?.tables.map(\.id), [tables[0].id])
+    }
     func testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase() async throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
