@@ -276,7 +276,11 @@ actor TableStore {
         let pointer = index
         try Task.checkCancellation()
         if let assembled {
-            try await repository.activate(assembled, requireSample: false) { try data.write(to: pointer, options: .atomic) }
+            // All imported shards have already passed full integrity/hash checks;
+            // existing pages come from our immutable active database. SQLite has
+            // committed the edits to this private copy. Recheck its schema and FTS
+            // query before switching, without scanning every untouched page again.
+            try await repository.activate(assembled, requireSample: false, checkIntegrity: false) { try data.write(to: pointer, options: .atomic) }
         } else {
             try await repository.clear { try data.write(to: pointer, options: .atomic) }
         }
