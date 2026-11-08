@@ -1,0 +1,68 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "083AB8B2-1487-42B3-A0EA-94B6FAFDBD84",
+        "deviceName" : "iPad26Diagnosis",
+        "exportedFileName" : "17754F8F-76FB-4082-BFFE-158C78582FE6.png",
+        "isAssociatedWithFailure" : false,
+        "repetitionNumber" : 1,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_3C024A61-5804-4CB7-816B-AC98936B0584.png",
+        "timestamp" : 1794122405.796
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "083AB8B2-1487-42B3-A0EA-94B6FAFDBD84",
+        "deviceName" : "iPad26Diagnosis",
+        "exportedFileName" : "559A1632-FEB0-4109-B64D-E20F97454C5B.png",
+        "isAssociatedWithFailure" : false,
+        "repetitionNumber" : 1,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_1AAF1C70-B122-475E-9C97-A5C54FE505F2.png",
+        "timestamp" : 1794122401.647
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "083AB8B2-1487-42B3-A0EA-94B6FAFDBD84",
+        "deviceName" : "iPad26Diagnosis",
+        "exportedFileName" : "BEA6A2F8-4943-4731-ADB6-32162665BF90.png",
+        "isAssociatedWithFailure" : false,
+        "repetitionNumber" : 2,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_F19E6F47-99F1-4CEB-97CC-6F6B80CC8CFE.png",
+        "timestamp" : 1794122444.943
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "083AB8B2-1487-42B3-A0EA-94B6FAFDBD84",
+        "deviceName" : "iPad26Diagnosis",
+        "exportedFileName" : "B2E811DD-E64B-4416-8862-890B703687B5.png",
+        "isAssociatedWithFailure" : false,
+        "repetitionNumber" : 2,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_5EAC7CD3-E66D-4102-A611-74F3CEE1CA1C.png",
+        "timestamp" : 1794122442.314
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "083AB8B2-1487-42B3-A0EA-94B6FAFDBD84",
+        "deviceName" : "iPad26Diagnosis",
+        "exportedFileName" : "E8C8C6CA-36AD-4571-90D2-F48DC5AA90B3.png",
+        "isAssociatedWithFailure" : false,
+        "repetitionNumber" : 3,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_04742B89-9F7F-499A-BFEC-0F18838A761D.png",
+        "timestamp" : 1794122482.18
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "083AB8B2-1487-42B3-A0EA-94B6FAFDBD84",
+        "deviceName" : "iPad26Diagnosis",
+        "exportedFileName" : "016601E7-D285-47CF-BBAA-E6A43949CF11.png",
+        "isAssociatedWithFailure" : false,
+        "repetitionNumber" : 3,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_14B36EB6-676D-4F1A-852E-9608A3C77983.png",
+        "timestamp" : 1794122479.234
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  }
+]
