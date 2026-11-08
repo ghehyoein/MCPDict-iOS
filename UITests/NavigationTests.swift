@@ -510,24 +510,21 @@ final class NavigationTests: XCTestCase {
     @MainActor func testDenseMapMenuRemainsInteractiveAfterLoading() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--dense-map-fixture"]; app.launch()
-        // These identifiers are unique; avoid asking XCTest to enumerate every
-        // map label merely to prove uniqueness of a toolbar/menu control.
-        func control(_ id: String) -> XCUIElement { app.buttons.matching(identifier: id).firstMatch }
         app.tabBars.buttons["地圖"].tap()
         let count = app.descendants(matching: .any).matching(identifier: "mapPointStatus").firstMatch
         let loaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", "3306"), object: count)
         XCTAssertEqual(XCTWaiter.wait(for: [loaded], timeout: 30), .completed)
-        control("mapLanguageSelection").tap()
-        XCTAssertTrue(control("expand-根0").waitForExistence(timeout: 10))
-        control("expand-根0").tap()
-        control("expand-區0").tap()
-        XCTAssertTrue(control("check-點0").exists)
-        control("finishLanguages").tap()
+        app.buttons["mapLanguageSelection"].tap()
+        XCTAssertTrue(app.buttons["expand-根0"].waitForExistence(timeout: 10))
+        app.buttons["expand-根0"].tap()
+        app.buttons["expand-區0"].tap()
+        XCTAssertTrue(app.buttons["check-點0"].exists)
+        app.buttons["finishLanguages"].tap()
         let warmStart = Date()
         for _ in 0..<3 {
-            control("mapLanguageSelection").tap()
-            XCTAssertTrue(control("check-點0").waitForExistence(timeout: 5))
-            control("finishLanguages").tap()
+            app.buttons["mapLanguageSelection"].tap()
+            XCTAssertTrue(app.buttons["check-點0"].waitForExistence(timeout: 5))
+            app.buttons["finishLanguages"].tap()
         }
         XCTAssertTrue(count.label.contains("3306"))
         print("DENSE_MAP_MENU_BENCH points=3306 warm_open_close_3_seconds=\(Date().timeIntervalSince(warmStart))")
