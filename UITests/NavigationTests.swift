@@ -94,7 +94,10 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
         confirmation.buttons["取消"].tap()
         XCTAssertFalse(confirmation.exists)
-        XCTAssertTrue(reset.isHittable)
+        // UIKit may remove the alert from accessibility before its dismissal
+        // transition has restored hit testing to the underlying settings row.
+        let resetReady = XCTNSPredicateExpectation(predicate: NSPredicate(format: "hittable == true"), object: reset)
+        XCTAssertEqual(XCTWaiter.wait(for: [resetReady], timeout: 5), .completed)
         reset.tap()
         XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
         confirmation.buttons["還原"].tap()
