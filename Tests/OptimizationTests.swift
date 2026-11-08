@@ -48,6 +48,12 @@ final class OptimizationTests: XCTestCase {
         XCTAssertEqual(views[0].readingView?.text, point.reading)
         XCTAssertTrue(views[0].readingView?.isSelectable == true)
         XCTAssertTrue(views.dropFirst().allSatisfy { $0.readingView == nil })
+        let cleared = DialectPoint(id: "0", name: "點0", longitude: 113, latitude: 23, color: "#008080", reading: "")
+        views[0].configure(cleared, fontSize: 16) {}
+        XCTAssertNil(views[0].readingView)
+        XCTAssertEqual(views[0].subviews.count, 1)
+        views[0].configure(point, fontSize: 16) {}
+        XCTAssertEqual(views[0].readingView?.text, point.reading)
     }
     func testIndexedRemovalMatchesExactNamesAndRollsBack() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

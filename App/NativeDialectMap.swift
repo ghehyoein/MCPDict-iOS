@@ -137,7 +137,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private var previousReading: String?
     private var previousParts: [ToneDisplay.Part]?
     private var previousFontSize: Double?
-    private var cachedText = NSAttributedString(string: "")
+    private var cachedReadingRect = CGRect.zero
+    private var previousColor: String?
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
         // Only the map slider sizes annotation text; map controls keep their normal traits.
@@ -170,16 +171,21 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     @objc private func openDetails() { choose?() }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
         self.choose = choose
-        nameButton.setTitle(point.name, for: .normal)
+        if nameButton.currentTitle != point.name { nameButton.setTitle(point.name, for: .normal) }
         nameButton.accessibilityLabel = point.name
-        nameButton.titleLabel?.font = .systemFont(ofSize: labelSize)
+        if nameButton.titleLabel?.font.pointSize != CGFloat(labelSize) { nameButton.titleLabel?.font = .systemFont(ofSize: labelSize) }
+        if previousColor != point.color {
+        previousColor = point.color
         let colors = TableColors.hexes(point.color)
         nameButton.backgroundColor = TableColors.uiColor(colors.first ?? "#008080")
         gradient.colors = (colors.count == 1 ? colors + colors : colors).map { TableColors.uiColor($0).cgColor }
         gradient.startPoint = CGPoint(x: 0, y: 0.5); gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        }
         if point.reading.isEmpty {
             previousReading = nil
-            readingView?.isHidden = true; readingBlur?.isHidden = true
+            readingView?.removeFromSuperview(); readingBlur?.removeFromSuperview()
+            readingView = nil; readingBlur = nil
+            previousParts = nil
             let size = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
             bounds = CGRect(x: 0, y: 0, width: size.width + 12, height: max(size.height, CGFloat(labelSize) * 1.4))
             nameButton.frame = bounds; gradient.frame = nameButton.bounds
@@ -213,17 +219,16 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         readingText.attributedText = text
         if !contentChanged && NSMaxRange(selection) <= text.length { readingText.selectedRange = selection }
         if contentChanged { readingText.setContentOffset(.zero, animated: false) }
-        cachedText = text; previousReading = point.reading; previousParts = point.toneParts; previousFontSize = fontSize
+        previousReading = point.reading; previousParts = point.toneParts; previousFontSize = fontSize
+        let range = (text.string as NSString).rangeOfComposedCharacterSequences(for: NSRange(location: 0, length: min(text.length, 1024)))
+        cachedReadingRect = text.attributedSubstring(from: range).boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
         }
-        let text = cachedText
         readingText.accessibilityIdentifier = "map-reading-" + point.id
         readingText.accessibilityLabel = point.reading
         readingText.isHidden = point.reading.isEmpty
         let nameButtonSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
         // Size only the viewport; the text view retains the entire selectable text.
-        let sampleRange = (text.string as NSString).rangeOfComposedCharacterSequences(for: NSRange(location: 0, length: min(text.length, 1024)))
-        let sample = text.attributedSubstring(from: sampleRange)
-        let readingRect = sample.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+        let readingRect = cachedReadingRect
         let nameWidth: CGFloat = nameButtonSize.width + 12, nameHeight: CGFloat = max(nameButtonSize.height, CGFloat(labelSize) * 1.4)
         let readingWidth: CGFloat = min(268, ceil(readingRect.width) + 8)
         let readingHeight: CGFloat = point.reading.isEmpty ? 0 : min(180, ceil(readingRect.height) + 8)
