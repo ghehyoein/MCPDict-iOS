@@ -14,5 +14,5 @@ jobs:
     steps:
       - name: Check candidate and start the ten-device-system matrix
         run: |
-          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/codex/performance-selection-tables --jq .sha)" = ea960df495489316282b62fdf017d68ef92802c0
+          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/codex/performance-selection-tables --jq .sha)" = a28c482421c0db34ac36ef390f41553ab611a7ea
           gh workflow run ios.yml --ref codex/performance-selection-tables
