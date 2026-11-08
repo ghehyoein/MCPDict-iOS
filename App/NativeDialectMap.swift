@@ -163,10 +163,13 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     // pronunciation and name controls interactive, including overlapping label bounds.
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
-        for control in [readingView as UIView?, nameButton as UIView?].compactMap({ $0 }) where !control.isHidden {
-            if let hit = control.hitTest(convert(point, to: control), with: event) { return hit }
-        }
-        return nil
+        if let readingView, !readingView.isHidden {
+            // Preserve native text selection handles, including touches beyond
+            // the text viewport. Name-only labels need no such extended hit area.
+            if let hit = readingView.hitTest(convert(point, to: readingView), with: event) { return hit }
+        } else if !bounds.contains(point) { return nil }
+        guard !nameButton.isHidden else { return nil }
+        return nameButton.hitTest(convert(point, to: nameButton), with: event)
     }
     @objc private func openDetails() { choose?() }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
