@@ -1,48 +1,76 @@
-name: Verify published 0.9.3 IPA
+name: Verify query input preservation
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
   contents: read
 jobs:
-  verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  check:
+    name: ${{ matrix.device }} / iOS ${{ matrix.ios }}
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [iPhone-13, iPhone-16-Pro-Max]
+        ios: ['18.5', '26.2']
+    runs-on: macos-15
     env:
-      GH_TOKEN: ${{ github.token }}
-      GH_REPO: ghehyoein/MCPDict-iOS
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 7901d90264cb772f87d25a7002fb360d833cba45
-      - name: Download published assets and verify device IPA
+          ref: e294b1a81213e3060f616b178243b7f0cf32977b
+      - name: Python data contract tests
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+      - uses: actions/checkout@v4
+        with:
+          repository: osfans/MCPDict
+          ref: 3cf11dfc91250259a20bf2f271eac4ad8134040a
+          path: bundled-source
+      - name: Build complete bundled dictionary snapshot
         run: |
-          gh release view iphone-dev-67-5ecd9cd --json tagName,targetCommitish,isDraft,isPrerelease,url
-          gh release download iphone-dev-67-5ecd9cd --pattern '*.ipa' --pattern '*.json' --pattern '*.sha256' --dir release-verify
-          python3 - <<'PYCODE'
-          from pathlib import Path
-          import urllib.request, sys, hashlib, json, plistlib, zipfile
-          sys.path.insert(0, 'tools')
-          from package_ipa import validate_device_binary
-          build = '67'
-          root = Path('release-verify')
-          report = json.loads((root / 'MCPDict-iPhone-unsigned.json').read_text())
-          ipa = root / 'MCPDict-iPhone-unsigned.ipa'
-          with ipa.open('rb') as stream: digest = hashlib.file_digest(stream, 'sha256').hexdigest()
-          assert digest == report['sha256'] == (root / 'MCPDict-iPhone-unsigned.sha256').read_text().split()[0]
-          assert report['version'] == '0.9.3' and report['build'] == build
-          assert report['platform'] == 'iPhoneOS' and report['architecture'] == 'arm64'
-          assert report['size'] == ipa.stat().st_size
-          with zipfile.ZipFile(ipa) as z:
-              assert z.testzip() is None
-              info_path = next(n for n in z.namelist() if n.count('/') == 2 and n.endswith('/Info.plist'))
-              info = plistlib.loads(z.read(info_path))
-              assert info['CFBundleShortVersionString'] == '0.9.3' and info['CFBundleVersion'] == build
-              assert info['CFBundleSupportedPlatforms'] == ['iPhoneOS']
-              assert set(info['UIDeviceFamily']) == {1, 2}
-              app = info_path.rsplit('/', 1)[0]
-              executable = root / 'verified-device-executable'
-              executable.write_bytes(z.read(app + '/' + info['CFBundleExecutable']))
-              validate_device_binary(executable)
-          print(json.dumps(report, ensure_ascii=False))
-          PYCODE
+          python3 -m venv bundle-env
+          bundle-env/bin/pip install regex==2026.9.29
+          bundle-env/bin/python tools/bundle_tables.py bundled-source App/BundledTables
+      - name: Generate Xcode project
+        run: |
+          brew install xcodegen
+          python3 tools/prepare_assets.py
+          xcodegen generate
+      - name: Compile for iOS Simulator without signing
+        run: xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -sdk iphonesimulator -configuration Debug -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
+      - name: Test SQLite queries and failed update rollback in Simulator
+        env:
+          DEVICE_TYPE: ${{ matrix.device }}
+          IOS_VERSION: ${{ matrix.ios }}
+        run: |
+          runtime="com.apple.CoreSimulator.SimRuntime.iOS-${IOS_VERSION//./-}"
+          device=$(xcrun simctl create "MCPDict-${DEVICE_TYPE}-${IOS_VERSION}" "com.apple.CoreSimulator.SimDeviceType.${DEVICE_TYPE}" "$runtime")
+          xcrun simctl boot "$device"
+          xcrun simctl bootstatus "$device" -b
+          xcrun simctl list devices | tee tested-device.txt
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults CODE_SIGNING_ALLOWED=NO -only-testing:MCPDictIOSUITests/NavigationTests/testVariantSelectionPreservesTypedInputAndMode -only-testing:MCPDictIOSUITests/NavigationTests/testSelectorsChangeOnlyAfterSubmittedQuery -only-testing:MCPDictIOSUITests/NavigationTests/testMapSearchModeControlsAndVariantResults test
+      - name: Export test diagnostics and screenshots
+        if: always()
+        run: |
+          if [ -d TestResults.xcresult ]; then
+            mkdir -p TestAttachments
+            xcrun xcresulttool get test-results tests --path TestResults.xcresult > TestAttachments/tests.json
+            xcrun xcresulttool export attachments --path TestResults.xcresult --output-path TestAttachments
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simulator-test-results-${{ matrix.device }}-${{ matrix.ios }}
+          path: |
+            tested-device.txt
+            TestResults.xcresult
+            TestAttachments
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simulator-screenshots-${{ matrix.device }}-${{ matrix.ios }}
+          path: |
+            TestAttachments/**/*.png
+            TestAttachments/**/*.jpg
+            TestAttachments/**/*.json
