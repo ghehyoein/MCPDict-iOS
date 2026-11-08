@@ -504,6 +504,30 @@ final class NavigationTests: XCTestCase {
         XCTAssertNotEqual(app.buttons["南通"].value as? String, "*")
     }
 
+    @MainActor func testDenseMapMenuRemainsInteractiveAfterLoading() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--dense-map-fixture"]; app.launch()
+        app.tabBars.buttons["地圖"].tap()
+        let count = app.descendants(matching: .any).matching(identifier: "mapPointStatus").firstMatch
+        let loaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", "3306"), object: count)
+        XCTAssertEqual(XCTWaiter.wait(for: [loaded], timeout: 30), .completed)
+        app.buttons["mapLanguageSelection"].tap()
+        XCTAssertTrue(app.buttons["expand-根0"].waitForExistence(timeout: 10))
+        app.buttons["expand-根0"].tap()
+        app.buttons["expand-區0"].tap()
+        XCTAssertTrue(app.buttons["check-點0"].exists)
+        app.buttons["finishLanguages"].tap()
+        let warmStart = Date()
+        for _ in 0..<3 {
+            app.buttons["mapLanguageSelection"].tap()
+            XCTAssertTrue(app.buttons["check-點0"].waitForExistence(timeout: 5))
+            app.buttons["finishLanguages"].tap()
+        }
+        XCTAssertTrue(count.label.contains("3306"))
+        print("DENSE_MAP_MENU_BENCH points=3306 warm_open_close_3_seconds=\(Date().timeIntervalSince(warmStart))")
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "3306語言點完整地圖"; shot.lifetime = .keepAlways; add(shot)
+    }
+
     @MainActor func testMapTextSupportsNativeSelectionAndMenuFollowsInput() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]; app.launch()
