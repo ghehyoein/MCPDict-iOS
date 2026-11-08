@@ -1,0 +1,499 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "BC8CBA82-3647-4EFD-B78D-ADAEEBD293E8.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_70C327F6-C4E6-4657-B54E-92AB6D320AF3.MCPDictIOS",
+        "timestamp" : 1794116878.845
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "6E6AEA13-5530-4314-80F5-6CB2534FCD6D",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.47.58 AM",
+        "timestamp" : 1794116878.848
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "5117BED3-E5B0-4609-BA6B-F74D4D971FC3.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `\"check-點0\" Button`_0_B524B172-E298-4274-B3E2-7CF0CC031BFF.txt",
+        "timestamp" : 1794116871.864
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "2EBD73B4-1A62-4860-8DF8-63DD85DC8059",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.47.46 AM",
+        "timestamp" : 1794116866.79
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "0F55E203-3674-42EB-8CE2-A6E9A1F0A2FB",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.47.37 AM",
+        "timestamp" : 1794116857.664
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "62EDD435-3FA1-4796-AA44-49B243F6B2A9.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `\"check-點0\" Button`_0_E1B3B030-5107-486A-8C45-0153D1ED8A58.txt",
+        "timestamp" : 1794116848.425
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "B09CDC8B-CEC1-4B99-9A2C-B344E93F8FAF",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.47.22 AM",
+        "timestamp" : 1794116842.829
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "BFDB14E1-356E-497E-A3D9-CC91EC043AB6",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.47.15 AM",
+        "timestamp" : 1794116835.42
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "27148840-6808-4D9A-BB06-771CFC43E8B4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.47.06 AM",
+        "timestamp" : 1794116826.217
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "0B6419AB-E48E-4779-8A6C-93B439F0F99C",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.46.59 AM",
+        "timestamp" : 1794116819.281
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "C245FE84-A390-46A2-9D68-F40E38537CA5",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.46.52 AM",
+        "timestamp" : 1794116812.999
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "A8D7B8EF-8015-424C-ABAF-CC3ED881E0B3",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.46.48 AM",
+        "timestamp" : 1794116808.203
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "2A8812CB-13E7-43FB-97AA-E2021895282A",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.46.40 AM",
+        "timestamp" : 1794116800.665
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "7CE1B330-7A06-44A8-9AB5-B43D3A120DF1",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.46.13 AM",
+        "timestamp" : 1794116773.132
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "6BCC44C1-2E18-4A37-9479-D03D3223D770.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 05.46.05 AM.mp4",
+        "timestamp" : 1794116765.837
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "C386C7DE-6CCF-498C-AC16-5A2DC298C328.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "Complete Issue Description.txt"
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "F999E08F-33DD-47AD-BE45-6CFD433D4971.txt",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "App UI hierarchy for io.github.ghehyoein_0_3C1ADCCF-6B3B-4BE9-9001-2DD7C7D558DF.MCPDictIOS",
+        "timestamp" : 1794116896.434
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "91CDF7CA-F48F-4D43-A5C7-3D94650730E3",
+        "isAssociatedWithFailure" : true,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.48.16 AM",
+        "timestamp" : 1794116896.434
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "AEE01CA1-56DF-4346-A6BE-BC3B8BBFEAD2.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖文字原生選取_0_FAB15CD7-08F1-4765-BF7C-DE3E1B8211CE.png",
+        "timestamp" : 1794117168.84
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "12E5B919-5686-4368-A4FA-3E7366011FFB.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "原生文字選區及系統選單_0_C6432264-89B7-4E47-B6E7-3B5FCF4BA945.png",
+        "timestamp" : 1794117184.816
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "1F3849F0-1231-4308-A8D0-1DB8419BF4AA.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "生字本滾動後浮動操作_0_05CDFB3C-836D-4A76-AF64-260190634F81.png",
+        "timestamp" : 1794117222.792
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "01973E1E-F80C-4317-B317-B05F2D7DE383.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "滾動後固定選字區及頂部遮罩_0_B53E38EA-1DBE-4444-B44D-17D4107BA33B.png",
+        "timestamp" : 1794117246.776
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "1E062F95-F47E-4246-B2C0-1BB2E3DB5457.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "末級邯彰直接補入贊皇_0_D48789FD-285B-497C-886A-D331551F4885.png",
+        "timestamp" : 1794117291.621
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "4C6623CB-6C65-4BD7-A6CC-55C47A7D7B09.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "南通補入潤州過渡色子目錄_0_9B7D1C05-8F94-41CE-B3C8-6B3146A68A54.png",
+        "timestamp" : 1794117266.071
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "AFD9BAF3-74A3-4C88-B4F7-377D649DFA14.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "共用語言選單及原生地音開關_0_3BE23312-9443-450B-94A9-E3AB69F8EFDA.png",
+        "timestamp" : 1794117372.663
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "7018EAD9-E62F-427D-82FE-5557E39F2CF9.txt",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Debug description for `\"mapSizeSlider\" Slider`_0_B42A5199-4C16-497E-A3EC-534381340350.txt",
+        "timestamp" : 1794117546.904
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "8D573ED7-5AA8-4D26-88D2-611C388E3ECC",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.59.06 AM",
+        "timestamp" : 1794117546.904
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "F36AF2B9-CD83-47FE-A494-D51834BA08BE",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.31 AM",
+        "timestamp" : 1794117451.059
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "5B67BA63-456A-4AD0-AD19-DEAA931F17A8",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.31 AM",
+        "timestamp" : 1794117451.384
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "B85CBF7A-F305-40C7-8338-E2FBE700AAA7",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.28 AM",
+        "timestamp" : 1794117448.972
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "594C7CB9-0B91-4042-9823-BB9A7F61B651",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.29 AM",
+        "timestamp" : 1794117449.328
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "70DD2F8A-CF8A-45B3-932A-F0C47066C25F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.28 AM",
+        "timestamp" : 1794117448.548
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "DFAAE9BA-CE90-426B-8A99-C94BC838C898",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.26 AM",
+        "timestamp" : 1794117446.274
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "410BA6B4-9ED2-4685-9E92-900F05E6A5E2",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.26 AM",
+        "timestamp" : 1794117446.602
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "CF6A5822-6B1B-4BFF-9A40-82D0B1FF3BBC",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.23 AM",
+        "timestamp" : 1794117443.774
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "F4E136A3-A9CC-4F47-BBB0-1E0FFF29E89F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.24 AM",
+        "timestamp" : 1794117444.082
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "5CBB8553-F013-4FC4-8B36-B76755AD0A18",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.19 AM",
+        "timestamp" : 1794117439.964
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "E9C51E10-7B90-4E0A-8A5F-6851222AE404",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.21 AM",
+        "timestamp" : 1794117441.798
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "6543D4EF-58E8-44FC-93D7-F27C1EEF326F",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.17 AM",
+        "timestamp" : 1794117437.458
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "50BF4F97-9920-4E9F-B8C4-16EC67FC777B",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.19 AM",
+        "timestamp" : 1794117439.155
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "EFAEFD1C-8B79-4A43-B53C-240C593E0771",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.13 AM",
+        "timestamp" : 1794117433.488
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "7BB2F700-D5E6-4A5A-A98B-FBE1C6D599AC",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.14 AM",
+        "timestamp" : 1794117434.516
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "B6FAB961-AC34-414E-8B32-071589298A09",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.10 AM",
+        "timestamp" : 1794117430.762
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "67018CAB-1232-4EEF-9AEE-1AFEAC6AD6CC",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.11 AM",
+        "timestamp" : 1794117431.565
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "1E0C1F70-A2AE-42BE-BC9E-AC5255BE9B17.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_F855940B-DD3A-4BFE-823A-15BED9CC189B.png",
+        "timestamp" : 1794117429.872
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "0FC484E5-11F5-4C31-8F91-813DCB5ED7D8",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "UI Snapshot 2026-11-08 at 05.57.07 AM",
+        "timestamp" : 1794117427.372
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "C40A51B6-D55E-4147-9725-A2D7E1FE119C",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.08 AM",
+        "timestamp" : 1794117428.262
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "ACA89FE7-173E-448E-8C7A-A27DF51CF365.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_0D48FA9C-78C4-47A8-91EA-0945A3031DE1.png",
+        "timestamp" : 1794117426.238
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "918DA2CF-55DE-40F1-B281-9EFFBEACDA56",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Synthesized Event 2026-11-08 at 05.57.00 AM",
+        "timestamp" : 1794117420.659
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "81F9A6B9-CACF-46B7-8A3F-57FD9C403145",
+        "deviceName" : "MCPDict-iPad-9th-generation-26.2",
+        "exportedFileName" : "99D993EC-39F9-4BDD-B20A-A2483E9B94B6.mp4",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "Screen Recording 2026-11-08 at 05.56.51 AM.mp4",
+        "timestamp" : 1794117411.846
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  }
+]

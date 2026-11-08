@@ -1,0 +1,4 @@
+Query chain:
+ →Find: Target Application 'io.github.ghehyoein.MCPDictIOS'
+  ↪︎Find: Descendants matching type Button
+    ↪︎Find: Elements matching predicate '"check-點0" IN identifiers'

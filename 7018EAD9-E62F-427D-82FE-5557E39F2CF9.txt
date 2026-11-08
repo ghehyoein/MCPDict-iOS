@@ -1,0 +1,31 @@
+Attributes: Slider, 0x116384270, {{inf, inf}, {0.0, 0.0}}, identifier: 'mapSizeSlider', label: '地圖語言點', value: 20.247
+Element subtree:
+ →Slider, 0x116384270, {{inf, inf}, {0.0, 0.0}}, identifier: 'mapSizeSlider', label: '地圖語言點', value: 20.247
+Path to element:
+ →Application, 0x1163828c0, pid: 76617, label: '汉字音典'
+  ↳Window (Main), 0x1163829e0, {{inf, inf}, {0.0, 0.0}}
+   ↳Other, 0x116382b00, {{inf, inf}, {0.0, 0.0}}
+    ↳Other, 0x116382ec0, {{inf, inf}, {0.0, 0.0}}
+     ↳Other, 0x116382fe0, {{inf, inf}, {0.0, 0.0}}
+      ↳Other, 0x116383100, {{inf, inf}, {0.0, 0.0}}
+       ↳Other, 0x116383460, {{inf, inf}, {0.0, 0.0}}
+        ↳Other, 0x116382c20, {{inf, inf}, {0.0, 0.0}}
+         ↳Other, 0x116382d40, {{inf, inf}, {0.0, 0.0}}
+          ↳Other, 0x116383220, {{inf, inf}, {0.0, 0.0}}
+           ↳Other, 0x116383340, {{inf, inf}, {0.0, 0.0}}
+            ↳Other, 0x116383610, {{inf, inf}, {0.0, 0.0}}
+             ↳Other, 0x116383730, {{inf, inf}, {0.0, 0.0}}
+              ↳Other, 0x116383850, {{inf, inf}, {0.0, 0.0}}
+               ↳Other, 0x116383970, {{inf, inf}, {0.0, 0.0}}
+                ↳Other, 0x116383a90, {{inf, inf}, {0.0, 0.0}}
+                 ↳Other, 0x116383bb0, {{inf, inf}, {0.0, 0.0}}
+                  ↳CollectionView, 0x116383cd0, {{inf, inf}, {0.0, 0.0}}
+                   ↳Cell, 0x116383df0, {{inf, inf}, {0.0, 0.0}}
+                    ↳Other, 0x116383f10, {{inf, inf}, {0.0, 0.0}}
+                     ↳Other, 0x116384030, {{inf, inf}, {0.0, 0.0}}
+                      ↳Other, 0x116384150, {{inf, inf}, {0.0, 0.0}}
+                       ↳Slider, 0x116384270, {{inf, inf}, {0.0, 0.0}}, identifier: 'mapSizeSlider', label: '地圖語言點', value: 20.247
+Query chain:
+ →Find: Target Application 'io.github.ghehyoein.MCPDictIOS'
+  ↪︎Find: Descendants matching type Slider
+    ↪︎Find: Elements matching predicate '"mapSizeSlider" IN identifiers'
