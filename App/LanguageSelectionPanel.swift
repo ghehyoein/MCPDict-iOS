@@ -100,6 +100,14 @@ struct TransitionToggle: View {
                 Text(ui("過渡色"))
             }.fixedSize().contentTransition(.identity)
                 .transaction { $0.animation = nil; $0.disablesAnimations = true }
-        }.buttonStyle(.borderless).accessibilityIdentifier("includeDictionaryTransitions")
+        }.buttonStyle(StaticCheckboxButtonStyle()).accessibilityIdentifier("includeDictionaryTransitions")
+    }
+}
+
+// Keep checkbox labels at their normal tint while pressed; the system borderless
+// style otherwise fades the whole label independently of its content transaction.
+struct StaticCheckboxButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.foregroundStyle(.tint)
     }
 }

@@ -2,6 +2,7 @@ import SwiftUI
 
 /// Dictionary and map observe one instance; downloads owns a separate instance.
 @MainActor final class LanguageSelectionState: ObservableObject {
+    let indexCache = SelectionIndexCache()
     let namespace: String
     private let defaults: UserDefaults
     @Published var expanded = false

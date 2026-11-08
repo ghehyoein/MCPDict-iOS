@@ -3,6 +3,7 @@ import SwiftUI
 enum TableGrouping: String, CaseIterable, Identifiable {
     case atlas = "地圖集二分區", dictionary = "音典分區", administrative = "行政區劃", name = "語言點", person = "維護人"
     var id: String { rawValue }
+    var displayName: String { self == .person ? "錄入人" : rawValue }
     func path(_ table: TablePackage) -> [String] {
         switch self {
         case .atlas: return table.atlas

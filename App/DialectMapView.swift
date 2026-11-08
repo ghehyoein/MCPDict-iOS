@@ -17,7 +17,7 @@ struct DialectMapView: View {
     @State private var submittedNames = Set<String>()
     @AppStorage("baseMapStyle") private var baseMapStyle = "standard"
     @State private var center = TableLocation(longitude: 108, latitude: 34)
-    private var names: Set<String> { Set(model.selectedLanguages ?? model.languages) }
+    private var names: Set<String> { model.selectedLanguageNames }
     private var namesBinding: Binding<Set<String>> { Binding(get: { names }, set: { model.selectLanguages($0) }) }
     @State private var character = ""
     @FocusState private var inputFocused: Bool
@@ -101,7 +101,7 @@ struct DialectMapView: View {
         .onAppear { rebuildMapTables(); receiveHandoff() }
         .onChange(of: menuOpen) { _, open in if open { inputFocused = false } }
         .onChange(of: model.mapHandoff?.id) { _, _ in receiveHandoff() }
-        .onChange(of: tables) { _, _ in rebuildMapTables() }
+        .onChange(of: model.tableRevision) { _, _ in rebuildMapTables() }
         .onChange(of: names) { _, _ in if result == nil { rebuildPoints() } }
         .onChange(of: submittedNames) { _, _ in rebuildPoints() }
         .onChange(of: activeCharacter) { _, _ in rebuildPoints() }

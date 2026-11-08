@@ -32,7 +32,7 @@ final class NavigationTests: XCTestCase {
         app.tabBars.buttons["設定"].tap(); app.buttons["字表下載"].tap()
         XCTAssertFalse(app.buttons["downloadLanguageSelection"].exists)
         let toggle = app.buttons["classificationPickerToggle"]
-        chooseClassification(app, "維護人")
+        chooseClassification(app, "錄入人")
         let blank = app.buttons["check-(無)"]
         let person = app.buttons["check-測試維護人"]
         XCTAssertTrue(blank.exists); XCTAssertTrue(person.exists)
@@ -90,6 +90,14 @@ final class NavigationTests: XCTestCase {
         }
         guard reset.exists && reset.isHittable else { XCTFail("Reset row was not reached: \(app.debugDescription)"); return }
         reset.tap()
+        let confirmation = app.alerts["是否還原默認設定？"]
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
+        confirmation.buttons["取消"].tap()
+        XCTAssertFalse(confirmation.exists)
+        XCTAssertTrue(reset.isHittable)
+        reset.tap()
+        XCTAssertTrue(confirmation.waitForExistence(timeout: 5))
+        confirmation.buttons["還原"].tap()
         XCTAssertTrue(map.waitForExistence(timeout: 5))
         XCTAssertEqual(map.value as? String, originalMap)
         XCTAssertEqual(reading.value as? String, oldReading)

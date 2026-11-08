@@ -78,6 +78,57 @@ final class SQLiteConnection {
         }
     }
 
+    // Reuse one compiled INSERT for every row in a TSV instead of preparing it
+    // once per pronunciation. The connection remains owned by its importing task.
+    func batch(_ sql: String, _ body: (_ execute: ([String]) throws -> Void) throws -> Void) throws {
+        var statement: OpaquePointer?
+        guard sqlite3_prepare_v2(db, sql, -1, &statement, nil) == SQLITE_OK else {
+            throw DictionaryFailure(message: String(cString: sqlite3_errmsg(db)))
+        }
+        defer { sqlite3_finalize(statement) }
+        try body { values in
+            try Task.checkCancellation()
+            sqlite3_reset(statement); sqlite3_clear_bindings(statement)
+            guard values.count == Int(sqlite3_bind_parameter_count(statement)) else {
+                throw DictionaryFailure(message: "寫入參數數量不符")
+            }
+            for (index, value) in values.enumerated() {
+                let code = value.withCString { sqlite3_bind_text(statement, Int32(index + 1), $0, -1, unsafeBitCast(-1, to: sqlite3_destructor_type.self)) }
+                guard code == SQLITE_OK else { throw DictionaryFailure(message: "寫入參數綁定失敗") }
+            }
+            guard sqlite3_step(statement) == SQLITE_DONE else {
+                throw DictionaryFailure(message: String(cString: sqlite3_errmsg(db)))
+            }
+        }
+    }
+    func transaction(_ body: () throws -> Void) throws {
+        _ = try rows("BEGIN IMMEDIATE")
+        do { try body(); _ = try rows("COMMIT") }
+        catch { _ = try? rows("ROLLBACK"); throw error }
+    }
+    func removeLanguages(_ names: [String]) throws {
+        // FTS already indexes language names. Exact equality still guards against
+        // tokenizer normalization, punctuation and similarly named language points.
+        for start in stride(from: 0, to: names.count, by: 128) {
+            let batch = Array(names[start..<min(start + 128, names.count)])
+            let indexed = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) != nil }
+            let fallback = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) == nil }
+            if !indexed.isEmpty {
+                let expression = "語言 : (" + indexed.map { "\"" + $0.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }.joined(separator: " OR ") + ")"
+                let json = String(data: try JSONEncoder().encode(indexed), encoding: .utf8)!
+                _ = try rows("DELETE FROM langs WHERE rowid IN (SELECT rowid FROM langs WHERE langs MATCH ? AND 語言 IN (SELECT value FROM json_each(?)))", [expression, json])
+            }
+            if !fallback.isEmpty {
+                let json = String(data: try JSONEncoder().encode(fallback), encoding: .utf8)!
+                _ = try rows("DELETE FROM langs WHERE 語言 IN (SELECT value FROM json_each(?))", [json])
+            }
+        }
+        if !names.isEmpty {
+            let json = String(data: try JSONEncoder().encode(names), encoding: .utf8)!
+            _ = try rows("DELETE FROM info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [json])
+        }
+    }
+
     func validate(requireSample: Bool = true) throws {
         guard try rows("PRAGMA quick_check").first?.values.first == "ok" else {
             throw DictionaryFailure(message: "資料庫完整性檢查失敗")

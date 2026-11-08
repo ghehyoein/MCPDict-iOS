@@ -2,6 +2,8 @@ import Foundation
 
 // One immutable snapshot per catalog/classification, reused for every checkbox update.
 struct SelectionIndex {
+    let revision = UUID()
+    private var tableIDsByName = [String: String]()
     struct Node {
         let id: String
         let title: String
@@ -27,7 +29,8 @@ struct SelectionIndex {
             var terms = [table.name]
             for path in [table.atlas, table.dictionary, table.administrative] { terms.append(contentsOf: path) }
             if grouping == .person || grouping == .dictionary { terms.append(contentsOf: paths.flatMap { $0 }) }
-            searchText[table.id] = terms.joined(separator: "\n")
+            tableIDsByName[table.name] = table.id
+            searchText[table.id] = InterfaceLanguage.text(terms.joined(separator: "\n"), script: "hans")
             for path in paths {
             var parent: String?
             for depth in path.indices {
@@ -59,11 +62,19 @@ struct SelectionIndex {
         roots = ordered(roots)
         for key in Array(nodes.keys) { nodes[key]!.children = ordered(nodes[key]!.children) }
     }
+    func region(names: Set<String>, saved: String?) -> String? {
+        guard !names.isEmpty else { return nil }
+        let ids = Set(names.compactMap { tableIDsByName[$0] })
+        guard ids.count == names.count else { return nil }
+        if let saved, let node = nodes["g:" + saved], node.ids == ids { return saved }
+        return nodes.values.filter { $0.region != nil && $0.ids.count == ids.count && $0.ids == ids }
+            .sorted { $0.depth == $1.depth ? $0.region! < $1.region! : $0.depth < $1.depth }.first?.region
+    }
     func matches(_ query: String) -> Set<String>? {
         guard !query.isEmpty else { return nil }
         let needle = InterfaceLanguage.text(query, script: "hans")
         return Set(searchText.compactMap { id, text in
-            InterfaceLanguage.text(text, script: "hans").localizedStandardContains(needle) ? id : nil
+            text.localizedStandardContains(needle) ? id : nil
         })
     }
     func rows(expanded: Set<String>, matching: Set<String>?, scope: LanguageSelectionScope) -> [Row] {
@@ -78,6 +89,30 @@ struct SelectionIndex {
             if expandable && expanded.contains(key) { for child in node.children { visit(child) } }
         }
         for root in roots { visit(root) }
+        return result
+    }
+}
+
+// Owned by the selection state, so closing the dropdown does not discard the tree.
+@MainActor final class SelectionIndexCache {
+    private struct Entry {
+        let tables: [TablePackage]
+        let grouping: TableGrouping
+        let roles: Set<PersonRole>
+        let paths: [String: [[String]]]
+        let index: SelectionIndex
+    }
+    private var entries = [Entry]()
+    private(set) var builds = 0
+    func index(tables: [TablePackage], grouping: TableGrouping, roles: Set<PersonRole>, paths: [String: [[String]]]) -> SelectionIndex {
+        if let offset = entries.firstIndex(where: { $0.grouping == grouping && $0.roles == roles && $0.paths == paths && $0.tables == tables }) {
+            let entry = entries.remove(at: offset); entries.append(entry)
+            return entry.index
+        }
+        let result = SelectionIndex(tables: tables, grouping: grouping, roles: roles, additionalPaths: paths)
+        builds += 1
+        entries.append(Entry(tables: tables, grouping: grouping, roles: roles, paths: paths, index: result))
+        if entries.count > 4 { entries.removeFirst() }
         return result
     }
 }

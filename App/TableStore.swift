@@ -62,8 +62,10 @@ actor TableStore {
     private let root: URL
     private var busy = false
     private let bundledRoot: URL?
-    init(repository: DictionaryRepository, root: URL? = nil, bundledRoot: URL? = Bundle.main.resourceURL?.appendingPathComponent("BundledTables")) {
+    private let fetchTable: @Sendable (URL) async throws -> Data
+    init(repository: DictionaryRepository, root: URL? = nil, bundledRoot: URL? = Bundle.main.resourceURL?.appendingPathComponent("BundledTables"), fetchTable: @escaping @Sendable (URL) async throws -> Data = { try await UpstreamTables.get($0, limit: 200_000_000) }) {
         self.bundledRoot = bundledRoot
+        self.fetchTable = fetchTable
         self.repository = repository
         self.root = root ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Tables", isDirectory: true)
     }
@@ -137,7 +139,9 @@ actor TableStore {
         return state
     }
     func catalog() async throws -> TableCatalog {
-        let latest = try await UpstreamTables.catalog()
+        let cached = cachedCatalog()
+        let latest = try await UpstreamTables.catalog(cached: cached)
+        if cached?.sourceCommit == latest.sourceCommit { return latest }
         try prepare()
         try JSONEncoder().encode(latest).write(to: root.appendingPathComponent("catalog.json"), options: .atomic)
         return latest
@@ -183,7 +187,7 @@ actor TableStore {
         defer { busy = false }
         return try await applyInternal(catalog, selected: selected, localFiles: localFiles, progress: progress)
     }
-    private func applyInternal(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], phaseProgress: @Sendable (Double) async -> Void = { _ in }, progress: @Sendable (String) async -> Void) async throws -> TableInstallation {
+    private func applyInternal(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], verifiedIDs: Set<String> = [], phaseProgress: @Sendable (Double) async -> Void = { _ in }, progress: @Sendable (String) async -> Void) async throws -> TableInstallation {
         try catalog.validate()
         guard selected.isSubset(of: Set(catalog.tables.map(\.id))) else { throw DictionaryFailure(message: "選取項目不在目前目錄中") }
         try prepare()
@@ -230,7 +234,7 @@ actor TableStore {
                     try FileManager.default.moveItem(at: temporary, to: file)
                 }
             }
-            try verify(file, table: table)
+            if !verifiedIDs.contains(table.id) { try verify(file, table: table) }
         }
         try Task.checkCancellation()
         await progress("建立已選字表的離線索引…")
@@ -242,6 +246,9 @@ actor TableStore {
             }
             await phaseProgress(0.25)
             let output = try SQLiteConnection(url: assembled, readOnly: false)
+            // This is an unpublished staging copy; a failed operation discards it.
+            _ = try output.rows("PRAGMA journal_mode=MEMORY")
+            _ = try output.rows("PRAGMA cache_size=-16384")
             if !reusable {
                 let first = try SQLiteConnection(url: root.appendingPathComponent(tables[0].localName))
                 for name in ["langs", "info", "mcpdict"] {
@@ -251,16 +258,16 @@ actor TableStore {
             } else {
                 let changedIDs = Set(changed.map(\.id))
                 let removed = (previous?.tables ?? []).filter { !selected.contains($0.id) || changedIDs.contains($0.id) }.map(\.name)
-                let names = String(data: try JSONEncoder().encode(removed), encoding: .utf8)!
-                _ = try output.rows("DELETE FROM langs WHERE 語言 IN (SELECT value FROM json_each(?))", [names])
-                _ = try output.rows("DELETE FROM info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [names])
+                try output.transaction { try output.removeLanguages(removed) }
             }
             await phaseProgress(0.75)
             for table in changed {
                 try Task.checkCancellation()
                 _ = try output.rows("ATTACH DATABASE ? AS shard", [root.appendingPathComponent(table.localName).path])
-                _ = try output.rows("INSERT INTO main.langs SELECT 字組, 語言, 讀音, 註釋 FROM shard.langs ORDER BY rowid")
-                _ = try output.rows("INSERT INTO main.info (簡稱, 語言) SELECT 簡稱, 語言 FROM shard.info")
+                try output.transaction {
+                    _ = try output.rows("INSERT INTO main.langs SELECT 字組, 語言, 讀音, 註釋 FROM shard.langs ORDER BY rowid")
+                    _ = try output.rows("INSERT INTO main.info (簡稱, 語言) SELECT 簡稱, 語言 FROM shard.info")
+                }
                 _ = try output.rows("DETACH DATABASE shard")
             }
         }
@@ -280,6 +287,23 @@ actor TableStore {
             try? FileManager.default.removeItem(at: file)
         }
         return state
+    }
+    private func prefetchSources(_ tables: [TablePackage], localFiles: [String: URL]) async throws -> [String: Data] {
+        try await withThrowingTaskGroup(of: (String, Data).self) { group in
+            var sources = [String: Data]()
+            for table in tables where table.isUpstream {
+                try Task.checkCancellation()
+                if FileManager.default.fileExists(atPath: root.appendingPathComponent(table.localName).path) { continue }
+                if let file = localFiles[table.id] { sources[table.id] = try Data(contentsOf: file) }
+                else if let data = try bundledData(for: table) { sources[table.id] = data }
+                else {
+                    let fetch = fetchTable
+                    group.addTask { (table.id, try await fetch(table.url)) }
+                }
+            }
+            for try await (id, data) in group { sources[id] = data }
+            return sources
+        }
     }
     // Download is additive. Completed, verified tables are activated even on cancellation.
     func download(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], completedCount: @escaping @Sendable (Int) async -> Void = { _ in }, progress: @escaping @Sendable (String) async -> Void) async throws -> TableDownloadResult {
@@ -302,9 +326,14 @@ actor TableStore {
         guard available > bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請先釋放儲存空間") }
         var failure: String?
         var completed = 0
+        var verifiedIDs = Set<String>()
         await completedCount(0)
         do {
-            for (offset, table) in requested.enumerated() {
+            for batch in TableDownloadBatch.make(requested) {
+                try Task.checkCancellation()
+                let sources = try await prefetchSources(batch, localFiles: localFiles)
+                for table in batch {
+                let offset = completed
                 try Task.checkCancellation()
                 await progress("\(offset + 1)/\(requested.count) · \(table.name)")
                 try Task.checkCancellation()
@@ -319,9 +348,8 @@ actor TableStore {
                     defer { try? FileManager.default.removeItem(at: staging) }
                     if table.isUpstream {
                         let data: Data
-                        if let local = localFiles[table.id] { data = try Data(contentsOf: local) }
-                        else if let bundled = try bundledData(for: table) { data = bundled }
-                    else { data = try await UpstreamTables.get(table.url, limit: 200_000_000) }
+                        if let prefetched = sources[table.id] { data = prefetched }
+                        else { throw DictionaryFailure(message: "字表下載資料缺失") }
                         try UpstreamTables.importTSV(data, table: table, to: staging)
                     } else if let local = localFiles[table.id] {
                         try FileManager.default.copyItem(at: local, to: staging)
@@ -331,13 +359,15 @@ actor TableStore {
                         guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw DictionaryFailure(message: "\(table.name)：下載失敗") }
                         try FileManager.default.moveItem(at: temporary, to: staging)
                     }
-                    try verify(staging, table: table)
+                    if !table.isUpstream { try verify(staging, table: table) }
                     try FileManager.default.moveItem(at: staging, to: file)
                 } else { try verify(file, table: table) }
                 retained[table.id] = table
+                verifiedIDs.insert(table.id)
                 completed += 1
                 await completedCount(completed)
                 await progress("已完成 \(completed)/\(requested.count) · \(table.name)")
+                }
             }
         } catch {
             if !Task.isCancelled && !(error is CancellationError) { failure = error.localizedDescription }
@@ -346,8 +376,9 @@ actor TableStore {
         await progress(cancelled ? "正在保存已完成的字表…" : "正在建立查詢索引…")
         let combined = TableCatalog(schemaVersion: 1, version: catalog.version, sourceRepository: catalog.sourceRepository, sourceCommit: catalog.sourceCommit, scope: "", tables: Array(retained.values))
         // A new task intentionally finishes the atomic save after the user cancels networking.
+        let verified = verifiedIDs
         let state = try await Task.detached {
-            try await self.applyInternal(combined, selected: Set(combined.tables.map(\.id))) { _ in }
+            try await self.applyInternal(combined, selected: Set(combined.tables.map(\.id)), verifiedIDs: verified) { _ in }
         }.value
         return TableDownloadResult(installation: state, cancelled: cancelled, failure: failure, completed: completed)
     }
