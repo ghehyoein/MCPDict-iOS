@@ -510,33 +510,38 @@ final class NavigationTests: XCTestCase {
     @MainActor func testDenseMapMenuRemainsInteractiveAfterLoading() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--dense-map-fixture"]; app.launch()
+        // Bulk snapshots avoid thousands of per-element attribute requests
+        // made by firstMatch when the map contains many accessible labels.
+        func control(_ id: String) -> XCUIElement { app.buttons[id] }
         app.tabBars.buttons["地圖"].tap()
         let count = app.descendants(matching: .any).matching(identifier: "mapPointStatus").firstMatch
         let loaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", "3306"), object: count)
         XCTAssertEqual(XCTWaiter.wait(for: [loaded], timeout: 30), .completed)
-        app.buttons["mapLanguageSelection"].tap()
-        XCTAssertTrue(app.buttons["expand-根0"].waitForExistence(timeout: 10))
-        app.buttons["expand-根0"].tap()
-        app.buttons["expand-區0"].tap()
-        XCTAssertTrue(app.buttons["check-點0"].exists)
-        app.buttons["finishLanguages"].tap()
+        control("mapLanguageSelection").tap()
+        XCTAssertTrue(control("expand-根0").waitForExistence(timeout: 10))
+        control("expand-根0").tap()
+        control("expand-區0").tap()
+        XCTAssertTrue(control("check-點0").exists)
+        control("finishLanguages").tap()
         let warmStart = Date()
         for _ in 0..<3 {
-            app.buttons["mapLanguageSelection"].tap()
-            XCTAssertTrue(app.buttons["check-點0"].waitForExistence(timeout: 5))
-            app.buttons["finishLanguages"].tap()
+            control("mapLanguageSelection").tap()
+            XCTAssertTrue(control("check-點0").waitForExistence(timeout: 5))
+            control("finishLanguages").tap()
         }
         XCTAssertTrue(count.label.contains("3306"))
         print("DENSE_MAP_MENU_BENCH points=3306 warm_open_close_3_seconds=\(Date().timeIntervalSince(warmStart))")
         // Exercise both removal and insertion after the native accessibility
         // snapshot has already been read, so caching cannot retain stale controls.
         for expected in ["3305", "3306"] {
-            app.buttons["mapLanguageSelection"].tap()
-            app.buttons["check-點0"].tap()
-            app.buttons["finishLanguages"].tap()
+            control("mapLanguageSelection").tap()
+            control("check-點0").tap()
+            control("finishLanguages").tap()
             let changed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", expected), object: count)
             XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed)
-            XCTAssertEqual(app.buttons["map-name-" + String(repeating: "0", count: 24)].exists, expected == "3306")
+            let marker = control("map-name-" + String(repeating: "0", count: 24))
+            let markerChanged = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == %@", NSNumber(value: expected == "3306")), object: marker)
+            XCTAssertEqual(XCTWaiter.wait(for: [markerChanged], timeout: 5), .completed)
         }
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "3306語言點完整地圖"; shot.lifetime = .keepAlways; add(shot)
     }

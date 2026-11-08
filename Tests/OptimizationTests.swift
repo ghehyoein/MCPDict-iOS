@@ -32,6 +32,23 @@ final class OptimizationTests: XCTestCase {
         XCTAssertEqual(cache.builds, 2, "A catalog/removal change must invalidate the snapshot")
         print("TREE_CACHE_BENCH points=3306 cold_seconds=\(cold) warm_100_seconds=\(Date().timeIntervalSince(warmStart)) builds=\(cache.builds)")
     }
+    @MainActor func testUnchangedCatalogAndDatabasePathKeepMapMetadataRevision() {
+        let model = AppModel()
+        let catalog = TableCatalog(schemaVersion: 1, version: "test", sourceRepository: UpstreamTables.repository,
+                                   sourceCommit: String(repeating: "a", count: 40), scope: "", tables: [table(0)])
+        model.catalog = catalog
+        let first = model.tableRevision
+        model.catalog = catalog
+        XCTAssertEqual(model.tableRevision, first)
+        model.installed = TableInstallation(catalogVersion: "test", tables: catalog.tables, databaseFile: "first.db")
+        let installed = model.tableRevision
+        model.installed = TableInstallation(catalogVersion: "test", tables: catalog.tables, databaseFile: "second.db")
+        XCTAssertEqual(model.tableRevision, installed)
+        model.catalog = TableCatalog(schemaVersion: 1, version: "next", sourceRepository: UpstreamTables.repository,
+                                     sourceCommit: catalog.sourceCommit, scope: "", tables: [table(0), table(1)])
+        XCTAssertNotEqual(model.tableRevision, installed)
+        XCTAssertEqual(model.availableTables.count, 2)
+    }
     @MainActor func testNameOnlyMapDoesNotAllocate3306TextViews() throws {
         let start = Date()
         var views = [LabelAnnotationView]()
