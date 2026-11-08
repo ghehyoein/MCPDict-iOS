@@ -237,9 +237,10 @@ final class NavigationTests: XCTestCase {
         XCTAssertEqual(reading.frame.midX, labelFrame.midX, accuracy: 1)
         app.segmentedControls.buttons["自選"].tap()
         XCTAssertTrue(app.buttons["finishLanguages"].exists)
-        // Tap below the actual menu, above the device-specific tab bar.
-        let bottom = app.buttons["finishLanguages"].frame.maxY + 20
-        app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 12, dy: bottom)).tap()
+        // The compact screen may have no map space below the menu. Its side
+        // margin remains exposed on every device and must dismiss the menu.
+        let mapMiddle = app.maps.firstMatch.frame.midY
+        app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: 6, dy: mapMiddle)).tap()
         XCTAssertFalse(app.buttons["finishLanguages"].exists, app.debugDescription)
         XCTAssertTrue(reading.exists, "Switching draft selections must retain the submitted map result")
 
