@@ -1,18 +1,34 @@
-name: Run final 0.9.3 device matrix
+name: Inspect final Home-button iPhone interface
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
-  actions: write
-  contents: read
+  actions: read
+  contents: write
 jobs:
-  regression:
+  evidence:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
-      - name: Verify candidate commit and dispatch complete simulator matrix
+      - uses: actions/checkout@v4
+      - name: Export final iPhone SE screenshots
         run: |
-          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/codex/performance-selection-tables --jq .sha)" = 7901d90264cb772f87d25a7002fb360d833cba45
-          gh workflow run ios.yml --ref codex/performance-selection-tables
+          gh run download 42462394616 --name simulator-screenshots-iPhone-SE-3rd-generation-18.5 --dir download
+          mkdir evidence
+          python3 - <<'PYCODE'
+          from pathlib import Path
+          import shutil
+          for p in Path('download').rglob('*'):
+              if p.is_file() and p.suffix in {'.json','.txt','.png'}:
+                  shutil.copy2(p, Path('evidence') / p.name)
+          PYCODE
+          cd evidence
+          git init -b codex/performance-093-final-se3-review
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m 'Final iPhone SE interface verification'
+          git remote add origin https://github.com/ghehyoein/MCPDict-iOS.git
+          git -c http.https://github.com/.extraheader="$(git -C .. config http.https://github.com/.extraheader)" push origin HEAD:refs/heads/codex/performance-093-final-se3-review
