@@ -121,41 +121,61 @@ struct NativeDialectMap: UIViewRepresentable {
 // thousands of times. Reuse the exact native elements until the map changes.
 final class CachedAccessibilityMapView: MKMapView {
     private var accessibilitySnapshot: [Any]?
+    private var accessibilityIndices = [ObjectIdentifier: Int]()
     private var hasAccessibilitySnapshot = false
-    override var accessibilityElements: [Any]? {
-        get {
-            if !hasAccessibilitySnapshot {
-                // Transparent native containers also recompute their full child
-                // array for each indexed access. Traverse them once and retain
-                // the actual accessible controls, with their live frames/actions.
-                var flattened = [Any]()
-                var seen = Set<ObjectIdentifier>()
-                func append(_ element: Any) {
-                    if let view = element as? UIView {
-                        guard seen.insert(ObjectIdentifier(view)).inserted else { return }
-                        if !view.isAccessibilityElement, let children = view.accessibilityElements, !children.isEmpty {
-                            for child in children { append(child) }
-                            return
-                        }
-                    }
-                    flattened.append(element)
+    private func prepareAccessibilitySnapshot() {
+        guard !hasAccessibilitySnapshot else { return }
+        // Transparent native containers also recompute their full child array
+        // for each indexed access. Preserve their actual accessible controls.
+        var flattened = [Any]()
+        var seen = Set<ObjectIdentifier>()
+        func append(_ element: Any) {
+            if let view = element as? UIView {
+                guard view !== self, seen.insert(ObjectIdentifier(view)).inserted else { return }
+                if !view.isAccessibilityElement, let children = view.accessibilityElements, !children.isEmpty {
+                    for child in children { append(child) }
+                    return
                 }
-                if let elements = super.accessibilityElements {
-                    for element in elements { append(element) }
-                    accessibilitySnapshot = flattened
-                } else { accessibilitySnapshot = nil }
-                hasAccessibilitySnapshot = true
             }
-            return accessibilitySnapshot
+            flattened.append(element)
         }
-        set {
-            super.accessibilityElements = newValue
-            invalidateAccessibilitySnapshot()
+        if let elements = super.accessibilityElements {
+            for element in elements { append(element) }
+            accessibilitySnapshot = flattened
+        } else { accessibilitySnapshot = nil }
+        accessibilityIndices.removeAll(keepingCapacity: true)
+        for (index, element) in flattened.enumerated() {
+            if let object = element as? NSObject {
+                let key = ObjectIdentifier(object)
+                if accessibilityIndices[key] == nil { accessibilityIndices[key] = index }
+            }
         }
+        hasAccessibilitySnapshot = true
+    }
+    override var accessibilityElements: [Any]? {
+        get { prepareAccessibilitySnapshot(); return accessibilitySnapshot }
+        set { super.accessibilityElements = newValue; invalidateAccessibilitySnapshot() }
+    }
+    // NSObject's default indexed accessor fetches and reconnects the entire
+    // array on every index. These public container methods keep each access O(1).
+    override func accessibilityElementCount() -> Int {
+        prepareAccessibilitySnapshot()
+        return accessibilitySnapshot?.count ?? 0
+    }
+    override func accessibilityElement(at index: Int) -> Any? {
+        prepareAccessibilitySnapshot()
+        guard let elements = accessibilitySnapshot, elements.indices.contains(index) else { return nil }
+        return elements[index]
+    }
+    override func index(ofAccessibilityElement element: Any) -> Int {
+        prepareAccessibilitySnapshot()
+        guard let object = element as? NSObject else { return NSNotFound }
+        return accessibilityIndices[ObjectIdentifier(object)] ?? NSNotFound
     }
     func invalidateAccessibilitySnapshot() {
         hasAccessibilitySnapshot = false
         accessibilitySnapshot = nil
+        accessibilityIndices.removeAll(keepingCapacity: true)
     }
     override func layoutSubviews() {
         super.layoutSubviews()
