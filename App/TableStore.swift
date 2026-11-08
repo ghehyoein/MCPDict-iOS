@@ -202,6 +202,9 @@ actor TableStore {
             try JSONEncoder().encode(state).write(to: index, options: .atomic)
             return state
         }
+        let retainedSize = tables.reduce(Int64(0)) { $0 + $1.size }
+        let previousSize = (previous?.tables ?? []).reduce(Int64(0)) { $0 + $1.size }
+        let rebuildRetained = reusable && changed.isEmpty && retainedSize < previousSize / 2
         let bytes = changed.reduce(Int64(0)) { $0 + $1.size }
         let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
         var previousBytes: Int64 = 0
@@ -241,7 +244,7 @@ actor TableStore {
         let assembled = tables.isEmpty ? nil : root.appendingPathComponent(UUID().uuidString + ".db")
         if let assembled {
             created.append(assembled)
-            if let oldFile = previous?.databaseFile {
+            if !rebuildRetained, let oldFile = previous?.databaseFile {
                 try FileManager.default.copyItem(at: root.appendingPathComponent(oldFile), to: assembled)
             }
             await phaseProgress(0.25)
@@ -249,7 +252,9 @@ actor TableStore {
             // This is an unpublished staging copy; a failed operation discards it.
             _ = try output.rows("PRAGMA journal_mode=MEMORY")
             _ = try output.rows("PRAGMA cache_size=-16384")
-            if !reusable {
+            if rebuildRetained, let oldFile = previous?.databaseFile {
+                try output.copyRetainedLanguages(from: root.appendingPathComponent(oldFile), names: tables.map(\.name))
+            } else if !reusable {
                 let first = try SQLiteConnection(url: root.appendingPathComponent(tables[0].localName))
                 for name in ["langs", "info", "mcpdict"] {
                     guard let sql = try first.rows("SELECT sql FROM sqlite_master WHERE name=?", [name]).first?["sql"] else { throw DictionaryFailure(message: "字表結構缺失") }

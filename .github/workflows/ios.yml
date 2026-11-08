@@ -1,4 +1,4 @@
-name: Diagnose dense map
+name: Diagnose device coverage
 on:
   push:
     branches: [codex/diagnose-dense-map]
@@ -6,8 +6,12 @@ permissions:
   contents: read
 jobs:
   diagnose:
+    strategy:
+      fail-fast: false
+      matrix:
+        device: [iPhone-SE-3rd-generation, iPhone-16-Pro-Max, iPad-9th-generation]
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: 30
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
     steps:
@@ -18,31 +22,22 @@ jobs:
           brew install xcodegen
           python3 tools/prepare_assets.py
           xcodegen generate
-      - name: Run dense map with main-thread sampling
+      - name: Test device navigation and retained data
+        env:
+          DEVICE_TYPE: ${{ matrix.device }}
         run: |
-          device=$(xcrun simctl create DenseMap com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max com.apple.CoreSimulator.SimRuntime.iOS-18-5)
+          device=$(xcrun simctl create DeviceCoverage "com.apple.CoreSimulator.SimDeviceType.${DEVICE_TYPE}" com.apple.CoreSimulator.SimRuntime.iOS-18-5)
           xcrun simctl boot "$device"
           xcrun simctl bootstatus "$device" -b
-          python3 tools/diagnose_map.py "$device" &
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -only-testing:MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading CODE_SIGNING_ALLOWED=NO test
-      - name: Export samples
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -only-testing:MCPDictIOSTests/OptimizationTests -only-testing:MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading -only-testing:MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu -only-testing:MCPDictIOSUITests/NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText -only-testing:MCPDictIOSUITests/NavigationTests/testTreeSelectionBlankStartAndSettings -only-testing:MCPDictIOSUITests/NavigationTests/testDownloadsPushAndReferenceOptionsSheet CODE_SIGNING_ALLOWED=NO test
+      - name: Export evidence
         if: always()
         run: |
-          python3 - <<'PYLOG'
-          from pathlib import Path
-          for path in sorted(Path('.').glob('dense-sample-*.txt')):
-              lines=path.read_text().splitlines()
-              print(path.name)
-              for line in lines[:240]: print(line)
-          PYLOG
           if [ -d TestResults.xcresult ]; then
             xcrun xcresulttool export attachments --path TestResults.xcresult --output-path TestAttachments
           fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: dense-map-diagnostics
-          path: |
-            dense-*.txt
-            dense-*.png
-            TestAttachments
+          name: device-diagnostics-${{ matrix.device }}
+          path: TestAttachments

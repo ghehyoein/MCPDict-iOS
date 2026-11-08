@@ -129,6 +129,44 @@ final class SQLiteConnection {
         }
     }
 
+    // When most tables are removed, copy the small retained set into a fresh
+    // staging database instead of journaling and deleting millions of old rows.
+    // Preserve row IDs, extra metadata columns and independent reference data.
+    func copyRetainedLanguages(from source: URL, names: [String]) throws {
+        _ = try rows("ATTACH DATABASE ? AS retained", [source.path])
+        defer { _ = try? rows("DETACH DATABASE retained") }
+        func quoted(_ name: String) -> String { "\"" + name.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
+        try transaction {
+            var columns = [String: String]()
+            for name in ["langs", "info", "mcpdict"] {
+                guard let sql = try rows("SELECT sql FROM retained.sqlite_master WHERE name=?", [name]).first?["sql"] else {
+                    throw DictionaryFailure(message: "字表結構缺失")
+                }
+                _ = try rows(sql)
+                let fields = try rows("PRAGMA retained.table_info(\(name))").compactMap { $0["name"] }
+                columns[name] = (["rowid"] + fields).map(quoted).joined(separator: ",")
+            }
+            let languageColumns = columns["langs"]!
+            for start in stride(from: 0, to: names.count, by: 128) {
+                try Task.checkCancellation()
+                let batch = Array(names[start..<min(start + 128, names.count)])
+                let indexed = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) != nil }
+                let fallback = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) == nil }
+                for (group, useIndex) in [(indexed, true), (fallback, false)] where !group.isEmpty {
+                    let json = String(data: try JSONEncoder().encode(group), encoding: .utf8)!
+                    let expression = "語言 : (" + group.map { quoted($0) }.joined(separator: " OR ") + ")"
+                    let condition = (useIndex ? "langs MATCH ? AND " : "") + "語言 IN (SELECT value FROM json_each(?))"
+                    _ = try rows("INSERT INTO main.langs (\(languageColumns)) SELECT \(languageColumns) FROM retained.langs WHERE \(condition)", useIndex ? [expression, json] : [json])
+                }
+            }
+            let json = String(data: try JSONEncoder().encode(names), encoding: .utf8)!
+            let infoColumns = columns["info"]!
+            _ = try rows("INSERT INTO main.info (\(infoColumns)) SELECT \(infoColumns) FROM retained.info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [json])
+            let referenceColumns = columns["mcpdict"]!
+            _ = try rows("INSERT INTO main.mcpdict (\(referenceColumns)) SELECT \(referenceColumns) FROM retained.mcpdict")
+        }
+    }
+
     func validate(requireSample: Bool = true, checkIntegrity: Bool = true) throws {
         if checkIntegrity {
             guard try rows("PRAGMA quick_check").first?.values.first == "ok" else {

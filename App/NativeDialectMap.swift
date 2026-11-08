@@ -251,6 +251,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         self.choose = choose
         if nameButton.currentTitle != point.name { nameButton.setTitle(point.name, for: .normal) }
         nameButton.accessibilityLabel = point.name
+        nameButton.accessibilityIdentifier = "map-name-" + point.id
         if nameButton.titleLabel?.font.pointSize != CGFloat(labelSize) { nameButton.titleLabel?.font = .systemFont(ofSize: labelSize) }
         if previousColor != point.color {
         previousColor = point.color
