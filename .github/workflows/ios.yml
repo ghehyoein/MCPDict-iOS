@@ -1,4 +1,4 @@
-name: Inspect iPadOS 26 interaction failures
+name: Inspect Home-button iPad interface
 on:
   push:
     branches: [codex/performance-release-actions]
@@ -13,22 +13,22 @@ jobs:
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
       - uses: actions/checkout@v4
-      - name: Export iPad failure hierarchy and screenshots
+      - name: Export Home-button iPad screenshots
         run: |
-          gh run download 42448620536 --name simulator-test-results-iPad-9th-generation-26.2 --dir download
+          gh run download 42451566636 --name simulator-screenshots-iPad-9th-generation-18.5 --dir download
           mkdir evidence
           python3 - <<'PYCODE'
           from pathlib import Path
           import shutil
           for p in Path('download').rglob('*'):
-              if p.is_file() and 'TestAttachments' in p.parts and p.suffix in {'.json','.txt','.png'}:
+              if p.is_file() and p.suffix in {'.json','.txt','.png'}:
                   shutil.copy2(p, Path('evidence') / p.name)
           PYCODE
           cd evidence
-          git init -b codex/performance-093-ipad26-review
+          git init -b codex/performance-093-ipad9-review
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add .
-          git commit -m 'iPadOS 26 interaction diagnostics'
+          git commit -m 'Home-button iPad interface verification'
           git remote add origin https://github.com/ghehyoein/MCPDict-iOS.git
-          git -c http.https://github.com/.extraheader="$(git -C .. config http.https://github.com/.extraheader)" push origin HEAD:refs/heads/codex/performance-093-ipad26-review
+          git -c http.https://github.com/.extraheader="$(git -C .. config http.https://github.com/.extraheader)" push origin HEAD:refs/heads/codex/performance-093-ipad9-review
