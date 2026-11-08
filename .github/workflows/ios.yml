@@ -1,4 +1,4 @@
-name: Diagnose device coverage
+name: Diagnose iPadOS 26 menu and reset interactions
 on:
   push:
     branches: [codex/diagnose-dense-map]
@@ -6,10 +6,6 @@ permissions:
   contents: read
 jobs:
   diagnose:
-    strategy:
-      fail-fast: false
-      matrix:
-        device: [iPhone-SE-3rd-generation, iPhone-16-Pro-Max, iPad-9th-generation]
     runs-on: macos-15
     timeout-minutes: 30
     env:
@@ -22,22 +18,32 @@ jobs:
           brew install xcodegen
           python3 tools/prepare_assets.py
           xcodegen generate
-      - name: Test device navigation and retained data
-        env:
-          DEVICE_TYPE: ${{ matrix.device }}
+      - name: Repeat menu and reset checks with main-thread samples
         run: |
-          device=$(xcrun simctl create DeviceCoverage "com.apple.CoreSimulator.SimDeviceType.${DEVICE_TYPE}" com.apple.CoreSimulator.SimRuntime.iOS-18-5)
+          device=$(xcrun simctl create iPad26Diagnosis com.apple.CoreSimulator.SimDeviceType.iPad-9th-generation com.apple.CoreSimulator.SimRuntime.iOS-26-2)
           xcrun simctl boot "$device"
           xcrun simctl bootstatus "$device" -b
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -only-testing:MCPDictIOSTests/OptimizationTests -only-testing:MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading -only-testing:MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu -only-testing:MCPDictIOSUITests/NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText -only-testing:MCPDictIOSUITests/NavigationTests/testTreeSelectionBlankStartAndSettings -only-testing:MCPDictIOSUITests/NavigationTests/testDownloadsPushAndReferenceOptionsSheet CODE_SIGNING_ALLOWED=NO test
-      - name: Export evidence
+          python3 tools/diagnose_map.py "$device" &
+          sampler=$!
+          trap 'kill "$sampler" 2>/dev/null || true' EXIT
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -test-iterations 3 -only-testing:MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading -only-testing:MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders CODE_SIGNING_ALLOWED=NO test
+      - name: Export diagnostic samples and screenshots
         if: always()
         run: |
+          python3 - <<'PYLOG'
+          from pathlib import Path
+          for path in sorted(Path('.').glob('dense-sample-*.txt')):
+              print(path.name)
+              print("\n".join(path.read_text().splitlines()[:175]))
+          PYLOG
           if [ -d TestResults.xcresult ]; then
             xcrun xcresulttool export attachments --path TestResults.xcresult --output-path TestAttachments
           fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: device-diagnostics-${{ matrix.device }}
-          path: TestAttachments
+          name: ipad26-interaction-diagnostics
+          path: |
+            dense-*.txt
+            dense-*.png
+            TestAttachments
