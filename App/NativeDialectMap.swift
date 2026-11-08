@@ -125,7 +125,25 @@ final class CachedAccessibilityMapView: MKMapView {
     override var accessibilityElements: [Any]? {
         get {
             if !hasAccessibilitySnapshot {
-                accessibilitySnapshot = super.accessibilityElements
+                // Transparent native containers also recompute their full child
+                // array for each indexed access. Traverse them once and retain
+                // the actual accessible controls, with their live frames/actions.
+                var flattened = [Any]()
+                var seen = Set<ObjectIdentifier>()
+                func append(_ element: Any) {
+                    if let view = element as? UIView {
+                        guard seen.insert(ObjectIdentifier(view)).inserted else { return }
+                        if !view.isAccessibilityElement, let children = view.accessibilityElements, !children.isEmpty {
+                            for child in children { append(child) }
+                            return
+                        }
+                    }
+                    flattened.append(element)
+                }
+                if let elements = super.accessibilityElements {
+                    for element in elements { append(element) }
+                    accessibilitySnapshot = flattened
+                } else { accessibilitySnapshot = nil }
                 hasAccessibilitySnapshot = true
             }
             return accessibilitySnapshot
