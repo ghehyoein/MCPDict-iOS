@@ -1,72 +1,48 @@
-name: Check iOS and Python
-on: [push, pull_request, workflow_dispatch]
+name: Diagnose dense map
+on:
+  push:
+    branches: [codex/diagnose-dense-map]
 permissions:
   contents: read
 jobs:
-  check:
-    name: ${{ matrix.device }} / iOS ${{ matrix.ios }}
-    strategy:
-      fail-fast: false
-      matrix:
-        device: [iPhone-13, iPhone-16-Pro-Max]
-        ios: ['18.5', '26.2']
+  diagnose:
     runs-on: macos-15
+    timeout-minutes: 20
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Python data contract tests
-        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
-      - uses: actions/checkout@v4
-        with:
-          repository: osfans/MCPDict
-          ref: 3cf11dfc91250259a20bf2f271eac4ad8134040a
-          path: bundled-source
-      - name: Build complete bundled dictionary snapshot
+      - name: Prepare fixture build
         run: |
-          python3 -m venv bundle-env
-          bundle-env/bin/pip install regex==2026.9.29
-          bundle-env/bin/python tools/bundle_tables.py bundled-source App/BundledTables
-      - name: Generate Xcode project
-        run: |
+          mkdir -p App/BundledTables
           brew install xcodegen
           python3 tools/prepare_assets.py
           xcodegen generate
-      - name: Compile for iOS Simulator without signing
-        run: xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -sdk iphonesimulator -configuration Debug -derivedDataPath DerivedData CODE_SIGNING_ALLOWED=NO build
-      - name: Test SQLite queries and failed update rollback in Simulator
-        env:
-          DEVICE_TYPE: ${{ matrix.device }}
-          IOS_VERSION: ${{ matrix.ios }}
+      - name: Run dense map with main-thread sampling
         run: |
-          runtime="com.apple.CoreSimulator.SimRuntime.iOS-${IOS_VERSION//./-}"
-          device=$(xcrun simctl create "MCPDict-${DEVICE_TYPE}-${IOS_VERSION}" "com.apple.CoreSimulator.SimDeviceType.${DEVICE_TYPE}" "$runtime")
+          device=$(xcrun simctl create DenseMap com.apple.CoreSimulator.SimDeviceType.iPhone-16-Pro-Max com.apple.CoreSimulator.SimRuntime.iOS-18-5)
           xcrun simctl boot "$device"
           xcrun simctl bootstatus "$device" -b
-          xcrun simctl list devices | tee tested-device.txt
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults CODE_SIGNING_ALLOWED=NO test
-      - name: Export test diagnostics and screenshots
+          python3 tools/diagnose_map.py "$device" &
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -only-testing:MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading CODE_SIGNING_ALLOWED=NO test
+      - name: Export samples
         if: always()
         run: |
+          python3 - <<'PYLOG'
+          from pathlib import Path
+          for path in sorted(Path('.').glob('dense-sample-*.txt')):
+              lines=path.read_text().splitlines()
+              print(path.name)
+              for line in lines[:240]: print(line)
+          PYLOG
           if [ -d TestResults.xcresult ]; then
-            mkdir -p TestAttachments
-            xcrun xcresulttool get test-results tests --path TestResults.xcresult > TestAttachments/tests.json
             xcrun xcresulttool export attachments --path TestResults.xcresult --output-path TestAttachments
           fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: simulator-test-results-${{ matrix.device }}-${{ matrix.ios }}
+          name: dense-map-diagnostics
           path: |
-            tested-device.txt
-            TestResults.xcresult
+            dense-*.txt
+            dense-*.png
             TestAttachments
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: simulator-screenshots-${{ matrix.device }}-${{ matrix.ios }}
-          path: |
-            TestAttachments/**/*.png
-            TestAttachments/**/*.jpg
-            TestAttachments/**/*.json
