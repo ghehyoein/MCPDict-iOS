@@ -19,7 +19,6 @@ jobs:
           gh run download 42444678770 -n simulator-screenshots-iPhone-SE-3rd-generation-18.5 -D /tmp/device-images/se
           gh run download 42444678770 -n simulator-screenshots-iPad-9th-generation-18.5 -D /tmp/device-images/ipad
           git switch --orphan codex/device-validation-images
-          git rm -rf .
           cp -R /tmp/device-images/* .
           git add se ipad
           git -c user.name=github-actions -c user.email=github-actions@github.com commit -m 'Export simulator diagnostics for device coverage review'
