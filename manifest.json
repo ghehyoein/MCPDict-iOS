@@ -1,0 +1,140 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "CA229913-E66F-4193-ABA3-FE24CCB96095.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "3306語言點完整地圖_0_6972974D-1E87-4215-8769-39B22C07C309.png",
+        "timestamp" : 1794120264.296
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "85715ECD-2892-4BF8-9D4D-592AEC955492.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖文字原生選取_0_CAF08DF6-4E08-4AD7-957E-40B73BEFBAE6.png",
+        "timestamp" : 1794120508.668
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "D1EEBD20-1A3C-4B9C-955B-5402FFC3FAC3.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "原生文字選區及系統選單_0_1D17DBA0-0DA2-4FEF-92FB-A17880B7E870.png",
+        "timestamp" : 1794120525.36
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "8B86189B-6DC0-46C8-83D6-1AAAED47576B.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "生字本滾動後浮動操作_0_06D7514E-086D-4998-8A27-EBF72203A43B.png",
+        "timestamp" : 1794120553.939
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "8F3DDDB8-EC4F-4726-922C-55004B84A414.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "滾動後固定選字區及頂部遮罩_0_8A969A55-0981-4F7C-8BDD-2489A9C6D937.png",
+        "timestamp" : 1794120575.539
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "2A08D6CD-32D1-4202-ADD7-03B2FCAB3E0A.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "末級邯彰直接補入贊皇_0_790F517D-FABF-4989-B43B-1CB2BAF99CCB.png",
+        "timestamp" : 1794120612.891
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "372DD52C-0CFC-4119-806E-42A38AC97596.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "南通補入潤州過渡色子目錄_0_DDAD9598-4C08-4267-A24F-7D276B273F15.png",
+        "timestamp" : 1794120591.641
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "75AA4474-D011-405E-8535-02DAA7F234D9.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "共用語言選單及原生地音開關_0_BEE0386D-01B9-4A6A-993B-033E5D61A623.png",
+        "timestamp" : 1794120655.124
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "D3A918D4-6B10-492E-8F7D-FC897533B187.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_84D58ACE-4BDF-485B-B1C4-1183FF4E85CB.png",
+        "timestamp" : 1794120691.374
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "6DD342E4-C062-47F8-A162-C0120B7D624E",
+        "deviceName" : "MCPDict-iPad-9th-generation-18.5",
+        "exportedFileName" : "C16CC064-9B34-48E4-B531-255D2149ACA2.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_33466508-A006-4F90-BBCF-6D1DF419A0BC.png",
+        "timestamp" : 1794120689.646
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  }
+]
