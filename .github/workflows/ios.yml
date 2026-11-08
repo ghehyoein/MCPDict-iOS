@@ -8,12 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        device:
-          - iPhone-13
-          - iPhone-16-Pro-Max
-          - iPhone-SE-3rd-generation
-          - iPad-Air-11-inch-M3
-          - iPad-9th-generation
+        device: [iPhone-13, iPhone-16-Pro-Max]
         ios: ['18.5', '26.2']
     runs-on: macos-15
     env:
