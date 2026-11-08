@@ -435,6 +435,14 @@ final class AppModel: ObservableObject {
 
 }
 
+// Keep the native tab controller alive while language/reset changes recreate page state.
+// Replacing the controller during alert dismissal can loop in iPadOS 26 tab layout.
+private struct ResettableTabContent<Content: View>: View {
+    let revision: String
+    @ViewBuilder let content: () -> Content
+    var body: some View { content().id(revision) }
+}
+
 struct RootView: View {
     @EnvironmentObject var model: AppModel
     @AppStorage("appearance") private var appearance = "system"
@@ -442,14 +450,13 @@ struct RootView: View {
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
     var body: some View {
         TabView(selection: $model.activeTab) {
-            SearchView().tag(0).tabItem { Label { Text(ui("字典")) } icon: { Image(uiImage: DictionaryTabIcon.image) } }
-            FavoritesView().tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
-            DialectMapView().tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
-            SettingsView().tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
+            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { SearchView() }.tag(0).tabItem { Label { Text(ui("字典")) } icon: { Image(uiImage: DictionaryTabIcon.image) } }
+            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { FavoritesView() }.tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
+            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { DialectMapView() }.tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
+            ResettableTabContent(revision: uiLanguage + String(model.settingsRevision)) { SettingsView() }.tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
         .environmentObject(model.languageSelection)
         .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
-        .id(uiLanguage + String(model.settingsRevision))
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
         .dynamicTypeSize(AppTypography.size(fontSize))
         .tint(AppAccent.color)
