@@ -57,8 +57,13 @@ def build(checkout, output):
         assert expected == blob, file.name
         meta = {k: (v if isinstance(v,str) else json.dumps(v,ensure_ascii=False,separators=(',',':'))) for k,v in details[name].items()}
         source_name = meta.get('文件名', '')
-        if source_name and (checkout/'tools/tables/data'/source_name).is_file():
-            meta['文件網址'] = 'https://github.com/osfans/MCPDict/blob/'+commit+'/tools/tables/data/'+quote(source_name)
+        source_path = 'tools/tables/data/' + source_name
+        converted_path = 'tools/tables/data/' + str(Path(source_name).with_suffix('.tsv')) if source_name else ''
+        linked_path = (source_path if source_name and (checkout/source_path).is_file() else
+                       converted_path if converted_path and (checkout/converted_path).is_file() else
+                       'tools/tables/output/' + file.name)
+        if source_name:
+            meta['文件網址'] = 'https://github.com/osfans/MCPDict/blob/'+commit+'/' + quote(linked_path)
         def path(key): return [v.strip() for v in meta.get(key,'').split('－') if v.strip()] or ['未分類']
         identity = hashlib.sha256(name.encode()).hexdigest()[:24]
         rows=[]

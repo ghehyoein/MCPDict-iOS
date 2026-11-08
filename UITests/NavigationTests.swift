@@ -238,7 +238,7 @@ final class NavigationTests: XCTestCase {
         let input = app.textFields["請輸入漢字"]
         input.tap(); input.typeText("中")
         app.buttons["查字"].tap()
-        let reading = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
+        let reading = app.descendants(matching: .any).matching(identifier: "map-reading-" + String(repeating: "a", count: 24)).firstMatch
         XCTAssertTrue(reading.waitForExistence(timeout: 10))
         XCTAssertTrue(reading.isHittable)
         let restored = app.textViews.matching(identifier: "mapPointStatus").matching(NSPredicate(format: "label CONTAINS %@", "1 個語言點")).firstMatch
@@ -280,7 +280,7 @@ final class NavigationTests: XCTestCase {
         // Verify the destination itself and the transferred reading below.
         XCTAssertTrue(app.buttons["mapLanguageSelection"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.maps.firstMatch.exists)
-        let mark = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
+        let mark = app.descendants(matching: .any).matching(identifier: "map-reading-" + String(repeating: "a", count: 24)).firstMatch
         XCTAssertTrue(mark.waitForExistence(timeout: 8))
         XCTAssertEqual(mark.label, "tɕiɔŋ1")
     }
@@ -296,7 +296,7 @@ final class NavigationTests: XCTestCase {
             let field = app.textFields[hint]
             field.tap(); field.typeText(value); app.buttons["查字"].tap()
         }
-        let mark = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
+        let mark = app.descendants(matching: .any).matching(identifier: "map-reading-" + String(repeating: "a", count: 24)).firstMatch
         query("請輸入漢字", "中输")
         XCTAssertTrue(app.buttons["輸"].waitForExistence(timeout: 8))
         app.buttons["輸"].tap()
@@ -350,8 +350,8 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.textViews["dictionaryHeadword"].waitForExistence(timeout: 8))
         tab(app, "生字本").tap()
         app.buttons["chooseNotebooks"].tap()
-        app.buttons["新建生字表"].tap()
-        let alert = app.alerts["新建生字表"]
+        app.buttons["新建生字本"].tap()
+        let alert = app.alerts["新建生字本"]
         XCTAssertTrue(alert.waitForExistence(timeout: 3))
         let title = "測試表-" + String(UUID().uuidString.prefix(6))
         alert.textFields.firstMatch.tap(); alert.textFields.firstMatch.typeText(String(title))
@@ -367,7 +367,7 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.buttons["selectAllLanguages"].isHittable)
         XCTAssertTrue(app.buttons["finishLanguages"].isHittable)
         app.buttons["selectAllLanguages"].tap(); app.buttons["finishLanguages"].tap()
-        XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "map-reading-" + String(repeating: "a", count: 24)).firstMatch.waitForExistence(timeout: 8))
     }
     @MainActor func testPinnedHeaderPreservesInputAndLanguageMenu() throws {
         let app = XCUIApplication()
@@ -515,14 +515,14 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Look Up", "查詢", "查询"])).firstMatch.exists)
         XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Translate", "翻譯", "翻译"])).firstMatch.exists)
         tab(app, "設定").tap()
-        XCTAssertFalse(app.buttons["設定預設字表"].exists)
+        XCTAssertFalse(app.buttons["設定預設生字本"].exists)
         app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "點擊收藏星號")).firstMatch.tap()
-        app.buttons["直接加入預設字表"].tap()
+        app.buttons["直接加入預設生字本"].tap()
         if app.navigationBars["點擊收藏星號"].exists { app.navigationBars.buttons.firstMatch.tap() }
-        app.buttons["設定預設字表"].tap()
-        XCTAssertTrue(app.navigationBars["設定預設字表"].waitForExistence(timeout: 5))
+        app.buttons["設定預設生字本"].tap()
+        XCTAssertTrue(app.navigationBars["設定預設生字本"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.navigationBars.buttons["完成"].exists)
-        XCTAssertTrue(app.buttons["預設生字表 · 預設生字表"].exists)
+        XCTAssertTrue(app.buttons["預設生字本 · 預設生字本"].exists)
     }
 
     @MainActor func testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions() throws {
@@ -621,7 +621,7 @@ final class NavigationTests: XCTestCase {
         XCTAssertGreaterThan(app.buttons["mapLanguageSelection"].frame.minY, input.frame.maxY)
         input.tap(); input.typeText("输")
         app.buttons["查字"].tap()
-        let text = app.textViews["map-reading-" + String(repeating: "a", count: 24)]
+        let text = app.descendants(matching: .any).matching(identifier: "map-reading-" + String(repeating: "a", count: 24)).firstMatch
         XCTAssertTrue(text.waitForExistence(timeout: 8))
         text.press(forDuration: 1.2)
         let copy = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Copy", "拷貝", "拷贝", "複製", "复制"])).firstMatch
@@ -664,7 +664,7 @@ final class NavigationTests: XCTestCase {
         input.tap(); input.typeText("中")
         XCTAssertTrue(app.buttons["查字"].isEnabled)
         app.buttons["查字"].tap()
-        XCTAssertTrue(app.textViews["map-reading-" + String(repeating: "a", count: 24)].waitForExistence(timeout: 8))
+        XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "map-reading-" + String(repeating: "a", count: 24)).firstMatch.waitForExistence(timeout: 8))
     }
 
 }

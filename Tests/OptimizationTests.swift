@@ -62,7 +62,8 @@ final class OptimizationTests: XCTestCase {
         print("MAP_NAME_BENCH points=3306 seconds=\(Date().timeIntervalSince(start)) text_views=0 blur_views=0")
         let point = DialectPoint(id: "0", name: "點0", longitude: 113, latitude: 23, color: "#008080", reading: "可選取的完整讀音")
         views[0].configure(point, fontSize: 16) {}
-        XCTAssertEqual(views[0].readingView?.text, point.reading)
+        XCTAssertNil(views[0].readingView)
+        XCTAssertEqual(views[0].readingText.text, point.reading)
         XCTAssertTrue(views[0].readingView?.isSelectable == true)
         XCTAssertTrue(views.dropFirst().allSatisfy { $0.readingView == nil })
         let cleared = DialectPoint(id: "0", name: "點0", longitude: 113, latitude: 23, color: "#008080", reading: "")
@@ -70,8 +71,29 @@ final class OptimizationTests: XCTestCase {
         XCTAssertNil(views[0].readingView)
         XCTAssertEqual(views[0].subviews.count, 1)
         views[0].configure(point, fontSize: 16) {}
-        XCTAssertEqual(views[0].readingView?.text, point.reading)
+        XCTAssertNil(views[0].readingView)
+        XCTAssertEqual(views[0].readingText.text, point.reading)
     }
+    @MainActor func testDenseReadingsDeferTextViewsUntilActuallyTouched() {
+        let start = Date()
+        let views = (0..<3306).map { index -> LabelAnnotationView in
+            let view = LabelAnnotationView(annotation: nil, reuseIdentifier: nil)
+            let point = DialectPoint(id: String(index), name: "點\(index)", longitude: 113, latitude: 23,
+                                     color: "#008080", reading: "hæ3  " + String(repeating: "完整注釋", count: 80))
+            view.configure(point, fontSize: 16) {}
+            return view
+        }
+        XCTAssertTrue(views.allSatisfy { $0.readingView == nil })
+        for view in views { XCTAssertNil(view.hitTest(CGPoint(x: -1000, y: -1000), with: nil)) }
+        XCTAssertTrue(views.allSatisfy { $0.readingView == nil })
+        let first = views[0]
+        _ = first.hitTest(CGPoint(x: first.bounds.midX, y: 8), with: nil)
+        XCTAssertTrue(first.readingView?.isSelectable == true)
+        XCTAssertTrue(first.readingView?.text.contains("完整注釋") == true)
+        XCTAssertEqual(views.filter { $0.readingView != nil }.count, 1)
+        print("DENSE_READING_BENCH points=3306 text_views_before_touch=0 after_touch=1 seconds=\(Date().timeIntervalSince(start))")
+    }
+
     func testIndexedRemovalMatchesExactNamesAndRollsBack() throws {
         let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)

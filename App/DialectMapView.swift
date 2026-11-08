@@ -32,8 +32,12 @@ struct DialectMapView: View {
     @State private var points = [DialectPoint]()
     @State private var pointsRevision = UUID()
     @State private var tableByName = [String: TablePackage]()
+    @State private var orderingKey = ""
+    @State private var orderedNames = [String]()
+    @State private var cachedRanks = [String: Int]()
     private func rebuildMapTables() {
         tableByName = Dictionary(uniqueKeysWithValues: tables.map { ($0.name, $0) })
+        orderingKey = ""
         rebuildPoints()
     }
     private func recolorPoints() {
@@ -50,8 +54,19 @@ struct DialectMapView: View {
     private func rebuildPoints() {
         pointsRevision = UUID()
         let group = result?.groups[activeCharacter] ?? [:]
-        let ranks = ResultOrdering.ranks(tables, namespace: "dictionary")
-        points = (result == nil ? names : submittedNames).sorted { (ranks[$0] ?? Int.max) < (ranks[$1] ?? Int.max) }.compactMap { name in
+        let key = selector.kind.rawValue + ":" + selector.grouping.rawValue
+        if orderingKey != key {
+            cachedRanks = ResultOrdering.ranks(tables, namespace: "dictionary")
+            orderedNames = cachedRanks.keys.sorted { cachedRanks[$0]! < cachedRanks[$1]! }
+            orderingKey = key
+        }
+        let selected = result == nil ? names : submittedNames
+        // Large result sets use a linear membership pass through the cached order.
+        // Tiny selections avoid scanning the full catalog.
+        let ordered = selected.count < orderedNames.count / 8
+            ? selected.sorted { (cachedRanks[$0] ?? Int.max) < (cachedRanks[$1] ?? Int.max) }
+            : orderedNames.filter { selected.contains($0) }
+        points = ordered.compactMap { name in
             let lines = group[name] ?? []
             guard let table = tableByName[name], result == nil || !lines.isEmpty else { return nil }
             let separator = result?.mode == .note ? "\n" : " / "

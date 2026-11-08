@@ -31,11 +31,11 @@ struct FavoriteSettingsSection: View {
     var body: some View {
         Section(ui("收藏")) {
             Picker(ui("點擊收藏星號"), selection: $action) {
-                Text(ui("詢問加入哪些生字表")).tag("ask")
-                Text(ui("直接加入預設字表")).tag("direct")
+                Text(ui("詢問加入哪些生字本")).tag("ask")
+                Text(ui("直接加入預設生字本")).tag("direct")
             }.pickerStyle(.menu)
             if action == "direct" {
-                NavigationLink(ui("設定預設字表")) { DefaultFavoriteBooksView() }
+                NavigationLink(ui("設定預設生字本")) { DefaultFavoriteBooksView() }
             }
         }
     }
@@ -56,10 +56,10 @@ struct DefaultFavoriteBooksView: View {
                             .contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
                         Text(verbatim: book.title); Spacer()
                     }.contentShape(Rectangle())
-                }.buttonStyle(.plain).accessibilityLabel(ui("預設生字表") + " · " + book.title)
+                }.buttonStyle(.plain).accessibilityLabel(ui("預設生字本") + " · " + book.title)
             }
         }.onAppear { defaults = FavoritePreferences.targets(in: model.notebook) }
-            .navigationTitle(ui("設定預設字表")).navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(ui("設定預設生字本")).navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .tabBar)
     }
 }

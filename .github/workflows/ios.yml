@@ -21,7 +21,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: osfans/MCPDict
-          ref: 3cf11dfc91250259a20bf2f271eac4ad8134040a
+          ref: 5231117297c38822a1fd06c047df61f4f034500f
           path: bundled-source
       - name: Build complete bundled dictionary snapshot
         run: |

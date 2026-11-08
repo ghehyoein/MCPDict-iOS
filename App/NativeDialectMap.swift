@@ -187,8 +187,34 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     let nameButton = UIButton(type: .system)
     private(set) var readingView: UITextView?
     private var readingBlur: UIVisualEffectView?
+    private var readingPreview: MapReadingPreview?
+    private var renderedReading = NSAttributedString(string: "")
+    private var readingFrame = CGRect.zero
+    private var readingNeedsScroll = false
+    private func ensureReadingPreview() {
+        guard readingPreview == nil else { return }
+        let preview = MapReadingPreview()
+        preview.backgroundColor = .clear
+        preview.clipsToBounds = true
+        preview.contentMode = .redraw
+        preview.isAccessibilityElement = true
+        preview.accessibilityTraits = .staticText
+        preview.activate = { [weak self] in
+            guard let self else { return false }
+            return self.readingText.becomeFirstResponder()
+        }
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        blur.isUserInteractionEnabled = false
+        blur.layer.cornerRadius = 4; blur.clipsToBounds = true
+        insertSubview(blur, at: 0); addSubview(preview)
+        readingPreview = preview; readingBlur = blur
+    }
+    // TextKit and native selection machinery are needed only for a touched label.
+    // Hit testing creates the text view before UIKit delivers that same touch,
+    // preserving the first long press and native selection gestures.
     var readingText: UITextView {
         if let readingView { return readingView }
+        ensureReadingPreview()
         let text = UITextView()
         text.adjustsFontForContentSizeCategory = false
         text.isEditable = false; text.isSelectable = true
@@ -198,14 +224,29 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         text.layer.cornerRadius = 3
         text.textContainer.maximumNumberOfLines = 0
         text.textContainer.lineBreakMode = .byCharWrapping
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
-        blur.isUserInteractionEnabled = false
-        blur.layer.cornerRadius = 4; blur.clipsToBounds = true
-        insertSubview(blur, at: 0); addSubview(text)
-        readingView = text; readingBlur = blur
+        text.attributedText = renderedReading
+        text.frame = readingFrame; text.isScrollEnabled = readingNeedsScroll
+        text.accessibilityIdentifier = readingPreview?.accessibilityIdentifier
+        text.accessibilityLabel = readingPreview?.accessibilityLabel
+        addSubview(text); readingView = text; readingPreview?.isHidden = true
         if window != nil { MapTextGestureGate.install(above: self) }
         accessibilityElements = [text, nameButton]
+        (superviewOfMap() as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
         return text
+    }
+    private func superviewOfMap() -> MKMapView? {
+        var parent = superview
+        while let view = parent {
+            if let map = view as? MKMapView { return map }
+            parent = view.superview
+        }
+        return nil
+    }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        readingView?.resignFirstResponder(); readingView?.removeFromSuperview(); readingView = nil
+        readingPreview?.isHidden = false
+        if let readingPreview { accessibilityElements = [readingPreview, nameButton] }
     }
     private let gradient = CAGradientLayer()
     private var choose: (() -> Void)?
@@ -238,11 +279,13 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     // pronunciation and name controls interactive, including overlapping label bounds.
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
-        if let readingView, !readingView.isHidden {
-            // Preserve native text selection handles, including touches beyond
-            // the text viewport. Name-only labels need no such extended hit area.
-            if let hit = readingView.hitTest(convert(point, to: readingView), with: event) { return hit }
-        } else if !bounds.contains(point) { return nil }
+        let selecting = readingView?.isFirstResponder == true
+        // Reject off-label touches in O(1), without walking TextKit descendants.
+        guard bounds.contains(point) || selecting else { return nil }
+        if !readingFrame.isEmpty, readingFrame.contains(point) || selecting {
+            let text = readingText
+            if let hit = text.hitTest(convert(point, to: text), with: event) { return hit }
+        }
         guard !nameButton.isHidden else { return nil }
         return nameButton.hitTest(convert(point, to: nameButton), with: event)
     }
@@ -262,8 +305,9 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         }
         if point.reading.isEmpty {
             previousReading = nil
-            readingView?.removeFromSuperview(); readingBlur?.removeFromSuperview()
-            readingView = nil; readingBlur = nil
+            readingView?.removeFromSuperview(); readingBlur?.removeFromSuperview(); readingPreview?.removeFromSuperview()
+            readingView = nil; readingBlur = nil; readingPreview = nil
+            renderedReading = NSAttributedString(string: ""); readingFrame = .zero
             previousParts = nil
             let size = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
             bounds = CGRect(x: 0, y: 0, width: size.width + 12, height: max(size.height, CGFloat(labelSize) * 1.4))
@@ -272,7 +316,9 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
             collisionMode = .rectangle
             return
         }
-        accessibilityElements = [readingText, nameButton]
+        ensureReadingPreview()
+        if let readingView { accessibilityElements = [readingView, nameButton] }
+        else if let readingPreview { accessibilityElements = [readingPreview, nameButton] }
         let textChanged = previousReading != point.reading || previousParts != point.toneParts || previousFontSize != fontSize
         if textChanged {
         let text = NSMutableAttributedString(string: "")
@@ -293,18 +339,27 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
                 text.append(NSAttributedString(attachment: attachment))
             } else { text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: UIColor.label])) }
         }
+        let paragraph = NSMutableParagraphStyle()
+        paragraph.lineBreakMode = .byCharWrapping
+        text.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: text.length))
         let contentChanged = previousReading != point.reading
-        let selection = readingText.selectedRange
-        readingText.attributedText = text
-        if !contentChanged && NSMaxRange(selection) <= text.length { readingText.selectedRange = selection }
-        if contentChanged { readingText.setContentOffset(.zero, animated: false) }
+        renderedReading = text
+        if let readingView {
+            let selection = readingView.selectedRange
+            readingView.attributedText = text
+            if !contentChanged && NSMaxRange(selection) <= text.length { readingView.selectedRange = selection }
+            if contentChanged { readingView.setContentOffset(.zero, animated: false) }
+        }
         previousReading = point.reading; previousParts = point.toneParts; previousFontSize = fontSize
         let range = (text.string as NSString).rangeOfComposedCharacterSequences(for: NSRange(location: 0, length: min(text.length, 1024)))
-        cachedReadingRect = text.attributedSubstring(from: range).boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+        let previewText = text.attributedSubstring(from: range)
+        readingPreview?.text = previewText
+        cachedReadingRect = previewText.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
         }
-        readingText.accessibilityIdentifier = "map-reading-" + point.id
-        readingText.accessibilityLabel = point.reading
-        readingText.isHidden = point.reading.isEmpty
+        for view in [readingPreview as UIView?, readingView as UIView?].compactMap({ $0 }) {
+            view.accessibilityIdentifier = "map-reading-" + point.id
+            view.accessibilityLabel = point.reading
+        }
         let nameButtonSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
         // Size only the viewport; the text view retains the entire selectable text.
         let readingRect = cachedReadingRect
@@ -314,9 +369,11 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         let width = max(nameWidth, readingWidth)
         bounds = CGRect(x: 0, y: 0, width: width, height: nameHeight + readingHeight)
         nameButton.frame = CGRect(x: (width-nameWidth)/2, y: readingHeight, width: nameWidth, height: nameHeight)
-        readingText.frame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
-        readingText.isScrollEnabled = ceil(readingRect.height) + 8 > readingHeight
-        readingBlur?.frame = readingText.frame; readingBlur?.isHidden = readingText.isHidden
+        readingFrame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
+        readingNeedsScroll = ceil(readingRect.height) + 8 > readingHeight
+        readingPreview?.frame = readingFrame; readingView?.frame = readingFrame
+        readingView?.isScrollEnabled = readingNeedsScroll
+        readingBlur?.frame = readingFrame
         gradient.frame = nameButton.bounds
         collisionMode = .rectangle
     }
@@ -358,4 +415,19 @@ private final class MapTextGestureGate: NSObject, UIGestureRecognizerDelegate {
         if original?.responds(to: selector) == true { return original }
         return super.forwardingTarget(for: selector)
     }
+}
+
+// Bounded, inert drawing for untouched results; full text remains available to
+// accessibility and is loaded into the native text view on interaction.
+private final class MapReadingPreview: UIView {
+    var text = NSAttributedString(string: "") { didSet { setNeedsDisplay() } }
+    var activate: (() -> Bool)?
+    override func draw(_ rect: CGRect) {
+        text.draw(with: bounds.insetBy(dx: 4, dy: 4), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+    }
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) { setNeedsDisplay() }
+    }
+    override func accessibilityActivate() -> Bool { activate?() ?? false }
 }

@@ -3,8 +3,11 @@ import Foundation
 struct VocabularyBook: Codable, Identifiable {
     let id: UUID
     var name: String
-    static let original = VocabularyBook(id: UUID(uuidString: "7D382C3B-BD71-4956-975B-DC901F1CB63C")!, name: "預設生字表")
-    var title: String { name == Self.original.name ? ui(name) : name }
+    static let original = VocabularyBook(id: UUID(uuidString: "7D382C3B-BD71-4956-975B-DC901F1CB63C")!, name: "預設生字本")
+    var title: String {
+        if id == Self.original.id && (name == Self.original.name || name == "預設生字表") { return ui("預設生字本") }
+        return name
+    }
 }
 
 struct NotebookArchive: Codable {
@@ -15,12 +18,16 @@ struct NotebookArchive: Codable {
 
     static func decode(_ data: Data) throws -> Self {
         let decoder = JSONDecoder()
-        let state: Self
+        var state: Self
         if let old = try? decoder.decode([SavedReading].self, from: data) {
             var migrated = Self()
             migrated.entries = old
             state = migrated
         } else { state = try decoder.decode(Self.self, from: data) }
+        if let index = state.books.firstIndex(where: { $0.id == VocabularyBook.original.id && $0.name == "預設生字表" }),
+           !state.books.contains(where: { $0.name == VocabularyBook.original.name }) {
+            state.books[index].name = VocabularyBook.original.name
+        }
         let ids = Set(state.books.map(\.id))
         guard state.version == 1, ids.count == state.books.count,
               Set(state.entries.map(\.id)).count == state.entries.count,
@@ -28,7 +35,7 @@ struct NotebookArchive: Codable {
               state.books.allSatisfy({ !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }),
               state.selected.isSubset(of: ids),
               state.entries.allSatisfy({ !$0.membership.isEmpty && $0.membership.isSubset(of: ids) }) else {
-            throw DictionaryFailure(message: "生字表資料格式不相容")
+            throw DictionaryFailure(message: "生字本資料格式不相容")
         }
         return state
     }

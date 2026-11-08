@@ -188,7 +188,7 @@ struct FavoriteButton: View {
         Button {
             if UserDefaults.standard.string(forKey: "favoriteAction") == "direct" {
                 let ids = FavoritePreferences.targets(in: model.notebook)
-                guard !ids.isEmpty else { model.error = "請先在設定中選擇預設生字表"; return }
+                guard !ids.isEmpty else { model.error = "請先在設定中選擇預設生字本"; return }
                 model.save(reading, to: ids)
             } else { choosing = true }
         } label: { Image(systemName: saved ? "star.fill" : "star").foregroundStyle(.orange).contentShape(Rectangle()) }

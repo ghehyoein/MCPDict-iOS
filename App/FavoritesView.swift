@@ -77,7 +77,7 @@ struct FavoritesView: View {
                 Section {
                     Button { showBooks = true } label: {
                         HStack {
-                            Text(ui("生字表")); Spacer()
+                            Text(ui("生字本")); Spacer()
                             Text(model.notebook.books.filter { model.notebook.selected.contains($0.id) }.map(\.title).joined(separator: "、"))
                                 .lineLimit(1).foregroundStyle(.secondary)
                             Image(systemName: "chevron.right")
@@ -89,9 +89,9 @@ struct FavoritesView: View {
                     choiceBar
 
                 }
-                if model.notebook.books.isEmpty { SystemText(ui("請先新建生字表。")) }
-                else if model.notebook.selected.isEmpty { SystemText(ui("請選擇要查看的生字表。")) }
-                else if model.visibleFavorites.isEmpty { SystemText(ui("點擊查詢結果旁的星號，即可加入所選生字表。")) }
+                if model.notebook.books.isEmpty { SystemText(ui("請先新建生字本。")) }
+                else if model.notebook.selected.isEmpty { SystemText(ui("請選擇要查看的生字本。")) }
+                else if model.visibleFavorites.isEmpty { SystemText(ui("點擊查詢結果旁的星號，即可加入所選生字本。")) }
                 ForEach(groups) { group in
                     Section {
                         ForEach(group.entries) { saved in
@@ -120,7 +120,7 @@ struct FavoritesView: View {
                             Button(ui("全選")) { selection = Set(shown.map(\.id)) }
                             Spacer()
                             SystemText(ui("已選 ") + String(selection.count))
-                            Menu(ui("加入生字表")) {
+                            Menu(ui("加入生字本")) {
                                 ForEach(model.notebook.books) { book in Button(book.title) { model.addFavorites(selection, to: book.id) } }
                             }.disabled(selection.isEmpty)
                             Button(ui("刪除"), role: .destructive) { remove(selection) }.disabled(selection.isEmpty)
@@ -138,7 +138,7 @@ struct FavoritesView: View {
                     let granted = url.startAccessingSecurityScopedResource()
                     defer { if granted { url.stopAccessingSecurityScopedResource() } }
                     try model.importNotebook(Data(contentsOf: url))
-                    transferMessage = ui("已合併匯入生字表，原有內容已保留。")
+                    transferMessage = ui("已合併匯入生字本，原有內容已保留。")
                 } catch { model.error = error.localizedDescription }
             }
             .alert(ui("生字本匯入"), isPresented: Binding(get: { transferMessage != nil }, set: { if !$0 { transferMessage = nil } })) {
@@ -156,8 +156,8 @@ struct FavoritesView: View {
              .onChange(of: model.notebook.selected) { _, _ in selection = [] }
              .navigationTitle(ui("生字本")).toolbar {
                 Menu {
-                    Button(ui("匯出所選生字表")) { exporting = true }.disabled(model.notebook.selected.isEmpty)
-                    Button(ui("匯入生字表")) { importing = true }
+                    Button(ui("匯出所選生字本")) { exporting = true }.disabled(model.notebook.selected.isEmpty)
+                    Button(ui("匯入生字本")) { importing = true }
                 } label: { Image(systemName: "square.and.arrow.up.on.square") }.accessibilityLabel(ui("匯入及匯出"))
                 Button(ui(selecting ? "完成" : "多選")) { selecting.toggle(); selection = [] }
             }

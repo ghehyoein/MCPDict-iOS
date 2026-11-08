@@ -34,10 +34,10 @@ struct BookPicker: View {
                             .accessibilityLabel(ui("管理") + book.title)
                         }
                     }
-                    Button(ui("新建生字表"), systemImage: "plus") { editID = nil; name = ""; editing = true }
-                } footer: { if reading != nil { SystemText(ui("點「完成」儲存勾選的生字表；不勾選任何表會取消收藏。")) } }
+                    Button(ui("新建生字本"), systemImage: "plus") { editID = nil; name = ""; editing = true }
+                } footer: { if reading != nil { SystemText(ui("點「完成」儲存勾選的生字本；不勾選任何表會取消收藏。")) } }
 
-            }.navigationTitle(ui("生字表")).navigationBarTitleDisplayMode(.inline)
+            }.navigationTitle(ui("生字本")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(ui("刪除"), role: .destructive) { requestDelete(selected) }.foregroundStyle(.red).disabled(selected.isEmpty)
@@ -46,17 +46,17 @@ struct BookPicker: View {
                     Button(ui("完成")) { if let reading { model.assign(reading, to: draft) }; dismiss() }
                 }
             }
-            .alert(ui(editID == nil ? "新建生字表" : "重新命名"), isPresented: $editing) {
-                TextField(ui("生字表名稱"), text: $name)
+            .alert(ui(editID == nil ? "新建生字本" : "重新命名"), isPresented: $editing) {
+                TextField(ui("生字本名稱"), text: $name)
                 Button(ui("儲存")) { saveName() }.disabled(!validName)
                 Button(ui("取消"), role: .cancel) {}
             } message: { if duplicateName { Text(ui("名稱已被使用")) } }
             .onAppear { if let reading { draft = model.memberships(reading) } }
             .onChange(of: model.notebook.books.map(\.id)) { _, ids in draft.formIntersection(ids) }
-            .confirmationDialog(ui("刪除所選生字表？"), isPresented: $confirm, titleVisibility: .visible) {
+            .confirmationDialog(ui("刪除所選生字本？"), isPresented: $confirm, titleVisibility: .visible) {
                 Button(ui("刪除") + "（" + String(deletion.count) + "）", role: .destructive) { model.deleteBooks(deletion) }
                 Button(ui("取消"), role: .cancel) {}
-            } message: { Text(ui("只屬於這些生字表的條目也會刪除；其他生字表中的條目會保留。")) }
+            } message: { Text(ui("只屬於這些生字本的條目也會刪除；其他生字本中的條目會保留。")) }
         }
     }
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }

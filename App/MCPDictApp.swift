@@ -383,7 +383,7 @@ final class AppModel: ObservableObject {
     }
     func save(_ reading: Reading, to targets: Set<UUID>? = nil) {
         let targets = (targets ?? notebook.selected).intersection(notebook.books.map(\.id))
-        guard !targets.isEmpty else { error = "請先在生字本選擇或新建生字表"; return }
+        guard !targets.isEmpty else { error = "請先在生字本選擇或新建生字本"; return }
         if targets.isSubset(of: savedMemberships[ReadingContentKey(reading)] ?? []) { return }
         changeNotebook { next in
             if let i = next.entries.firstIndex(where: { ReadingContentKey($0.reading) == ReadingContentKey(reading) }) {
@@ -394,7 +394,7 @@ final class AppModel: ObservableObject {
     @discardableResult func setBookName(_ raw: String, id: UUID? = nil, selectNew: Bool = true) -> UUID? {
         let name = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, !notebook.books.contains(where: { $0.id != id && $0.name == name }) else {
-            error = "請輸入非空且未使用的生字表名稱"; return nil
+            error = "請輸入非空且未使用的生字本名稱"; return nil
         }
         let target = id ?? UUID()
         let saved = changeNotebook { next in
@@ -408,7 +408,7 @@ final class AppModel: ObservableObject {
     }
     func importNotebook(_ data: Data) throws {
         let incoming = try NotebookArchive.decode(data)
-        guard changeNotebook({ $0.merge(incoming) }) else { throw DictionaryFailure(message: "生字表匯入儲存失敗") }
+        guard changeNotebook({ $0.merge(incoming) }) else { throw DictionaryFailure(message: "生字本匯入儲存失敗") }
     }
     func selectBooks(_ ids: Set<UUID>) { changeNotebook { $0.selected = ids.intersection($0.books.map(\.id)) } }
     func deleteBooks(_ ids: Set<UUID>) { changeNotebook { $0.remove(ids) } }

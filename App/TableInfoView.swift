@@ -49,7 +49,7 @@ struct TableInfoView: View {
         if key == "文件名" {
             HStack(alignment: .firstTextBaseline, spacing: 0) {
                 SystemText(ui(key) + "：", weight: .bold)
-                if let source = current.metadata?["文件網址"], let url = URL(string: source), url.scheme == "https" {
+                if let url = current.sourceFileURL {
                     Link(value(key), destination: url)
                 } else { SystemText(value(key)) }
             }
@@ -79,5 +79,14 @@ enum MetadataText {
             URL(string: source.substring(with: match.range(at: 1)).replacingOccurrences(of: "&amp;", with: "&"))
         }
         return Array(Set(urls)).sorted { $0.absoluteString < $1.absoluteString }
+    }
+}
+
+// Old cached catalogs may predate source-file links; normalized TSVs exist for every upstream table.
+extension TablePackage {
+    var sourceFileURL: URL? {
+        if let text = metadata?["文件網址"], let link = URL(string: text), link.scheme == "https" { return link }
+        guard isUpstream, !(metadata?["文件名"] ?? "").isEmpty else { return nil }
+        return URL(string: "https://github.com/osfans/MCPDict/blob/\(sourceCommit)/tools/tables/output/")?.appendingPathComponent(name + ".tsv")
     }
 }
