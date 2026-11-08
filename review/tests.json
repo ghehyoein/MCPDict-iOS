@@ -1,0 +1,1045 @@
+{
+  "devices" : [
+    {
+      "architecture" : "arm64",
+      "deviceId" : "CCFD570B-A0DA-4C18-975A-82A036EB4E27",
+      "deviceName" : "MCPDict-iPhone-SE-3rd-generation-26.2",
+      "modelName" : "iPhone SE (3rd generation)",
+      "osBuildNumber" : "23C54",
+      "osVersion" : "26.2",
+      "platform" : "iOS Simulator"
+    }
+  ],
+  "testNodes" : [
+    {
+      "children" : [
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "duration" : "0.093s",
+                  "durationInSeconds" : 0.09338605403900146,
+                  "name" : "testManualUpdateSurvivesRelaunchAndUpgrade()",
+                  "nodeIdentifier" : "BundledTablesTests/testManualUpdateSurvivesRelaunchAndUpgrade()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testManualUpdateSurvivesRelaunchAndUpgrade",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.064s",
+                  "durationInSeconds" : 0.06355595588684082,
+                  "name" : "testOfflineInstallRemovalRelaunchAndRestore()",
+                  "nodeIdentifier" : "BundledTablesTests/testOfflineInstallRemovalRelaunchAndRestore()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testOfflineInstallRemovalRelaunchAndRestore",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "59s",
+                  "durationInSeconds" : 59.61517798900604,
+                  "name" : "testPackagedCatalogContainsEveryBundledTable()",
+                  "nodeIdentifier" : "BundledTablesTests/testPackagedCatalogContainsEveryBundledTable()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testPackagedCatalogContainsEveryBundledTable",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.022s",
+                  "durationInSeconds" : 0.022256016731262207,
+                  "name" : "testReferenceIndexMatchesAndroidUnicodePopup()",
+                  "nodeIdentifier" : "BundledTablesTests/testReferenceIndexMatchesAndroidUnicodePopup()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests/testReferenceIndexMatchesAndroidUnicodePopup",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "BundledTablesTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/BundledTablesTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.12s",
+                  "durationInSeconds" : 0.12347996234893799,
+                  "name" : "testFailedActivationKeepsOldConnection()",
+                  "nodeIdentifier" : "DictionaryTests/testFailedActivationKeepsOldConnection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testFailedActivationKeepsOldConnection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.077s",
+                  "durationInSeconds" : 0.07659697532653809,
+                  "name" : "testIndexedLanguageRestrictionPreservesExactNamesAndSubstringPriority()",
+                  "nodeIdentifier" : "DictionaryTests/testIndexedLanguageRestrictionPreservesExactNamesAndSubstringPriority()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testIndexedLanguageRestrictionPreservesExactNamesAndSubstringPriority",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0032s",
+                  "durationInSeconds" : 0.0032449960708618164,
+                  "name" : "testManifestRejectsIncompatibleSchema()",
+                  "nodeIdentifier" : "DictionaryTests/testManifestRejectsIncompatibleSchema()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testManifestRejectsIncompatibleSchema",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.049s",
+                  "durationInSeconds" : 0.04903101921081543,
+                  "name" : "testMapUsesDictionarySearchAcrossModes()",
+                  "nodeIdentifier" : "DictionaryTests/testMapUsesDictionarySearchAcrossModes()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testMapUsesDictionarySearchAcrossModes",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.028s",
+                  "durationInSeconds" : 0.02776193618774414,
+                  "name" : "testSearchContract()",
+                  "nodeIdentifier" : "DictionaryTests/testSearchContract()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testSearchContract",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.11s",
+                  "durationInSeconds" : 0.10585808753967285,
+                  "name" : "testTableDownloadContractRestoreAndRemoval()",
+                  "nodeIdentifier" : "DictionaryTests/testTableDownloadContractRestoreAndRemoval()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests/testTableDownloadContractRestoreAndRemoval",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DictionaryTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.008s",
+                  "durationInSeconds" : 0.00801694393157959,
+                  "name" : "testAsterisksDistinguishBroadColorMembershipsFromUniqueTerminalRecords()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testAsterisksDistinguishBroadColorMembershipsFromUniqueTerminalRecords()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testAsterisksDistinguishBroadColorMembershipsFromUniqueTerminalRecords",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0052s",
+                  "durationInSeconds" : 0.005177021026611328,
+                  "name" : "testExactSharedColorsUseLargestRegionsAndUnknownColorsStayUnassigned()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testExactSharedColorsUseLargestRegionsAndUnknownColorsStayUnassigned()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testExactSharedColorsUseLargestRegionsAndUnknownColorsStayUnassigned",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.015s",
+                  "durationInSeconds" : 0.014999985694885254,
+                  "name" : "testNantongReciprocalTransitionsKeepOriginalsAndAddSubmenus()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testNantongReciprocalTransitionsKeepOriginalsAndAddSubmenus()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testNantongReciprocalTransitionsKeepOriginalsAndAddSubmenus",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.013s",
+                  "durationInSeconds" : 0.01287698745727539,
+                  "name" : "testRegionSelectionAndSearchIncludeAddedMembersWithoutDuplicates()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testRegionSelectionAndSearchIncludeAddedMembersWithoutDuplicates()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testRegionSelectionAndSearchIncludeAddedMembersWithoutDuplicates",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0042s",
+                  "durationInSeconds" : 0.0042220354080200195,
+                  "name" : "testTerminalRegionsReceivePointsDirectlyAcrossSeveralRegions()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testTerminalRegionsReceivePointsDirectlyAcrossSeveralRegions()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testTerminalRegionsReceivePointsDirectlyAcrossSeveralRegions",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0078s",
+                  "durationInSeconds" : 0.007802009582519531,
+                  "name" : "testTransitionToAnExistingAncestorStillGetsItsOwnSubmenuWithoutDoubleCounting()",
+                  "nodeIdentifier" : "DictionaryTransitionTests/testTransitionToAnExistingAncestorStillGetsItsOwnSubmenuWithoutDoubleCounting()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests/testTransitionToAnExistingAncestorStillGetsItsOwnSubmenuWithoutDoubleCounting",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DictionaryTransitionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DictionaryTransitionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.03s",
+                  "durationInSeconds" : 0.029971957206726074,
+                  "name" : "testBundledVariantsMatchUpstreamReverseLookup()",
+                  "nodeIdentifier" : "DisplaySearchTests/testBundledVariantsMatchUpstreamReverseLookup()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testBundledVariantsMatchUpstreamReverseLookup",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0017s",
+                  "durationInSeconds" : 0.0016900300979614258,
+                  "name" : "testExternalMapURLsPreserveCoordinatesAndEscapeNames()",
+                  "nodeIdentifier" : "DisplaySearchTests/testExternalMapURLsPreserveCoordinatesAndEscapeNames()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testExternalMapURLsPreserveCoordinatesAndEscapeNames",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.44s",
+                  "durationInSeconds" : 0.4435659646987915,
+                  "name" : "testSubstringPriorityLiteralSymbolsAndRegionAcrossPages()",
+                  "nodeIdentifier" : "DisplaySearchTests/testSubstringPriorityLiteralSymbolsAndRegionAcrossPages()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testSubstringPriorityLiteralSymbolsAndRegionAcrossPages",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0081s",
+                  "durationInSeconds" : 0.008054971694946289,
+                  "name" : "testToneModesAndUnknownPreservation()",
+                  "nodeIdentifier" : "DisplaySearchTests/testToneModesAndUnknownPreservation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testToneModesAndUnknownPreservation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0049s",
+                  "durationInSeconds" : 0.00494992733001709,
+                  "name" : "testTwoColorPreservationAndFontRange()",
+                  "nodeIdentifier" : "DisplaySearchTests/testTwoColorPreservationAndFontRange()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests/testTwoColorPreservationAndFontRange",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DisplaySearchTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DisplaySearchTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "5s",
+                  "durationInSeconds" : 5.666762948036194,
+                  "name" : "testUpstreamMandarinDownloadsAndQueries()",
+                  "nodeIdentifier" : "DownloadIntegrationTests/testUpstreamMandarinDownloadsAndQueries()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DownloadIntegrationTests/testUpstreamMandarinDownloadsAndQueries",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "DownloadIntegrationTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/DownloadIntegrationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0042s",
+                  "durationInSeconds" : 0.004222989082336426,
+                  "name" : "testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testAdministrativeGroupsStopAtCountyEvenWhenCityIsMissing",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.027s",
+                  "durationInSeconds" : 0.02713799476623535,
+                  "name" : "testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testDictionaryAndMapCachesSurviveRecreationAndKeepEmptySelection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.095s",
+                  "durationInSeconds" : 0.09495007991790771,
+                  "name" : "testPersonUnionBlankBucketAndFlagIntersection()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testPersonUnionBlankBucketAndFlagIntersection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testPersonUnionBlankBucketAndFlagIntersection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0022s",
+                  "durationInSeconds" : 0.0021740198135375977,
+                  "name" : "testRegionGroupsIncludeAllDescendantsAtEveryDepth()",
+                  "nodeIdentifier" : "LanguageSelectionTests/testRegionGroupsIncludeAllDescendantsAtEveryDepth()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests/testRegionGroupsIncludeAllDescendantsAtEveryDepth",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "LanguageSelectionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/LanguageSelectionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0055s",
+                  "durationInSeconds" : 0.00551295280456543,
+                  "name" : "testAutomaticMapFitLimitsDenseResultsAndKeepsSpreadOutPointsVisible()",
+                  "nodeIdentifier" : "MapTests/testAutomaticMapFitLimitsDenseResultsAndKeepsSpreadOutPointsVisible()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testAutomaticMapFitLimitsDenseResultsAndKeepsSpreadOutPointsVisible",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.027s",
+                  "durationInSeconds" : 0.027476906776428223,
+                  "name" : "testCoordinateOrderAndValidation()",
+                  "nodeIdentifier" : "MapTests/testCoordinateOrderAndValidation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testCoordinateOrderAndValidation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.84s",
+                  "durationInSeconds" : 0.8376560211181641,
+                  "name" : "testLongNoteKeepsAllTextInScrollableSelectableViewport()",
+                  "nodeIdentifier" : "MapTests/testLongNoteKeepsAllTextInScrollableSelectableViewport()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testLongNoteKeepsAllTextInScrollableSelectableViewport",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.026s",
+                  "durationInSeconds" : 0.02635502815246582,
+                  "name" : "testMapNamesReadingsAndInterfaceUseIndependentSizes()",
+                  "nodeIdentifier" : "MapTests/testMapNamesReadingsAndInterfaceUseIndependentSizes()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testMapNamesReadingsAndInterfaceUseIndependentSizes",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.21s",
+                  "durationInSeconds" : 0.2107679843902588,
+                  "name" : "testMapNoteSearchKeepsEveryCompleteNote()",
+                  "nodeIdentifier" : "MapTests/testMapNoteSearchKeepsEveryCompleteNote()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testMapNoteSearchKeepsEveryCompleteNote",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.17s",
+                  "durationInSeconds" : 0.16891300678253174,
+                  "name" : "testMapQueryDoesNotStopAtOneHundred()",
+                  "nodeIdentifier" : "MapTests/testMapQueryDoesNotStopAtOneHundred()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testMapQueryDoesNotStopAtOneHundred",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "1s",
+                  "durationInSeconds" : 1.0473589897155762,
+                  "name" : "testSystemMapUpdatesCoordinatesReadingsAndSelection()",
+                  "nodeIdentifier" : "MapTests/testSystemMapUpdatesCoordinatesReadingsAndSelection()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests/testSystemMapUpdatesCoordinatesReadingsAndSelection",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "MapTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/MapTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.086s",
+                  "durationInSeconds" : 0.08559489250183105,
+                  "name" : "testLegacyFavoritesAndSharedBookMembershipSurviveRestart()",
+                  "nodeIdentifier" : "NotebookTests/testLegacyFavoritesAndSharedBookMembershipSurviveRestart()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests/testLegacyFavoritesAndSharedBookMembershipSurviveRestart",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0023s",
+                  "durationInSeconds" : 0.0023229122161865234,
+                  "name" : "testParallelClassificationsKeepOneIdentityPerSavedEntry()",
+                  "nodeIdentifier" : "NotebookTests/testParallelClassificationsKeepOneIdentityPerSavedEntry()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests/testParallelClassificationsKeepOneIdentityPerSavedEntry",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.016s",
+                  "durationInSeconds" : 0.015552997589111328,
+                  "name" : "testStarAssignmentIsIndependentOfBookFilter()",
+                  "nodeIdentifier" : "NotebookTests/testStarAssignmentIsIndependentOfBookFilter()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests/testStarAssignmentIsIndependentOfBookFilter",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "NotebookTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/NotebookTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.3s",
+                  "durationInSeconds" : 0.2964479923248291,
+                  "name" : "testCachedTreeRestorationAt3306Points()",
+                  "nodeIdentifier" : "OptimizationTests/testCachedTreeRestorationAt3306Points()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testCachedTreeRestorationAt3306Points",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0053s",
+                  "durationInSeconds" : 0.005343079566955566,
+                  "name" : "testDownloadBatchRespectsCountSizeAndOrder()",
+                  "nodeIdentifier" : "OptimizationTests/testDownloadBatchRespectsCountSizeAndOrder()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testDownloadBatchRespectsCountSizeAndOrder",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.33s",
+                  "durationInSeconds" : 0.3258659839630127,
+                  "name" : "testIndexedRemovalMatchesExactNamesAndRollsBack()",
+                  "nodeIdentifier" : "OptimizationTests/testIndexedRemovalMatchesExactNamesAndRollsBack()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testIndexedRemovalMatchesExactNamesAndRollsBack",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "2s",
+                  "durationInSeconds" : 2.0270609855651855,
+                  "name" : "testNameOnlyMapDoesNotAllocate3306TextViews()",
+                  "nodeIdentifier" : "OptimizationTests/testNameOnlyMapDoesNotAllocate3306TextViews()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testNameOnlyMapDoesNotAllocate3306TextViews",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.26s",
+                  "durationInSeconds" : 0.2600749731063843,
+                  "name" : "testParallelPrefetchRetainsEveryVerifiedTable()",
+                  "nodeIdentifier" : "OptimizationTests/testParallelPrefetchRetainsEveryVerifiedTable()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testParallelPrefetchRetainsEveryVerifiedTable",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.012s",
+                  "durationInSeconds" : 0.012447953224182129,
+                  "name" : "testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase()",
+                  "nodeIdentifier" : "OptimizationTests/testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testPreparedActivationStillRejectsInvalidSchemaAndPreservesActiveDatabase",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0052s",
+                  "durationInSeconds" : 0.0051850080490112305,
+                  "name" : "testUnchangedCatalogAndDatabasePathKeepMapMetadataRevision()",
+                  "nodeIdentifier" : "OptimizationTests/testUnchangedCatalogAndDatabasePathKeepMapMetadataRevision()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testUnchangedCatalogAndDatabasePathKeepMapMetadataRevision",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0012s",
+                  "durationInSeconds" : 0.0011659860610961914,
+                  "name" : "testUnchangedCatalogOnlyRequestsHead()",
+                  "nodeIdentifier" : "OptimizationTests/testUnchangedCatalogOnlyRequestsHead()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests/testUnchangedCatalogOnlyRequestsHead",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "OptimizationTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/OptimizationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.023s",
+                  "durationInSeconds" : 0.02325296401977539,
+                  "name" : "testBatchedMapQueriesAndStatisticsInvalidation()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testBatchedMapQueriesAndStatisticsInvalidation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testBatchedMapQueriesAndStatisticsInvalidation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.7s",
+                  "durationInSeconds" : 0.704177975654602,
+                  "name" : "testIndexedTreeMatchesReferenceAndReusesMembership()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testIndexedTreeMatchesReferenceAndReusesMembership()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testIndexedTreeMatchesReferenceAndReusesMembership",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0057s",
+                  "durationInSeconds" : 0.0057059526443481445,
+                  "name" : "testResultAndFavoriteCachesInvalidate()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testResultAndFavoriteCachesInvalidate()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testResultAndFavoriteCachesInvalidate",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0079s",
+                  "durationInSeconds" : 0.007856965065002441,
+                  "name" : "testToneCacheUsesContentAndPreservesStyles()",
+                  "nodeIdentifier" : "PerformanceRegressionTests/testToneCacheUsesContentAndPreservesStyles()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests/testToneCacheUsesContentAndPreservesStyles",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "PerformanceRegressionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PerformanceRegressionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0019s",
+                  "durationInSeconds" : 0.0019199848175048828,
+                  "name" : "testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0027s",
+                  "durationInSeconds" : 0.002749919891357422,
+                  "name" : "testSelectedNotebookTextExportExcludesOtherBooksAndMemberships()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testSelectedNotebookTextExportExcludesOtherBooksAndMemberships()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testSelectedNotebookTextExportExcludesOtherBooksAndMemberships",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.036s",
+                  "durationInSeconds" : 0.03550398349761963,
+                  "name" : "testSelectionStateSharesControlsAndKeepsDownloadsIndependent()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testSelectionStateSharesControlsAndKeepsDownloadsIndependent()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testSelectionStateSharesControlsAndKeepsDownloadsIndependent",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0029s",
+                  "durationInSeconds" : 0.0028699636459350586,
+                  "name" : "testUnicodeMovesToInformationAndOnlyUnicodeExpandsByDefault()",
+                  "nodeIdentifier" : "PresentationRevisionTests/testUnicodeMovesToInformationAndOnlyUnicodeExpandsByDefault()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests/testUnicodeMovesToInformationAndOnlyUnicodeExpandsByDefault",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "PresentationRevisionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/PresentationRevisionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0071s",
+                  "durationInSeconds" : 0.007145047187805176,
+                  "name" : "testDefaultFavoritesAreIndependentOfBrowsingAndAllowSeveralBooks()",
+                  "nodeIdentifier" : "RequestedChangesTests/testDefaultFavoritesAreIndependentOfBrowsingAndAllowSeveralBooks()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testDefaultFavoritesAreIndependentOfBrowsingAndAllowSeveralBooks",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0029s",
+                  "durationInSeconds" : 0.0029380321502685547,
+                  "name" : "testImportRejectsDanglingMembershipAndDuplicateIdentity()",
+                  "nodeIdentifier" : "RequestedChangesTests/testImportRejectsDanglingMembershipAndDuplicateIdentity()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testImportRejectsDanglingMembershipAndDuplicateIdentity",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0035s",
+                  "durationInSeconds" : 0.0034639835357666016,
+                  "name" : "testIndexedResultsPreserveOrderAndRepeatedReadings()",
+                  "nodeIdentifier" : "RequestedChangesTests/testIndexedResultsPreserveOrderAndRepeatedReadings()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testIndexedResultsPreserveOrderAndRepeatedReadings",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.37s",
+                  "durationInSeconds" : 0.3698289394378662,
+                  "name" : "testLargeResultIndexMatchesExistingGrouping()",
+                  "nodeIdentifier" : "RequestedChangesTests/testLargeResultIndexMatchesExistingGrouping()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testLargeResultIndexMatchesExistingGrouping",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0041s",
+                  "durationInSeconds" : 0.004122018814086914,
+                  "name" : "testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot()",
+                  "nodeIdentifier" : "RequestedChangesTests/testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0087s",
+                  "durationInSeconds" : 0.008689045906066895,
+                  "name" : "testPlainTextRoundTripAndMergePreserveNotesMembershipAndFilter()",
+                  "nodeIdentifier" : "RequestedChangesTests/testPlainTextRoundTripAndMergePreserveNotesMembershipAndFilter()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testPlainTextRoundTripAndMergePreserveNotesMembershipAndFilter",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0063s",
+                  "durationInSeconds" : 0.006268024444580078,
+                  "name" : "testReferencePreferenceRoundTripKeepsOrderAndModes()",
+                  "nodeIdentifier" : "RequestedChangesTests/testReferencePreferenceRoundTripKeepsOrderAndModes()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testReferencePreferenceRoundTripKeepsOrderAndModes",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0005s",
+                  "durationInSeconds" : 0.0005000829696655273,
+                  "name" : "testRegionAncestorsFollowPathRatherThanSharedMembership()",
+                  "nodeIdentifier" : "RequestedChangesTests/testRegionAncestorsFollowPathRatherThanSharedMembership()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testRegionAncestorsFollowPathRatherThanSharedMembership",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0075s",
+                  "durationInSeconds" : 0.007497072219848633,
+                  "name" : "testTonePreviewUsesYinShangAnd51()",
+                  "nodeIdentifier" : "RequestedChangesTests/testTonePreviewUsesYinShangAnd51()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests/testTonePreviewUsesYinShangAnd51",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "RequestedChangesTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RequestedChangesTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0067s",
+                  "durationInSeconds" : 0.006667971611022949,
+                  "name" : "testBlankMaintainersDoNotCreateBlankEditorGroup()",
+                  "nodeIdentifier" : "Revision092Tests/testBlankMaintainersDoNotCreateBlankEditorGroup()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testBlankMaintainersDoNotCreateBlankEditorGroup",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.14s",
+                  "durationInSeconds" : 0.13592302799224854,
+                  "name" : "testDenseMapCameraUpdatesDoNotReplaceAnnotations()",
+                  "nodeIdentifier" : "Revision092Tests/testDenseMapCameraUpdatesDoNotReplaceAnnotations()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testDenseMapCameraUpdatesDoNotReplaceAnnotations",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0069s",
+                  "durationInSeconds" : 0.006893038749694824,
+                  "name" : "testInstalledTablesAreNotDownloadableUnlessChanged()",
+                  "nodeIdentifier" : "Revision092Tests/testInstalledTablesAreNotDownloadableUnlessChanged()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testInstalledTablesAreNotDownloadableUnlessChanged",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.088s",
+                  "durationInSeconds" : 0.08780300617218018,
+                  "name" : "testMapRetainsAnnotationAndSelectionAcrossPaletteChanges()",
+                  "nodeIdentifier" : "Revision092Tests/testMapRetainsAnnotationAndSelectionAcrossPaletteChanges()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testMapRetainsAnnotationAndSelectionAcrossPaletteChanges",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.028s",
+                  "durationInSeconds" : 0.02766704559326172,
+                  "name" : "testResetPreservesNotebookAndTablesButRestoresControls()",
+                  "nodeIdentifier" : "Revision092Tests/testResetPreservesNotebookAndTablesButRestoresControls()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testResetPreservesNotebookAndTablesButRestoresControls",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.002s",
+                  "durationInSeconds" : 0.001950979232788086,
+                  "name" : "testTransitionFilterExcludesSingleColorRoots()",
+                  "nodeIdentifier" : "Revision092Tests/testTransitionFilterExcludesSingleColorRoots()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests/testTransitionFilterExcludesSingleColorRoots",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "Revision092Tests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/Revision092Tests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.021s",
+                  "durationInSeconds" : 0.021229982376098633,
+                  "name" : "testBlankStartupAndFavoritePersistence()",
+                  "nodeIdentifier" : "RevisionSixTests/testBlankStartupAndFavoritePersistence()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionSixTests/testBlankStartupAndFavoritePersistence",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.004s",
+                  "durationInSeconds" : 0.003985047340393066,
+                  "name" : "testOriginalDiagnosticsSelectsOnlyRequestedTable()",
+                  "nodeIdentifier" : "RevisionSixTests/testOriginalDiagnosticsSelectsOnlyRequestedTable()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionSixTests/testOriginalDiagnosticsSelectsOnlyRequestedTable",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "RevisionSixTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionSixTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.0049s",
+                  "durationInSeconds" : 0.004915952682495117,
+                  "name" : "testAllMetadataFieldsAndSafeLinks()",
+                  "nodeIdentifier" : "RevisionTests/testAllMetadataFieldsAndSafeLinks()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testAllMetadataFieldsAndSafeLinks",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.35s",
+                  "durationInSeconds" : 0.34661996364593506,
+                  "name" : "testCancelKeepsCompletedAndUnselectedTablesAcrossRestart()",
+                  "nodeIdentifier" : "RevisionTests/testCancelKeepsCompletedAndUnselectedTablesAcrossRestart()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testCancelKeepsCompletedAndUnselectedTablesAcrossRestart",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0011s",
+                  "durationInSeconds" : 0.0011080503463745117,
+                  "name" : "testCatalogRefreshMarksOnlyChangedInstalledContent()",
+                  "nodeIdentifier" : "RevisionTests/testCatalogRefreshMarksOnlyChangedInstalledContent()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testCatalogRefreshMarksOnlyChangedInstalledContent",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "0.0022s",
+                  "durationInSeconds" : 0.0021920204162597656,
+                  "name" : "testScriptSwitchAndGroupedReadingsPreserveSource()",
+                  "nodeIdentifier" : "RevisionTests/testScriptSwitchAndGroupedReadingsPreserveSource()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests/testScriptSwitchAndGroupedReadingsPreserveSource",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "RevisionTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/RevisionTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            },
+            {
+              "children" : [
+                {
+                  "duration" : "0.077s",
+                  "durationInSeconds" : 0.07659995555877686,
+                  "name" : "testTSVHashImportAndRollback()",
+                  "nodeIdentifier" : "UpstreamTests/testTSVHashImportAndRollback()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/UpstreamTests/testTSVHashImportAndRollback",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "UpstreamTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests/UpstreamTests",
+              "nodeType" : "Test Suite",
+              "result" : "Passed"
+            }
+          ],
+          "name" : "MCPDictIOSTests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSTests",
+          "nodeType" : "Unit test bundle",
+          "result" : "Passed"
+        },
+        {
+          "children" : [
+            {
+              "children" : [
+                {
+                  "duration" : "43s",
+                  "durationInSeconds" : 43.387970089912415,
+                  "name" : "testContributorGroupingDoesNotFollowColorTabs()",
+                  "nodeIdentifier" : "NavigationTests/testContributorGroupingDoesNotFollowColorTabs()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testContributorGroupingDoesNotFollowColorTabs",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "NavigationTests.swift:544: XCTAssertEqual failed: (\"XCTWaiterResult(rawValue: 2)\") is not equal to (\"XCTWaiterResult(rawValue: 1)\")",
+                      "nodeType" : "Failure Message"
+                    },
+                    {
+                      "name" : "NavigationTests.swift:544: XCTAssertEqual failed: (\"XCTWaiterResult(rawValue: 2)\") is not equal to (\"XCTWaiterResult(rawValue: 1)\")",
+                      "nodeType" : "Failure Message"
+                    }
+                  ],
+                  "duration" : "4m 47s",
+                  "durationInSeconds" : 287.9673709869385,
+                  "name" : "testDenseMapMenuRemainsInteractiveAfterLoading()",
+                  "nodeIdentifier" : "NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading",
+                  "nodeType" : "Test Case",
+                  "result" : "Failed"
+                },
+                {
+                  "duration" : "47s",
+                  "durationInSeconds" : 47.02179503440857,
+                  "name" : "testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory()",
+                  "nodeIdentifier" : "NavigationTests/testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDictionaryResultSurvivesModeSwitchAndNotebookSingleCategory",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "35s",
+                  "durationInSeconds" : 35.54426193237305,
+                  "name" : "testDownloadsPushAndReferenceOptionsSheet()",
+                  "nodeIdentifier" : "NavigationTests/testDownloadsPushAndReferenceOptionsSheet()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDownloadsPushAndReferenceOptionsSheet",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "45s",
+                  "durationInSeconds" : 45.66698896884918,
+                  "name" : "testFinishQueriesAndNewNotebookUsesAlert()",
+                  "nodeIdentifier" : "NavigationTests/testFinishQueriesAndNewNotebookUsesAlert()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testFinishQueriesAndNewNotebookUsesAlert",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "NavigationTests.swift:296: Failed to swipe up \"languageTreeScroll\" ScrollView: No matches found for Descendants matching type ScrollView from input {(\n    Application, pid: 48343, label: '汉字音典'\n)}",
+                      "nodeType" : "Failure Message"
+                    }
+                  ],
+                  "duration" : "25s",
+                  "durationInSeconds" : 25.300692915916443,
+                  "name" : "testIndependentRootLevelsAndExclusiveRegions()",
+                  "nodeIdentifier" : "NavigationTests/testIndependentRootLevelsAndExclusiveRegions()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testIndependentRootLevelsAndExclusiveRegions",
+                  "nodeType" : "Test Case",
+                  "result" : "Failed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "NavigationTests.swift:228: XCTAssertFalse failed - Attributes: Application, 0x101585e70, pid: 49690, label: '汉字音典'\nElement subtree:\n →Application, 0x101585e70, pid: 49690, label: '汉字音典'\n    Window (Main), 0x101587170, {{0.0, 0.0}, {375.0, 667.0}}\n      Other, 0x1015884f0, {{0.0, 0.0}, {375.0, 667.0}}\n        Other, 0x101588610, {{0.0, 0.0}, {375.0, 667.0}}\n          Other, 0x101588250, {{0.0, 0.0}, {375.0, 667.0}}\n            Other, 0x101588370, {{0.0, 0.0}, {375.0, 667.0}}\n              Other, 0x101588730, {{0.0, 0.0}, {375.0, 667.0}}\n                Other, 0x101588850, {{0.0, 0.0}, {375.0, 667.0}}\n                  Other, 0x101588970, {{0.0, 0.0}, {375.0, 667.0}}\n                    Other, 0x101588a90, {{0.0, 0.0}, {375.0, 667.0}}\n                      Other, 0x101588bb0, {{0.0, 0.0}, {375.0, 667.0}}\n                        Other, 0x101588cd0, {{0.0, 0.0}, {375.0, 667.0}}\n                          Other, 0x101588df0, {{0.0, 0.0}, {375.0, 667.0}}\n                            NavigationBar, 0x101588f10, {{0.0, 20.0}, {375.0, 54.0}}, identifier: '語言地圖'\n                              StaticText, 0x101589030, {{16.0, 31.5}, {67.5, 21.0}}, label: '語言地圖'\n                              Other, 0x101589150, {{205.0, 24.0}, {41.5, 36.0}}, label: '顯示地圖'\n                                Other, 0x101589270, {{205.0, 24.0}, {41.5, 36.0}}\n                                  Button, 0x101589390, {{205.0, 24.0}, {41.5, 36.0}}, label: '顯示地圖'\n                                    Button, 0x1015894b0, {{205.0, 24.0}, {41.5, 36.0}}\n                                      Image, 0x1015895d0, {{214.5, 31.5}, {22.5, 21.5}}, identifier: 'map', label: '顯示地圖'\n                              Button, 0x1015896f0, {{262.5, 24.0}, {39.5, 36.0}}, label: '全覽'\n                              Button, 0x101589810, {{318.0, 24.0}, {37.0, 36.0}}, label: '更新'\n                            Other, 0x101589930, {{0.0, 0.0}, {375.0, 667.0}}\n                              Other, 0x101589a50, {{0.0, 0.0}, {375.0, 667.0}}\n                                Other, 0x101589b70, {{0.0, 0.0}, {375.0, 667.0}}\n                                  Other, 0x101589c90, {{0.0, 0.0}, {375.0, 667.0}}\n                                    SegmentedControl, 0x101589db0, {{16.0, 74.0}, {343.0, 31.0}}\n                                      Button, 0x101589ed0, {{16.0, 74.0}, {114.0, 32.0}}, label: '漢字', Selected\n                                      Button, 0x101589ff0, {{130.0, 74.0}, {114.0, 32.0}}, label: '讀音'\n                                      Button, 0x10158a110, {{244.0, 74.0}, {115.0, 32.0}}, label: '註釋'\n                                    TextField, 0x10158a230, {{16.0, 113.0}, {259.0, 34.0}}, placeholderValue: '請輸入漢字', value: 中\n                                    Button, 0x10158a350, {{283.0, 120.0}, {34.0, 20.5}}, label: '查字'\n                                    Button, 0x10158a470, {{325.0, 120.0}, {34.0, 20.5}}, label: '清除'\n                                    ScrollView, 0x10158a590, {{0.0, 183.5}, {375.0, 34.5}}\n                                      Other, 0x10158a6b0, {{0.0, 183.5}, {73.0, 34.5}}\n                                        Button, 0x10158a7d0, {{16.0, 183.5}, {41.0, 34.5}}, label: '中'\n                                      Other, 0x10158a8f0, {{0.0, 197.8}, {375.0, 17.2}}, label: 'Horizontal scroll bar, 1 page', value: 0%\n                                        Other, 0x10158aa10, {{365.0, 212.0}, {7.0, 3.0}}\n                                      Other, 0x10158ab30, {{0.0, 197.8}, {375.0, 17.2}}, label: 'Horizontal scroll bar, 1 page', value: 0%\n                                        Other, 0x10158ac50, {{365.0, 212.0}, {7.0, 3.0}}\n                                    TextView, 0x10158ad70, {{96.0, 226.0}, {183.0, 15.0}}, identifier: 'mapPointStatus', label: '1 個語言點 ·「中」僅查已下載字表', value: 1 個語言點 ·「中」僅查已下載字表\n                                      Other, 0x10158ae90, {{246.0, 226.0}, {30.0, 15.0}}, label: 'Vertical scroll bar, 1 page', value: 0%\n                                        Other, 0x10158afb0, {{273.0, 202.0}, {3.0, 36.0}}\n                                      Other, 0x10158b0d0, {{96.0, 230.5}, {183.0, 7.5}}, label: 'Horizontal scroll bar, 1 page', value: 0%\n                                        Other, 0x10158b1f0, {{99.0, 235.0}, {51.0, 3.0}}\n                                    Other, 0x10158b310, {{0.0, 249.0}, {375.0, 335.0}}\n                                      Button, 0x10158b430, {{141.5, 414.5}, {92.0, 32.0}}, identifier: 'map-name-aaaaaaaaaaaaaaaaaaaaaaaa', label: '示例語言點'\n                                        StaticText, 0x10158b550, {{147.5, 420.5}, {80.0, 20.0}}, label: '示例語言點'\n                                      TextView, 0x10158b670, {{162.0, 386.5}, {51.0, 28.0}}, identifier: 'map-reading-aaaaaaaaaaaaaaaaaaaaaaaa', label: 'tɕiɔŋ1', value: tɕiɔŋ1\n                                        Other, 0x10158b790, {{184.5, 386.5}, {25.5, 28.0}}, label: 'Vertical scroll bar, 1 page', value: 0%\n                                          Other, 0x10158b8b0, {{207.0, 355.5}, {3.0, 28.0}}\n                                        Other, 0x10158b9d0, {{162.0, 397.5}, {51.0, 14.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%\n                                          Other, 0x10158baf0, {{120.0, 408.5}, {36.0, 3.0}}\n                                      Map, 0x10158bc10, {{0.0, 249.0}, {375.0, 335.0}}\n                                        Other, 0x10158bd30, {{260.0, 321.3}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Chengde'\n                                        Other, 0x10158be50, {{83.5, 330.5}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Zhangjiakou'\n                                        Other, 0x10158bf70, {{-5.4, 388.5}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Datong'\n                                        Other, 0x10158c090, {{355.2, 399.6}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Qinhuangdao'\n                                        Other, 0x10158c1b0, {{172.5, 401.3}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Beijing'\n                                        Other, 0x10158c2d0, {{273.7, 421.6}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Tangshan'\n                                        Other, 0x10158c3f0, {{189.3, 430.4}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Langfang'\n                                        Other, 0x10158c510, {{134.0, 456.8}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Hebei'\n                                        Other, 0x10158c630, {{216.8, 457.5}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Tianjin'\n                                        Other, 0x10158c750, {{120.0, 478.6}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Baoding'\n                                        Other, 0x10158c870, {{63.8, 537.9}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Shijiazhuang'\n                                        Other, 0x10158c990, {{132.3, 560.5}, {30.0, 30.0}}, identifier: 'VKPointFeature', label: 'Hengshui'\n                                      Link, 0x10158cab0, {{69.6, 563.0}, {28.6, 11.0}}, label: 'Legal'\n                                    Button, 0x10158cbd0, {{16.0, 155.0}, {343.0, 20.5}}, label: '已選 0 個語言點'\n                                      StaticText, 0x10158ccf0, {{16.0, 155.0}, {120.5, 20.5}}, label: '已選 0 個語言點'\n                                      Image, 0x10158ce10, {{342.5, 161.0}, {14.5, 8.5}}, identifier: 'chevron.up', label: '往上'\n                                    Button, 0x10158cf30, {{16.0, 155.0}, {343.0, 20.5}}, identifier: 'mapLanguageSelection', label: '已選 0 個語言點'\n                                      StaticText, 0x10158d050, {{16.0, 155.0}, {120.5, 20.5}}, label: '已選 0 個語言點'\n                                      Image, 0x10158d170, {{342.5, 161.0}, {14.5, 8.5}}, identifier: 'chevron.up', label: '往上'\n                                    SegmentedControl, 0x10158d290, {{26.0, 193.5}, {323.0, 31.0}}\n                                      Button, 0x10158d3b0, {{26.0, 193.5}, {80.0, 32.0}}, label: '語言'\n                                      Button, 0x10158d4d0, {{106.0, 193.5}, {81.0, 32.0}}, label: '自選', Selected\n                                      Button, 0x10158d5f0, {{187.0, 193.5}, {80.0, 32.0}}, label: '分區'\n                                      Button, 0x10158d710, {{267.0, 193.5}, {82.0, 32.0}}, label: '行政區'\n                                    Button, 0x10158d830, {{26.0, 238.0}, {19.5, 17.5}}, identifier: 'square', label: '方言島'\n                                    TextView, 0x10158d950, {{45.5, 236.0}, {51.0, 21.0}}, label: '方言島', value: 方言島\n                                      Other, 0x10158da70, {{68.0, 236.0}, {25.5, 21.0}}, label: 'Vertical scroll bar, 1 page', value: 0%\n                                        Other, 0x10158db90, {{90.5, 218.0}, {3.0, 36.0}}\n                                      Other, 0x10158dcb0, {{45.5, 243.5}, {51.0, 10.5}}, label: 'Horizontal scroll bar, 1 page', value: 0%\n                                        Other, 0x10158ddd0, {{48.5, 251.0}, {45.0, 3.0}}\n                                    Button, 0x10158def0, {{106.5, 238.0}, {19.5, 17.5}}, identifier: 'square', label: '歷史音'\n                                    TextView, 0x10158e010, {{126.0, 236.0}, {51.0, 21.0}}, label: '歷史音', value: 歷史音\n                                      Other, 0x10158e130, {{148.5, 236.0}, {25.5, 21.0}}, label: 'Vertical scroll bar, 1 page', value: 0%\n                                        Other, 0x10158e250, {{171.0, 218.0}, {3.0, 36.0}}\n                                      Other, 0x10158e370, {{126.0, 243.5}, {51.0, 10.5}}, label: 'Horizontal scroll bar, 1 page', value: 0%\n                                        Other, 0x10158e490, {{129.0, 251.0}, {45.0, 3.0}}\n                                    Switch, 0x10158e5b0, {{258.0, 232.5}, {61.0, 28.0}}, identifier: 'paletteSwitch', label: '地圖集二／音典分區配色', value: 0\n                                    StaticText, 0x10158e9b0, {{267.2, 239.2}, {12.0, 14.5}}, label: '地圖集二／音典分區配色'\n                                    StaticText, 0x10158ead0, {{297.8, 239.2}, {12.0, 14.5}}, label: '地圖集二／音典分區配色'\n                                    Button, 0x10158ebf0, {{330.5, 238.0}, {17.0, 17.0}}, identifier: 'info.circle', label: '顏色切換說明'\n                                    TextView, 0x10158ed10, {{26.0, 268.5}, {227.0, 15.0}}, label: '自選功能後續待更新，目前與語言模式相同', value: 自選功能後續待更新，目前與語言模式相同\n                                      Other, 0x10158ee30, {{220.0, 268.5}, {30.0, 15.0}}, label: 'Vertical scroll bar, 1 page', value: 0%\n                                        Other, 0x10158ef50, {{247.0, 244.5}, {3.0, 36.0}}\n                                      Other, 0x10158f070, {{26.0, 273.0}, {227.0, 7.5}}, label: 'Horizontal scroll bar, 1 page', value: 0%\n                                        Other, 0x10158f190, {{29.0, 277.5}, {221.0, 3.0}}\n                                    TextField, 0x10158f2b0, {{26.0, 291.5}, {323.0, 34.0}}, placeholderValue: '搜尋語言或分區'\n                                    StaticText, 0x10158f3d0, {{26.0, 339.1}, {67.5, 20.5}}, label: '分類方式'\n                                    Button, 0x10158f4f0, {{207.5, 332.0}, {141.5, 34.5}}, identifier: 'classificationPickerToggle', label: '分類方式、地圖集二分區'\n                                      StaticText, 0x10158f610, {{219.5, 339.0}, {101.5, 20.5}}, label: '地圖集二分區'\n                                    ScrollView, 0x10158f730, {{26.0, 377.5}, {323.0, 200.0}}, identifier: 'languageTreeScroll'\n                                      Other, 0x10158f850, {{26.0, 377.5}, {323.0, 52.0}}\n                                        Other, 0x10158f970, {{26.0, 381.5}, {323.0, 44.0}}\n                                          Button, 0x10158fa90, {{26.0, 381.5}, {44.0, 44.0}}, identifier: 'check-漢語', label: '選擇漢語', value: unchecked\n                                          Button, 0x10158fbb0, {{78.0, 393.5}, {271.0, 20.5}}, identifier: 'expand-漢語', label: '漢語、1', value: collapsed\n                                            Image, 0x10158fcd0, {{81.0, 396.5}, {8.5, 14.5}}, identifier: 'chevron.right', label: '往前'\n                                            StaticText, 0x10158fdf0, {{98.5, 393.2}, {34.0, 20.5}}, label: '漢語'\n                                            StaticText, 0x10158ff10, {{329.5, 393.2}, {7.5, 20.5}}, label: '1'\n                                      Other, 0x101590030, {{316.0, 377.5}, {30.0, 200.0}}, label: 'Vertical scroll bar, 1 page', value: 0%\n                                        Other, 0x101590150, {{343.0, 528.5}, {3.0, 46.0}}\n                                      Other, 0x101590270, {{316.0, 377.5}, {30.0, 200.0}}, label: 'Vertical scroll bar, 1 page', value: 0%\n                                        Other, 0x101590390, {{343.0, 528.5}, {3.0, 46.0}}\n                                    Button, 0x1015904b0, {{39.0, 596.0}, {34.0, 20.5}}, identifier: 'selectAllLanguages', label: '全選'\n                                    Button, 0x1015905d0, {{183.5, 596.0}, {34.0, 20.5}}, identifier: 'clearLanguages', label: '清空'\n                                    Button, 0x1015906f0, {{315.0, 596.0}, {34.0, 20.5}}, identifier: 'finishLanguages', label: '完成'\n                            Other, 0x101590a10, {{0.0, 0.0}, {375.0, 667.0}}\n                              Other, 0x101590b30, {{0.0, 0.0}, {375.0, 667.0}}\n                Other, 0x101590c50, {{0.0, 584.0}, {375.0, 83.0}}\n                  Other, 0x101590d70, {{0.0, 0.0}, {375.0, 667.0}}\n                    TabBar, 0x101590e90, {{0.0, 584.0}, {375.0, 83.0}}, label: 'Tab Bar'\n                      Other, 0x101590fb0, {{21.0, 584.0}, {333.0, 62.0}}\n                        Other, 0x1015910d0, {{21.0, 584.0}, {94.0, 54.0}}\n                        Other, 0x1015911f0, {{21.0, 584.0}, {333.0, 62.0}}\n                          Button, 0x101591310, {{25.0, 588.0}, {94.0, 54.0}}, label: '字典'\n                          Button, 0x101591430, {{102.0, 588.0}, {94.0, 54.0}}, identifier: 'star', label: '生字本'\n                            Image, 0x101591550, {{134.0, 593.0}, {29.5, 28.5}}, identifier: 'star.fill', label: 'favorite'\n                          Button, 0x101591670, {{179.0, 588.0}, {94.0, 54.0}}, identifier: 'map', label: '地圖', Selected\n                            Image, 0x101591790, {{211.0, 595.0}, {29.5, 26.5}}, identifier: 'map.fill', label: 'show map'\n                          Button, 0x1015918b0, {{256.0, 588.0}, {94.0, 54.0}}, identifier: 'gearshape', label: '設定'\n                            Image, 0x1015919d0, {{289.0, 594.0}, {28.0, 28.0}}, identifier: 'gearshape.fill', label: 'gearshape.fill'\n                        Other, 0x101591af0, {{179.0, 588.0}, {94.0, 54.0}}\n                          Other, 0x101591c10, {{179.0, 588.0}, {94.0, 54.0}}\n                            Other, 0x101591d30, {{179.0, 588.0}, {94.0, 54.0}}\n                            Other, 0x101591e50, {{179.0, 588.0}, {94.0, 54.0}}\n                              Other, 0x101591f70, {{179.0, 588.0}, {94.0, 54.0}}\n                                Other, 0x101592090, {{179.0, 588.0}, {94.0, 54.0}}\n                                  Other, 0x1015921b0, {{179.0, 588.0}, {94.0, 54.0}}\n                                Other, 0x1015922d0, {{179.0, 588.0}, {94.0, 54.0}}\n                              Other, 0x1015923f0, {{179.0, 588.0}, {94.0, 54.0}}\n                  Other, 0x101592510, {{0.0, 584.0}, {375.0, 83.0}}\n                    Other, 0x101592630, {{0.0, 584.0}, {375.0, 83.0}}\n                      Other, 0x101592750, {{0.0, 584.0}, {375.0, 83.0}}\n                        Other, 0x101592870, {{0.0, 584.0}, {375.0, 83.0}}\n                          Other, 0x101592bc0, {{0.0, 584.0}, {375.0, 83.0}}\n                            Other, 0x101592ce0, {{0.0, 584.0}, {375.0, 83.0}}\n                        Other, 0x101592e00, {{0.0, 584.0}, {375.0, 83.0}}\n                          Other, 0x101592f20, {{0.0, 584.0}, {375.0, 83.0}}\n    Window, 0x101593040, {{0.0, 0.0}, {375.0, 667.0}}\n      Other, 0x101593160, {{0.0, 0.0}, {375.0, 667.0}}\n        Other, 0x101593280, {{0.0, 0.0}, {375.0, 667.0}}\nPath to element:\n →Application, 0x101585e70, pid: 49690, label: '汉字音典'\nQuery chain:\n →Find: Target Application 'io.github.ghehyoein.MCPDictIOS'\n  Output: {\n    Application, 0x101585b20, pid: 49690, label: '汉字音典'\n  }\n",
+                      "nodeType" : "Failure Message"
+                    }
+                  ],
+                  "duration" : "51s",
+                  "durationInSeconds" : 51.09234797954559,
+                  "name" : "testMapModesRefreshOpenDropdownAndSelectableText()",
+                  "nodeIdentifier" : "NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapModesRefreshOpenDropdownAndSelectableText",
+                  "nodeType" : "Test Case",
+                  "result" : "Failed"
+                },
+                {
+                  "duration" : "33s",
+                  "durationInSeconds" : 33.7030268907547,
+                  "name" : "testMapSearchModeControlsAndVariantResults()",
+                  "nodeIdentifier" : "NavigationTests/testMapSearchModeControlsAndVariantResults()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapSearchModeControlsAndVariantResults",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "21s",
+                  "durationInSeconds" : 21.592395901679993,
+                  "name" : "testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+                  "nodeIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "32s",
+                  "durationInSeconds" : 32.0090069770813,
+                  "name" : "testNativeTextSelectionAndDefaultBookNavigation()",
+                  "nodeIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "25s",
+                  "durationInSeconds" : 25.931758999824524,
+                  "name" : "testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+                  "nodeIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "children" : [
+                    {
+                      "name" : "NavigationTests.swift:347: XCTAssertTrue failed",
+                      "nodeType" : "Failure Message"
+                    }
+                  ],
+                  "duration" : "26s",
+                  "durationInSeconds" : 26.265512943267822,
+                  "name" : "testPinnedHeaderPreservesInputAndLanguageMenu()",
+                  "nodeIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu",
+                  "nodeType" : "Test Case",
+                  "result" : "Failed"
+                },
+                {
+                  "duration" : "1m 4s",
+                  "durationInSeconds" : 64.53270697593689,
+                  "name" : "testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+                  "nodeIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "18s",
+                  "durationInSeconds" : 18.388728976249695,
+                  "name" : "testSelectorsChangeOnlyAfterSubmittedQuery()",
+                  "nodeIdentifier" : "NavigationTests/testSelectorsChangeOnlyAfterSubmittedQuery()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSelectorsChangeOnlyAfterSubmittedQuery",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "28s",
+                  "durationInSeconds" : 28.417682886123657,
+                  "name" : "testSharedLanguageStateAndIndependentDownloads()",
+                  "nodeIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "24s",
+                  "durationInSeconds" : 24.299275994300842,
+                  "name" : "testTableOperationDoesNotDisableSelectionOrMapQuery()",
+                  "nodeIdentifier" : "NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testTableOperationDoesNotDisableSelectionOrMapQuery",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "41s",
+                  "durationInSeconds" : 41.64274203777313,
+                  "name" : "testThreeIndependentFontSliders()",
+                  "nodeIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "1m 9s",
+                  "durationInSeconds" : 69.50659799575806,
+                  "name" : "testTreeSelectionBlankStartAndSettings()",
+                  "nodeIdentifier" : "NavigationTests/testTreeSelectionBlankStartAndSettings()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testTreeSelectionBlankStartAndSettings",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                },
+                {
+                  "duration" : "27s",
+                  "durationInSeconds" : 27.92104697227478,
+                  "name" : "testUnicodeReferenceAndMapHandoff()",
+                  "nodeIdentifier" : "NavigationTests/testUnicodeReferenceAndMapHandoff()",
+                  "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testUnicodeReferenceAndMapHandoff",
+                  "nodeType" : "Test Case",
+                  "result" : "Passed"
+                }
+              ],
+              "name" : "NavigationTests",
+              "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests",
+              "nodeType" : "Test Suite",
+              "result" : "Failed"
+            }
+          ],
+          "name" : "MCPDictIOSUITests",
+          "nodeIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests",
+          "nodeType" : "UI test bundle",
+          "result" : "Failed"
+        }
+      ],
+      "name" : "MCPDictIOS",
+      "nodeType" : "Test Plan",
+      "result" : "Failed"
+    }
+  ],
+  "testPlanConfigurations" : [
+    {
+      "configurationId" : "1",
+      "configurationName" : "Test Scheme Action"
+    }
+  ]
+}

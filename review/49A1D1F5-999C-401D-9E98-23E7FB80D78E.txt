@@ -1,0 +1,101 @@
+Application, 0x1016deb20, pid: 48343, label: '汉字音典' <App element pid: 48343>
+  Window (Main), 0x1016d89c0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4313320464.4>
+    Other, 0x1016d3400, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4311772704.5>
+      Other, 0x1016da780, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4313940864.6>
+        Other, 0x1016d8de0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4313454432.7>
+          Other, 0x1016d17f0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4636997408.8>
+            Other, 0x1016df2a0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4312934784.9>
+              Other, 0x1016dee80, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4313663520.10>
+                Other, 0x1016dd520, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4314072608.12>
+                  Other, 0x1016dd640, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4313684240.207>
+                    Other, 0x1016dd760, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4637491296.208>
+                      Other, 0x1016dd880, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4637332304.209>
+                        Other, 0x1016dd9a0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4314825472.210>
+                          NavigationBar, 0x1016ddac0, {{0.0, 20.0}, {375.0, 106.0}}, identifier: '生字本' <AX element pid: 48343, elementOrHash.elementID: 4311960416.211>
+                            Other, 0x1016ddbe0, {{248.0, 24.0}, {43.0, 36.0}}, label: '匯入及匯出' <AX element pid: 48343, elementOrHash.elementID: 4331543552.214>
+                              Other, 0x1016ddd00, {{248.0, 24.0}, {43.0, 36.0}} <AX element pid: 48343, elementOrHash.elementID: 4637703776.219>
+                                Button, 0x1016dde20, {{248.0, 24.0}, {43.0, 36.0}}, label: '匯入及匯出' <AX element pid: 48343, elementOrHash.elementID: 4637188672.222>
+                                  Button, 0x1016ddf40, {{248.0, 24.0}, {43.0, 36.0}} <AX element pid: 48343, elementOrHash.elementID: 4637485136.225>
+                                    Image, 0x1016de060, {{257.5, 26.5}, {24.0, 31.0}}, identifier: 'square.and.arrow.up.on.square', label: '分享多個' <AX element pid: 48343, elementOrHash.elementID: 4637309360.228>
+                            Other, 0x1016de180, {{307.0, 24.0}, {48.0, 36.0}}, label: '多選' <AX element pid: 48343, elementOrHash.elementID: 4339113472.215>
+                              Other, 0x1016de2a0, {{307.0, 24.0}, {48.0, 36.0}} <AX element pid: 48343, elementOrHash.elementID: 4637333504.220>
+                                Button, 0x1016de3c0, {{307.0, 24.0}, {48.0, 36.0}}, label: '多選' <AX element pid: 48343, elementOrHash.elementID: 4637457792.223>
+                            StaticText, 0x1016de4e0, {{16.0, 77.5}, {97.0, 41.0}}, label: '生字本' <AX element pid: 48343, elementOrHash.elementID: 4637175856.216>
+                          Other, 0x1016de600, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4314226976.212>
+                            Other, 0x1016df9b0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4314798000.217>
+                              Other, 0x1016dfad0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4314788800.221>
+                                Other, 0x1016dfbf0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4312745312.224>
+                                  CollectionView, 0x1016dfd10, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4330287104.226>
+                                    Other, 0x1016dfe30, {{-16.0, -1208.0}, {407.0, 1464.5}} <AX element pid: 48343, elementOrHash.elementID: 4852666080.229>
+                                    Other, 0x1016dff50, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4312469664.230>
+                                    Other, 0x1016e0070, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4312469248.231>
+                                    Cell, 0x1016e0190, {{16.0, 126.0}, {343.0, 52.0}} <AX element pid: 48343, elementOrHash.elementID: 4339193856.232>
+                                      Other, 0x1016e02b0, {{16.0, 126.0}, {343.0, 52.0}} <AX element pid: 48343, elementOrHash.elementID: 4637100320.239>
+                                        Other, 0x1016e03d0, {{16.0, 126.0}, {343.0, 52.0}} <AX element pid: 48343, elementOrHash.elementID: 4637100816.246>
+                                      Other, 0x1016e04f0, {{16.0, 126.0}, {343.0, 52.0}} <AX element pid: 48343, elementOrHash.elementID: 4637098880.240>
+                                        Other, 0x1016e0610, {{16.0, 126.0}, {343.0, 52.0}} <AX element pid: 48343, elementOrHash.elementID: 4339433472.247>
+                                          Other, 0x1016e0730, {{16.0, 126.0}, {343.0, 52.0}} <AX element pid: 48343, elementOrHash.elementID: 4312739424.252>
+                                            Button, 0x1016e0850, {{16.0, 126.0}, {343.0, 52.0}}, identifier: 'chooseNotebooks', label: '生字表、預設生字表' <AX element pid: 48343, elementOrHash.elementID: 4312738528.255>
+                                              StaticText, 0x1016e0970, {{32.0, 141.8}, {51.0, 20.5}}, label: '生字表' <AX element pid: 48343, elementOrHash.elementID: 4853260128.258>
+                                              StaticText, 0x1016e0a90, {{238.0, 141.8}, {84.5, 20.5}}, label: '預設生字表' <AX element pid: 48343, elementOrHash.elementID: 4312262528.259>
+                                              Image, 0x1016e0bb0, {{333.5, 145.0}, {8.5, 14.5}}, identifier: 'chevron.right', label: '往前' <AX element pid: 48343, elementOrHash.elementID: 4312262960.260>
+                                    Cell, 0x1016e0cd0, {{16.0, 178.0}, {343.0, 61.0}} <AX element pid: 48343, elementOrHash.elementID: 4339987456.233>
+                                      Other, 0x1016e0df0, {{16.0, 178.0}, {343.0, 61.0}} <AX element pid: 48343, elementOrHash.elementID: 4314720464.241>
+                                        Other, 0x1016e0f10, {{16.0, 178.0}, {343.0, 61.0}} <AX element pid: 48343, elementOrHash.elementID: 4314720960.248>
+                                      Other, 0x1016e1030, {{16.0, 178.0}, {343.0, 61.0}} <AX element pid: 48343, elementOrHash.elementID: 4637134432.242>
+                                        Other, 0x1016e1150, {{16.0, 178.0}, {343.0, 61.0}} <AX element pid: 48343, elementOrHash.elementID: 4345520128.249>
+                                          Other, 0x1016e1270, {{16.0, 178.0}, {343.0, 61.0}} <AX element pid: 48343, elementOrHash.elementID: 4312640432.253>
+                                            SegmentedControl, 0x1016e1390, {{32.0, 193.0}, {311.0, 31.0}}, identifier: 'notebookCategory' <AX element pid: 48343, elementOrHash.elementID: 4314838992.256>
+                                              Button, 0x1016e14b0, {{32.0, 193.0}, {77.0, 32.0}}, label: '語言' <AX element pid: 48343, elementOrHash.elementID: 4852785264.261>
+                                              Button, 0x1016e15d0, {{109.0, 193.0}, {78.0, 32.0}}, label: '發音' <AX element pid: 48343, elementOrHash.elementID: 4852790336.262>
+                                              Button, 0x1016e16f0, {{187.0, 193.0}, {77.0, 32.0}}, label: '單字' <AX element pid: 48343, elementOrHash.elementID: 4852698944.263>
+                                              Button, 0x1016e1810, {{264.0, 193.0}, {79.0, 32.0}}, label: '隱藏', Selected <AX element pid: 48343, elementOrHash.elementID: 4852630160.264>
+                                    Other, 0x1016e1930, {{32.0, 177.0}, {311.0, 1.0}} <AX element pid: 48343, elementOrHash.elementID: 4852645696.234>
+                                    Other, 0x1016e1a50, {{-16.0, 256.5}, {407.0, 1442.5}} <AX element pid: 48343, elementOrHash.elementID: 4852675824.235>
+                                    Cell, 0x1016e1b70, {{16.0, 274.0}, {343.0, 71.0}} <AX element pid: 48343, elementOrHash.elementID: 4348990464.236>
+                                      Other, 0x1016e1c90, {{16.0, 274.0}, {343.0, 71.0}} <AX element pid: 48343, elementOrHash.elementID: 4852627040.243>
+                                        Other, 0x1016e1db0, {{16.0, 274.0}, {343.0, 71.0}} <AX element pid: 48343, elementOrHash.elementID: 4852627536.250>
+                                      Other, 0x1016e1ed0, {{16.0, 274.0}, {343.0, 71.0}} <AX element pid: 48343, elementOrHash.elementID: 4852696128.244>
+                                        Other, 0x1016e1ff0, {{16.0, 274.0}, {343.0, 71.0}} <AX element pid: 48343, elementOrHash.elementID: 4348992000.251>
+                                          Other, 0x1016e2110, {{16.0, 274.0}, {343.0, 71.0}} <AX element pid: 48343, elementOrHash.elementID: 4312689088.254>
+                                            TextView, 0x1016e2230, {{32.0, 289.0}, {311.0, 41.0}}, label: '點擊查詢結果旁的星號，即可加入所選生字表。', value: 點擊查詢結果旁的星號，即可加入所選生... <AX element pid: 48343, elementOrHash.elementID: 4339988992.257>
+                                              Other, 0x1016e2350, {{310.0, 299.0}, {30.0, 21.0}}, label: 'Vertical scroll bar, 1 page', value: 0% <AX element pid: 48343, elementOrHash.elementID: 4637377648.265>
+                                                Other, 0x1016e2470, {{337.0, 281.0}, {3.0, 36.0}} <AX element pid: 48343, elementOrHash.elementID: 4637148816.267>
+                                              Other, 0x1016e2590, {{42.0, 306.5}, {291.0, 20.5}}, label: 'Horizontal scroll bar, 1 page', value: 0% <AX element pid: 48343, elementOrHash.elementID: 4637130624.266>
+                                                Other, 0x1016e26b0, {{45.0, 324.0}, {285.0, 3.0}} <AX element pid: 48343, elementOrHash.elementID: 4637342448.268>
+                                    Other, 0x1016e27d0, {{342.0, 126.0}, {30.0, 458.0}}, label: 'Vertical scroll bar, 1 page', value: 0% <AX element pid: 48343, elementOrHash.elementID: 4312575712.237>
+                                      Other, 0x1016e28f0, {{369.0, 574.0}, {3.0, 7.0}} <AX element pid: 48343, elementOrHash.elementID: 4312576176.245>
+                                    Other, 0x1016e2a10, {{342.0, 126.0}, {30.0, 458.0}}, label: 'Vertical scroll bar, 1 page', value: 0% <AX element pid: 48343, elementOrHash.elementID: 4312575712.237>
+                                      Other, 0x1016e2b30, {{369.0, 574.0}, {3.0, 7.0}} <AX element pid: 48343, elementOrHash.elementID: 4312576176.245>
+                          Other, 0x1016e2c50, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4312401328.213>
+                            Other, 0x1016e2d70, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4637176976.218>
+              Other, 0x1016e2e90, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4313011696.11>
+                Other, 0x1016e2fb0, {{0.0, 0.0}, {375.0, 667.0}} <AX element pid: 48343, elementOrHash.elementID: 4312953760.13>
+                  TabBar, 0x1016e30d0, {{0.0, 584.0}, {375.0, 83.0}}, label: 'Tab Bar' <AX element pid: 48343, elementOrHash.elementID: 4313665056.16>
+                    Other, 0x1016e31f0, {{21.0, 584.0}, {333.0, 62.0}} <AX element pid: 48343, elementOrHash.elementID: 4313035984.19>
+                      Other, 0x1016e3310, {{21.0, 584.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313183056.22>
+                      Other, 0x1016e3430, {{21.0, 584.0}, {333.0, 62.0}} <AX element pid: 48343, elementOrHash.elementID: 4313108928.23>
+                        Button, 0x1016e3550, {{25.0, 588.0}, {94.0, 54.0}}, label: '字典' <AX element pid: 48343, elementOrHash.elementID: 4337890304.28>
+                        Button, 0x1016e3670, {{102.0, 588.0}, {94.0, 54.0}}, identifier: 'star', label: '生字本', Selected <AX element pid: 48343, elementOrHash.elementID: 4337926144.29>
+                          Image, 0x1016e3790, {{134.0, 593.0}, {29.5, 28.5}}, identifier: 'star.fill', label: 'favorite' <AX element pid: 48343, elementOrHash.elementID: 4313716544.38>
+                        Button, 0x1016e38b0, {{179.0, 588.0}, {94.0, 54.0}}, identifier: 'map', label: '地圖' <AX element pid: 48343, elementOrHash.elementID: 4337942528.30>
+                          Image, 0x1016e39d0, {{211.0, 595.0}, {29.5, 26.5}}, identifier: 'map.fill', label: 'show map' <AX element pid: 48343, elementOrHash.elementID: 4313719984.39>
+                        Button, 0x1016e3af0, {{256.0, 588.0}, {94.0, 54.0}}, identifier: 'gearshape', label: '設定' <AX element pid: 48343, elementOrHash.elementID: 4346189312.31>
+                          Image, 0x1016e3c10, {{289.0, 594.0}, {28.0, 28.0}}, identifier: 'gearshape.fill', label: 'gearshape.fill' <AX element pid: 48343, elementOrHash.elementID: 4314041360.40>
+                      Other, 0x1016e3d30, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313680432.24>
+                        Other, 0x1016e3e50, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313221328.32>
+                          Other, 0x1016e3f70, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4312899872.41>
+                          Other, 0x1016e4090, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313185472.42>
+                            Other, 0x1016e41b0, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4312960176.47>
+                              Other, 0x1016e42d0, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313091952.50>
+                                Other, 0x1016e43f0, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313214768.53>
+                              Other, 0x1016e4510, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313009840.51>
+                            Other, 0x1016e4630, {{102.0, 588.0}, {94.0, 54.0}} <AX element pid: 48343, elementOrHash.elementID: 4313034560.48>
+                Other, 0x1016e4750, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4313155744.14>
+                  Other, 0x1016e4870, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4313722704.17>
+                    Other, 0x1016e4990, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4313198368.20>
+                      Other, 0x1016e4ab0, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4314090032.25>
+                        Other, 0x1016e4bd0, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4314090960.33>
+                          Other, 0x1016e4cf0, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4314102048.43>
+                      Other, 0x1016e4e10, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4314095248.26>
+                        Other, 0x1016e4f30, {{0.0, 584.0}, {375.0, 83.0}} <AX element pid: 48343, elementOrHash.elementID: 4314103904.34>
