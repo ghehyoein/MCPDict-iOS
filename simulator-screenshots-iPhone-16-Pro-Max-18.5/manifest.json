@@ -1,0 +1,140 @@
+[
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "48EAB625-4D6F-4F4B-9F48-BF4F1E2E1947.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "3306語言點完整地圖_0_EF0A3E5D-A970-4222-8BC9-60C230966C79.png",
+        "timestamp" : 1794117984.952
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "35DAA392-C580-4E76-A7CB-CDA77A96E705.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖文字原生選取_0_32677B22-3EEE-436E-BF97-6B9EFFE01A8C.png",
+        "timestamp" : 1794118247.669
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "3B0066FF-D210-4914-B57C-30294A263675.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "原生文字選區及系統選單_0_C1CBAB86-9419-446E-8792-F17BB2B768EA.png",
+        "timestamp" : 1794118262.074
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNativeTextSelectionAndDefaultBookNavigation()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNativeTextSelectionAndDefaultBookNavigation"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "F843DF2F-003B-46DF-A1AE-8439B2773FF3.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "生字本滾動後浮動操作_0_4D9A7260-AADD-41CE-B30B-2715D6FB7EF9.png",
+        "timestamp" : 1794118288.382
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testNotebookActionsFloatAndLanguageChoiceDoesNotOpenDetails"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "6992841E-ED49-49F7-B918-D4065C5C0A54.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "滾動後固定選字區及頂部遮罩_0_3E41476C-FD79-40ED-9085-68D55C540D68.png",
+        "timestamp" : 1794118310.415
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testPinnedHeaderPreservesInputAndLanguageMenu"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "21608E78-B599-43F5-959B-F8A42D8BA604.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "末級邯彰直接補入贊皇_0_7AD8A781-9C6C-494F-83C2-3D0660986A6E.png",
+        "timestamp" : 1794118346.301
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "05CAE4EE-9A6F-4148-A306-606FAAB9FED0.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "南通補入潤州過渡色子目錄_0_F57350A3-607C-4F22-A3E8-DA386A1446CD.png",
+        "timestamp" : 1794118325.231
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testRecordedTransitionsAppearUnderBranchesAndDirectlyInTerminalRegions"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "719237D7-E78D-4EE0-893B-AC56B0E367F6.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "共用語言選單及原生地音開關_0_0013F1FE-2B8D-473A-9DD1-C3AEA2F7E057.png",
+        "timestamp" : 1794118422.283
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testSharedLanguageStateAndIndependentDownloads()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testSharedLanguageStateAndIndependentDownloads"
+  },
+  {
+    "attachments" : [
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "78D63D07-A797-43DB-AEF1-041A4073C479.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "地圖語言點放大後的固定分隔線_0_EE06F621-7AE9-4260-B2AB-13CFAF0AC8C8.png",
+        "timestamp" : 1794118464.845
+      },
+      {
+        "configurationName" : "Test Scheme Action",
+        "deviceId" : "FD734AE7-691C-4F87-B0AF-3CB550157F3F",
+        "deviceName" : "MCPDict-iPhone-16-Pro-Max-18.5",
+        "exportedFileName" : "9051FFCA-D96F-476A-8C5C-32726C039FFC.png",
+        "isAssociatedWithFailure" : false,
+        "suggestedHumanReadableName" : "字體大小內置預覽_0_99DF2EF6-8854-42DE-A5F5-7ADD82471214.png",
+        "timestamp" : 1794118463.685
+      }
+    ],
+    "testIdentifier" : "NavigationTests/testThreeIndependentFontSliders()",
+    "testIdentifierURL" : "test://com.apple.xcode/MCPDictIOS/MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders"
+  }
+]
