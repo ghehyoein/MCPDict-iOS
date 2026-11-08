@@ -1,18 +1,26 @@
-name: Dispatch final iPad handoff validation
+name: Export full-screen iPad review screenshots
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
-  actions: write
-  contents: read
+  actions: read
+  contents: write
 jobs:
-  validate:
+  evidence:
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ghehyoein/MCPDict-iOS
     steps:
-      - name: Check candidate and start ten device and system combinations
+      - uses: actions/checkout@v4
+      - name: Export completed iPad Air screenshots
         run: |
-          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/codex/performance-selection-tables --jq .sha)" = 57ce732b18284a0656a7c1e911216944665ca449
-          gh workflow run ios.yml --ref codex/performance-selection-tables
+          gh run download 42448620536 --name simulator-screenshots-iPad-Air-11-inch-M3-18.5 --dir evidence
+          cd evidence
+          git init -b codex/performance-093-ipad-review
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m 'Full-screen iPad screenshots of the 0.9.3 app'
+          git remote add origin https://github.com/ghehyoein/MCPDict-iOS.git
+          git -c http.https://github.com/.extraheader="$(git -C .. config http.https://github.com/.extraheader)" push origin HEAD:refs/heads/codex/performance-093-ipad-review
