@@ -1,29 +1,16 @@
-name: Check requested simulator device profiles
+name: Dispatch performance release validation
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
+  actions: write
   contents: read
 jobs:
-  profiles:
-    runs-on: macos-15
-    timeout-minutes: 10
+  validate:
+    runs-on: ubuntu-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ghehyoein/MCPDict-iOS
     steps:
-      - name: Verify Home-button iPhone and both iPad designs on both runtimes
-        run: |
-          python3 - <<'PYPROFILES'
-          import json,subprocess
-          types=json.loads(subprocess.check_output(['xcrun','simctl','list','devicetypes','--json']))['devicetypes']
-          names=['iPhone SE (3rd generation)','iPad (9th generation)','iPad Air 11-inch (M3)']
-          for name in names:
-              matches=[x for x in types if x['name']==name or x['name'].startswith(name+' (')]
-              assert matches, f'Missing device profile: {name}'
-              device=matches[0]
-              print('PROFILE',json.dumps(device,ensure_ascii=False),flush=True)
-              for version in ['18-5','26-2']:
-                  runtime='com.apple.CoreSimulator.SimRuntime.iOS-'+version
-                  identifier=subprocess.check_output(['xcrun','simctl','create','Profile-'+version+'-'+name,device['identifier'],runtime],text=True).strip()
-                  print('SUPPORTED',name,version,identifier,flush=True)
-          PYPROFILES
+      - name: Start the existing ten-combination validation matrix
+        run: gh workflow run ios.yml --ref codex/performance-selection-tables
