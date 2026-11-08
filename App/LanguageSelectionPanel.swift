@@ -6,7 +6,7 @@ struct SelectionMenuButton: View {
     @Binding var expanded: Bool
     var body: some View {
         Button { expanded.toggle() } label: {
-            HStack { Text(ui("已選 \(count) 個語言點")); Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down") }
+            HStack { Text(ui("已選 \(count) 個語言點")); Spacer(); Image(systemName: expanded ? "chevron.up" : "chevron.down") }.contentShape(Rectangle())
         }.buttonStyle(.borderless).accessibilityIdentifier(entryID)
     }
 }
