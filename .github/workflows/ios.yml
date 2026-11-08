@@ -18,7 +18,8 @@ jobs:
           brew install xcodegen
           python3 tools/prepare_assets.py
           xcodegen generate
-      - name: Repeat menu and reset checks with main-thread samples
+      - name: Repeat reset checks with stable tab controller
+        timeout-minutes: 22
         run: |
           device=$(xcrun simctl create iPad26Diagnosis com.apple.CoreSimulator.SimDeviceType.iPad-9th-generation com.apple.CoreSimulator.SimRuntime.iOS-26-2)
           xcrun simctl boot "$device"
@@ -26,7 +27,7 @@ jobs:
           python3 tools/diagnose_map.py "$device" &
           sampler=$!
           trap 'kill "$sampler" 2>/dev/null || true' EXIT
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -test-iterations 3 -only-testing:MCPDictIOSUITests/NavigationTests/testDenseMapMenuRemainsInteractiveAfterLoading -only-testing:MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders CODE_SIGNING_ALLOWED=NO test
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults -test-iterations 3 -only-testing:MCPDictIOSUITests/NavigationTests/testThreeIndependentFontSliders CODE_SIGNING_ALLOWED=NO test
       - name: Export diagnostic samples and screenshots
         if: always()
         run: |

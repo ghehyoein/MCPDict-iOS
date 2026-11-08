@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 struct SettingsView: View {
     @EnvironmentObject var model: AppModel
@@ -52,9 +51,9 @@ struct SettingsView: View {
                 }
             }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
         }.sheet(isPresented: $referenceSettings) { ReferenceSettingsView().dynamicTypeSize(AppTypography.size(fontSize)) }
-        .background {
-            ResetSettingsConfirmation(isPresented: $confirmReset, confirm: model.resetSettings)
-                .frame(width: 0, height: 0)
+        .alert(ui("是否還原默認設定？"), isPresented: $confirmReset) {
+            Button(ui("取消"), role: .cancel) {}
+            Button(ui("還原"), role: .destructive) { model.resetSettings() }
         }
     }
     private func sizeSlider(_ label: String, _ size: Binding<Double>, range: ClosedRange<Double>, identifier: String, sample: Int) -> some View {
@@ -86,22 +85,3 @@ struct SettingsView: View {
     }
 }
 
-
-// Reset recreates the root view and its presentation hierarchy. Finish the
-// native alert dismissal before changing that identity, including on iPadOS.
-private struct ResetSettingsConfirmation: UIViewControllerRepresentable {
-    @Binding var isPresented: Bool
-    let confirm: () -> Void
-    func makeUIViewController(context: Context) -> UIViewController { UIViewController() }
-    func updateUIViewController(_ controller: UIViewController, context: Context) {
-        guard isPresented, controller.view.window != nil, controller.presentedViewController == nil else { return }
-        let alert = UIAlertController(title: ui("是否還原默認設定？"), message: nil, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: ui("取消"), style: .cancel) { _ in isPresented = false })
-        alert.addAction(UIAlertAction(title: ui("還原"), style: .destructive) { [weak controller] _ in
-            isPresented = false
-            guard let controller else { confirm(); return }
-            controller.dismiss(animated: true, completion: confirm)
-        })
-        controller.present(alert, animated: true)
-    }
-}
