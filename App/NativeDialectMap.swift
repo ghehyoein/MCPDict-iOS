@@ -110,8 +110,28 @@ struct NativeDialectMap: UIViewRepresentable {
 
 final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     let nameButton = UIButton(type: .system)
-    let readingText = UITextView()
-    private let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+    private(set) var readingView: UITextView?
+    private var readingBlur: UIVisualEffectView?
+    var readingText: UITextView {
+        if let readingView { return readingView }
+        let text = UITextView()
+        text.adjustsFontForContentSizeCategory = false
+        text.isEditable = false; text.isSelectable = true
+        text.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
+        text.textContainer.lineFragmentPadding = 0
+        text.textColor = .label; text.backgroundColor = .clear
+        text.layer.cornerRadius = 3
+        text.textContainer.maximumNumberOfLines = 0
+        text.textContainer.lineBreakMode = .byCharWrapping
+        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        blur.isUserInteractionEnabled = false
+        blur.layer.cornerRadius = 4; blur.clipsToBounds = true
+        insertSubview(blur, at: 0); addSubview(text)
+        readingView = text; readingBlur = blur
+        if window != nil { MapTextGestureGate.install(above: self) }
+        accessibilityElements = [text, nameButton]
+        return text
+    }
     private let gradient = CAGradientLayer()
     private var choose: (() -> Void)?
     private var previousReading: String?
@@ -123,38 +143,26 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         // Only the map slider sizes annotation text; map controls keep their normal traits.
         traitOverrides.preferredContentSizeCategory = .large
         nameButton.titleLabel?.adjustsFontForContentSizeCategory = false
-        readingText.adjustsFontForContentSizeCategory = false
-        readingText.isEditable = false; readingText.isSelectable = true
-        readingText.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
-        readingText.textContainer.lineFragmentPadding = 0
         nameButton.layer.insertSublayer(gradient, at: 0)
         nameButton.layer.cornerRadius = 5; nameButton.clipsToBounds = true
         nameButton.setTitleColor(.white, for: .normal)
-        readingText.textColor = .label
-        readingText.backgroundColor = .clear
-        blur.isUserInteractionEnabled = false
-        blur.layer.cornerRadius = 4; blur.clipsToBounds = true
-        insertSubview(blur, at: 0)
-        readingText.layer.cornerRadius = 3
-        readingText.textContainer.maximumNumberOfLines = 0
-        readingText.textContainer.lineBreakMode = .byCharWrapping
-        addSubview(nameButton); addSubview(readingText)
+        addSubview(nameButton)
         nameButton.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
         isUserInteractionEnabled = true
         isAccessibilityElement = false
-        accessibilityElements = [readingText, nameButton]
+        accessibilityElements = [nameButton]
 
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        if window != nil { MapTextGestureGate.install(above: self) }
+        if window != nil && readingView != nil { MapTextGestureGate.install(above: self) }
     }
     // MapKit handles annotation selection itself. Explicit child hit testing keeps the
     // pronunciation and name controls interactive, including overlapping label bounds.
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
-        for control in [readingText as UIView, nameButton as UIView] where !control.isHidden {
+        for control in [readingView as UIView?, nameButton as UIView?].compactMap({ $0 }) where !control.isHidden {
             if let hit = control.hitTest(convert(point, to: control), with: event) { return hit }
         }
         return nil
@@ -169,6 +177,17 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         nameButton.backgroundColor = TableColors.uiColor(colors.first ?? "#008080")
         gradient.colors = (colors.count == 1 ? colors + colors : colors).map { TableColors.uiColor($0).cgColor }
         gradient.startPoint = CGPoint(x: 0, y: 0.5); gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        if point.reading.isEmpty {
+            previousReading = nil
+            readingView?.isHidden = true; readingBlur?.isHidden = true
+            let size = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
+            bounds = CGRect(x: 0, y: 0, width: size.width + 12, height: max(size.height, CGFloat(labelSize) * 1.4))
+            nameButton.frame = bounds; gradient.frame = nameButton.bounds
+            accessibilityElements = [nameButton]
+            collisionMode = .rectangle
+            return
+        }
+        accessibilityElements = [readingText, nameButton]
         let textChanged = previousReading != point.reading || previousParts != point.toneParts || previousFontSize != fontSize
         if textChanged {
         let text = NSMutableAttributedString(string: "")
@@ -213,7 +232,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         nameButton.frame = CGRect(x: (width-nameWidth)/2, y: readingHeight, width: nameWidth, height: nameHeight)
         readingText.frame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
         readingText.isScrollEnabled = ceil(readingRect.height) + 8 > readingHeight
-        blur.frame = readingText.frame; blur.isHidden = readingText.isHidden
+        readingBlur?.frame = readingText.frame; readingBlur?.isHidden = readingText.isHidden
         gradient.frame = nameButton.bounds
         collisionMode = .rectangle
     }

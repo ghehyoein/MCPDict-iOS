@@ -4,19 +4,16 @@ struct SelectionTree: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.tableDownloadStates) private var downloadStates
     @Environment(\.mapLabelSize) private var mapLabelSize
-    let tables: [TablePackage]
+    let index: SelectionIndex
     let grouping: TableGrouping
-    var roles: Set<PersonRole> = Set(PersonRole.allCases)
     var badgeGrouping: TableGrouping? = nil
     var scope: LanguageSelectionScope = .points
     var selectedRegion: Binding<String?> = .constant(nil)
     var filterQuery = ""
-    var additionalPaths = [String: [[String]]]()
     var inferredTransitionIDs = Set<String>()
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
     @Binding var expanded: Set<String>
-    @State private var index = SelectionIndex()
     @State private var matching: Set<String>?
     @State private var rows = [SelectionIndex.Row]()
     var body: some View {
@@ -57,15 +54,11 @@ struct SelectionTree: View {
                 }.padding(.leading, CGFloat(row.node.depth) * 18).padding(.vertical, 4)
             }
         }.onAppear { rebuild() }
-            .onChange(of: tables) { _, _ in rebuild() }
-            .onChange(of: grouping) { _, _ in expanded = []; rebuild() }
-            .onChange(of: roles) { _, _ in expanded = []; rebuild() }
+            .onChange(of: index.revision) { _, _ in rebuild() }
             .onChange(of: expanded) { _, _ in refreshRows() }
-            .onChange(of: additionalPaths) { _, _ in rebuild() }
             .onChange(of: filterQuery) { _, _ in matching = index.matches(filterQuery); refreshRows() }
     }
     private func rebuild() {
-        index = SelectionIndex(tables: tables, grouping: grouping, roles: roles, additionalPaths: additionalPaths)
         matching = index.matches(filterQuery)
         refreshRows()
     }
@@ -92,6 +85,7 @@ struct LanguageDropdown: View {
     var showsDone = true
     let done: () -> Void
     @State private var eligible = [TablePackage]()
+    @State private var index = SelectionIndex()
     @State private var additionalPaths = [String: [[String]]]()
     @State private var inferredTransitionIDs = Set<String>()
     private var treeScope: LanguageSelectionScope {
@@ -105,16 +99,16 @@ struct LanguageDropdown: View {
             additionalPaths = transitions.additionalPaths(eligible)
             inferredTransitionIDs = Set(eligible.filter { transitions.needsAsterisk($0) }.map(\.id))
         } else { additionalPaths = [:]; inferredTransitionIDs = [] }
+        index = state.indexCache.index(tables: eligible, grouping: state.grouping, roles: state.roles, paths: additionalPaths)
         if prune { names = names.intersection(Set(eligible.map(\.name))) }
         if updateRegion, state.scope == .terminalGroups, let region = state.region {
-            let index = SelectionIndex(tables: eligible, grouping: state.grouping, roles: state.roles, additionalPaths: additionalPaths)
             if let ids = index.nodes["g:" + region]?.ids { names = Set(eligible.filter { ids.contains($0.id) }.map(\.name)) }
         }
         restoreRegion()
     }
     private func restoreRegion() {
         guard state.scope == .terminalGroups else { return }
-        state.region = RegionSelection.restore(tables: eligible, grouping: state.grouping, names: names, saved: state.region, roles: state.roles, additionalPaths: additionalPaths)
+        state.region = index.region(names: names, saved: state.region)
         if state.region == nil, !names.isEmpty { names = [] }
     }
     private var selection: Binding<Set<String>> {
@@ -143,11 +137,11 @@ struct LanguageDropdown: View {
                                     Text(ui("維護人"))
                                 }.fixedSize().contentTransition(.identity)
                                     .transaction { $0.animation = nil; $0.disablesAnimations = true }
-                            }.buttonStyle(.borderless).accessibilityIdentifier("personRole-維護人")
+                            }.buttonStyle(StaticCheckboxButtonStyle()).accessibilityIdentifier("personRole-維護人")
                         }
                         Spacer(minLength: 0)
                         Picker(ui("分類方式"), selection: $state.grouping) {
-                            ForEach(state.groupingChoices) { Text(ui($0.rawValue)).tag($0) }
+                            ForEach(state.groupingChoices) { Text(ui($0.displayName)).tag($0) }
                         }.labelsHidden().pickerStyle(.menu).accessibilityIdentifier("classificationPickerToggle")
                     }
                 }
@@ -157,8 +151,8 @@ struct LanguageDropdown: View {
                     .font(.caption).accessibilityIdentifier("transitionExplanation")
             }
             ScrollView {
-                SelectionTree(tables: eligible, grouping: state.grouping, roles: state.roles, badgeGrouping: palette,
-                              scope: treeScope, selectedRegion: $state.region, filterQuery: state.filter, additionalPaths: additionalPaths, inferredTransitionIDs: inferredTransitionIDs,
+                SelectionTree(index: index, grouping: state.grouping, badgeGrouping: palette,
+                              scope: treeScope, selectedRegion: $state.region, filterQuery: state.filter, inferredTransitionIDs: inferredTransitionIDs,
                               selection: selection, inspect: inspect, expanded: $state.expandedNodes)
                     .frame(maxWidth: .infinity).id(state.grouping.rawValue)
             }.frame(height: 200).accessibilityIdentifier("languageTreeScroll")
@@ -180,7 +174,7 @@ struct LanguageDropdown: View {
         .onChange(of: state.includeTransitions) { _, _ in refresh(prune: true, updateRegion: true) }
         .onChange(of: model.availableTables) { _, _ in refresh(prune: false, updateRegion: true) }
         .onChange(of: state.flags) { _, _ in refresh(prune: true) }
-        .onChange(of: state.roles) { _, _ in refresh(prune: true) }
+        .onChange(of: state.roles) { _, _ in state.expandedNodes = []; refresh(prune: true) }
         .onChange(of: names) { _, _ in restoreRegion() }
     }
 }

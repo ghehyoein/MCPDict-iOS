@@ -31,13 +31,14 @@ enum UpstreamTables {
         }
         return data
     }
-    static func catalog() async throws -> TableCatalog {
+    static func catalog(cached: TableCatalog? = nil, fetch: @escaping @Sendable (URL) async throws -> Data = { try await UpstreamTables.get($0) }) async throws -> TableCatalog {
         struct Head: Decodable { let sha: String }
-        let head = try JSONDecoder().decode(Head.self, from: await get(URL(string: "https://api.github.com/repos/osfans/MCPDict/commits/master")!))
+        let head = try JSONDecoder().decode(Head.self, from: await fetch(URL(string: "https://api.github.com/repos/osfans/MCPDict/commits/master")!))
         guard head.sha.range(of: "^[0-9a-f]{40}$", options: .regularExpression) != nil else { throw DictionaryFailure(message: "上游版本格式錯誤") }
+        if let cached, cached.sourceCommit == head.sha { try cached.validate(); return cached }
         let base = URL(string: "https://raw.githubusercontent.com/osfans/MCPDict/\(head.sha)/tools/tables/output/")!
-        async let treeData = get(URL(string: "https://api.github.com/repos/osfans/MCPDict/git/trees/\(head.sha)?recursive=1")!)
-        async let detailsData = get(base.appendingPathComponent("_詳情.json"))
+        async let treeData = fetch(URL(string: "https://api.github.com/repos/osfans/MCPDict/git/trees/\(head.sha)?recursive=1")!)
+        async let detailsData = fetch(base.appendingPathComponent("_詳情.json"))
         let tree = try JSONDecoder().decode(Tree.self, from: await treeData)
         guard tree.truncated != true else { throw DictionaryFailure(message: "上游目錄過大，無法安全取得完整字表清單") }
         guard let metadata = try JSONSerialization.jsonObject(with: await detailsData) as? [String: [String: Any]] else { throw DictionaryFailure(message: "上游分區資料格式變更") }
@@ -94,6 +95,7 @@ enum UpstreamTables {
         _ = try db.rows("INSERT INTO info VALUES (?,?)", [table.name, table.fullName])
         _ = try db.rows("BEGIN")
         var count = 0
+        try db.batch("INSERT INTO langs VALUES (?,?,?,?)") { insert in
         for line in text.components(separatedBy: "\n") {
             try Task.checkCancellation()
             let line = line.hasSuffix("\r") ? String(line.dropLast()) : line
@@ -101,8 +103,9 @@ enum UpstreamTables {
             let fields = line.components(separatedBy: "\t")
             guard fields.count >= 2, !fields[0].isEmpty, !fields[1].isEmpty else { throw DictionaryFailure(message: "\(table.name)：字表行格式不相容") }
             let characters = fields[0].map(String.init).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.joined(separator: " ")
-            _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", [characters, table.name, fields[1], fields.dropFirst(2).joined(separator: "\t")])
+            try insert([characters, table.name, fields[1], fields.dropFirst(2).joined(separator: "\t")])
             count += 1
+        }
         }
         guard count > 0 else { throw DictionaryFailure(message: "\(table.name)：字表沒有讀音") }
         _ = try db.rows("COMMIT")

@@ -10,6 +10,7 @@ struct SettingsView: View {
     @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
     @AppStorage(AppTypography.readingKey) private var readingSize = 16.0
     @State private var referenceSettings = false
+    @State private var confirmReset = false
     var body: some View {
         NavigationStack {
             Form {
@@ -45,11 +46,15 @@ struct SettingsView: View {
                 }
                 MapSettingsSection()
                 Section {
-                    Button(ui("還原默認設定"), role: .destructive) { model.resetSettings() }
+                    Button(ui("還原默認設定"), role: .destructive) { confirmReset = true }
                         .foregroundStyle(.red).accessibilityIdentifier("resetSettings")
                 }
             }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
         }.sheet(isPresented: $referenceSettings) { ReferenceSettingsView().dynamicTypeSize(AppTypography.size(fontSize)) }
+        .alert(ui("是否還原默認設定？"), isPresented: $confirmReset) {
+            Button(ui("取消"), role: .cancel) {}
+            Button(ui("還原"), role: .destructive) { model.resetSettings() }
+        }
     }
     private func sizeSlider(_ label: String, _ size: Binding<Double>, range: ClosedRange<Double>, identifier: String, sample: Int) -> some View {
         VStack(alignment: .leading) {

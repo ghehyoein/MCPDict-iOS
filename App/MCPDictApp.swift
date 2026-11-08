@@ -46,7 +46,7 @@ final class AppModel: ObservableObject {
     @Published var tableDetail: TablePackage?
     @Published var installed: TableInstallation? { didSet { rebuildTableLookup() } }
     @Published var catalog: TableCatalog? { didSet { rebuildTableLookup() } }
-    @Published var languages = [String]()
+    @Published var languages = [String]() { didSet { if selectedLanguages == nil { selectedLanguageNames = Set(languages) } } }
     @Published var results = [Reading]() { didSet { characterGroupCache = [:]; homophoneCache = nil } }
     @Published var resultMode: SearchMode = .character
     @Published var resultQuery = ""
@@ -68,7 +68,8 @@ final class AppModel: ObservableObject {
     @Published var query = ""
     @Published var mode: SearchMode = .character
     @Published var language = ""
-    @Published var selectedLanguages: [String]?
+    @Published var selectedLanguages: [String]? { didSet { selectedLanguageNames = Set(selectedLanguages ?? languages) } }
+    private(set) var selectedLanguageNames = Set<String>()
     @Published var error: String?
     @Published var status = "尚未下載詞典"
     @Published var updating = false
@@ -256,6 +257,7 @@ final class AppModel: ObservableObject {
         } else if !languages.contains(language) { language = "" }
     }
     func selectLanguages(_ names: Set<String>) {
+        guard selectedLanguageNames != names || selectedLanguages == nil else { return }
         selectedLanguages = names.sorted()
         language = ui("已選 \(names.count) 個語言點")
         selectionCache.save(names, for: "dictionary")
@@ -267,7 +269,9 @@ final class AppModel: ObservableObject {
     private(set) var availableTables = [TablePackage]()
     private(set) var downloadStates = [String: TableDownloadState]()
     private var tableLookup = [String: TablePackage]()
+    private(set) var tableRevision = 0
     private func rebuildTableLookup() {
+        tableRevision += 1
         var lookup = [String: TablePackage]()
         for table in installed?.tables ?? [] { lookup[table.name] = table }
         for table in catalog?.tables ?? [] { lookup[table.name] = table }
@@ -471,7 +475,7 @@ struct SearchView: View {
                             .focused($searchFocused).onSubmit { submitQuery() }
                         Button(ui("查詢")) { submitQuery() }.disabled(model.searching)
                     }
-                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { Set(model.selectedLanguages ?? model.languages) }, set: { model.selectLanguages($0) }), state: selector, entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } })
+                    LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { model.selectedLanguageNames }, set: { model.selectLanguages($0) }), state: selector, entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } })
                 }
                 if model.searching { ProgressView(ui("查詢中…")) }
                 if model.updating { ProgressView(ui(model.status)) }
@@ -548,7 +552,7 @@ struct LanguageView: View {
         NavigationStack {
             VStack {
                 Picker(ui("分類方式"), selection: $grouping) {
-                    ForEach(TableGrouping.allCases) { Text(ui($0.rawValue)).tag($0) }
+                    ForEach(TableGrouping.allCases) { Text(ui($0.displayName)).tag($0) }
                 }.pickerStyle(.menu).padding(.horizontal)
                 Button(ui("全部已下載語言")) { model.language = ""; model.selectedLanguages = nil; dismiss() }
                 LanguageGroupList(tables: (model.installed?.tables ?? []).filter {

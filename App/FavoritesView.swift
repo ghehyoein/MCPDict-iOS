@@ -63,7 +63,7 @@ struct FavoritesView: View {
                             .background {
                                 if category == .language && key != currentKey {
                                     let colors = model.table(named: key).map { TableColors.hexes(TableColors.raw($0, palette == "dictionary" ? .dictionary : .atlas)) } ?? []
-                                    TableColors.gradient(colors).clipShape(RoundedRectangle(cornerRadius: 8))
+                                    TableColors.gradient(colors).clipShape(.buttonBorder)
                                 }
                             }
                     }
