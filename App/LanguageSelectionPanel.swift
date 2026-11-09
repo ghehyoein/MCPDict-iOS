@@ -40,6 +40,8 @@ struct LanguageSelectionPanel: View {
         .onChange(of: tables) { _, _ in restoreInitial(); syncCustom() }
         .onChange(of: state.custom) { _, _ in syncCustom() }
         .onChange(of: state.flags) { _, _ in syncCustom() }
+        .onChange(of: state.includeTransitions) { _, _ in syncCustom() }
+        .onChange(of: state.grouping) { _, _ in syncCustom() }
         .environmentObject(state)
     }
     private var controls: some View {
@@ -81,7 +83,7 @@ struct LanguageSelectionPanel: View {
         }
     }
     private var customNames: Set<String> {
-        state.custom.selected.intersection(Set(tables.filter(state.flags.matches).map(\.name)))
+        restoredNames(state.custom.selected)
     }
     private func syncCustom() { if state.kind == .custom { names = customNames } }
     private func restoreInitial() {

@@ -81,7 +81,7 @@ struct CustomSchemeControls: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Picker(ui("方案"), selection: $state.custom.current) {
-                ForEach(state.custom.schemes.sorted { $0.name < $1.name }) { Text($0.name).tag($0.name) }
+                ForEach(state.custom.schemes.sorted { $0.name < $1.name }) { Text($0.name == "默認方案" ? ui("默認方案") : $0.name).tag($0.name) }
             }.pickerStyle(.menu).accessibilityIdentifier("customSchemePicker")
             HStack {
                 Button(ui("新建")) { renaming = false; name = ""; naming = true }.accessibilityIdentifier("newCustomScheme")
