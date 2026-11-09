@@ -36,22 +36,22 @@ enum GuessLogic {
         let value = table.metadata?[dictionary ? "音典分區" : "地圖集二分區"] ?? ""
         return rule == .division ? String(value.split(separator: "－").first ?? "") : value
     }
-    static func geography(from: TableLocation, to: TableLocation) -> (li: Double, arrow: String) {
+    static func geography(from: TableLocation, to: TableLocation) -> (kilometers: Double, arrow: String) {
         let a = CLLocation(latitude: from.latitude, longitude: from.longitude)
         let b = CLLocation(latitude: to.latitude, longitude: to.longitude)
         let lat1 = from.latitude * .pi / 180, lat2 = to.latitude * .pi / 180
         let delta = (to.longitude - from.longitude) * .pi / 180
         let bearing = atan2(sin(delta) * cos(lat2), cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(delta)) * 180 / .pi
         let direction = Int(((bearing + 360).truncatingRemainder(dividingBy: 360) / 45).rounded()) % 8
-        return (a.distance(from: b) / 500, ["⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️"][direction])
+        return (a.distance(from: b) / 1000, ["⬆️", "↗️", "➡️", "↘️", "⬇️", "↙️", "⬅️", "↖️"][direction])
     }
-    static func won(_ guess: TablePackage, answer: TablePackage, rule: GuessRule, diameter: Double, dictionary: Bool) -> Bool {
+    static func won(_ guess: TablePackage, answer: TablePackage, rule: GuessRule, distanceKilometers: Double, dictionary: Bool) -> Bool {
         if guess.id == answer.id { return true }
         switch rule {
         case .language: return false
         case .distance:
             guard let a = guess.location, let b = answer.location else { return false }
-            return geography(from: a, to: b).li < diameter
+            return geography(from: a, to: b).kilometers < distanceKilometers
         case .province, .city, .county:
             let key = area(answer, rule: rule)
             return !key.isEmpty && area(guess, rule: rule) == key
@@ -59,6 +59,17 @@ enum GuessLogic {
             let key = division(answer, rule: rule, dictionary: dictionary)
             return !key.isEmpty && division(guess, rule: rule, dictionary: dictionary) == key
         }
+    }
+}
+
+enum GuessDistanceSettings {
+    static let key = "guessDistanceKilometers"
+    static func loadKilometers(defaults: UserDefaults = .standard) -> Double {
+        if let value = defaults.object(forKey: key) as? NSNumber { return value.doubleValue }
+        let previousLi = (defaults.object(forKey: "guessDiameter") as? NSNumber)?.doubleValue ?? 200
+        let kilometers = previousLi / 2
+        defaults.set(kilometers, forKey: key)
+        return kilometers
     }
 }
 
@@ -71,7 +82,7 @@ struct GuessGameView: View {
     @State private var level = ""
     @State private var province = ""
     @State private var division = ""
-    @AppStorage("guessDiameter") private var diameter = 200.0
+    @AppStorage(GuessDistanceSettings.key) private var distanceKilometers = 100.0
     @AppStorage("guessHintDirection") private var hintDirection = true
     @AppStorage("guessHintDistance") private var hintDistance = true
     @State private var answerCharacter = ""
@@ -148,6 +159,7 @@ struct GuessGameView: View {
                     ShareLink(item: log.reversed().joined(separator: "\n")) { Image(systemName: "square.and.arrow.up") }.disabled(log.isEmpty)
                 }
             }
+            .onAppear { distanceKilometers = GuessDistanceSettings.loadKilometers() }
             .task(id: input) { if kind == .language { await readingHint() } }
             .onChange(of: rule) { _, _ in Task { await newGame() } }
             .onChange(of: level) { _, _ in Task { await newGame() } }
@@ -169,7 +181,7 @@ struct GuessGameView: View {
                 Text(ui("全部")).tag("")
                 ForEach(Array(Set(tables.flatMap { dictionary ? $0.dictionary : $0.atlas })).sorted(), id: \.self) { Text($0).tag($0) }
             }
-            if rule == .distance { VStack { Text("\(ui("距離"))：\(Int(diameter)) \(ui("里"))"); Slider(value: $diameter, in: 10...200, step: 10) } }
+            if rule == .distance { VStack { Text("\(ui("距離"))：\(Int(distanceKilometers)) \(ui("公里"))"); Slider(value: $distanceKilometers, in: 5...100, step: 5) } }
             Toggle(ui("方向提示"), isOn: $hintDirection)
             Toggle(ui("距離提示"), isOn: $hintDistance)
         }
@@ -207,9 +219,9 @@ struct GuessGameView: View {
         guard let answer = answerTable, let guess = tables.first(where: { $0.name == language }), let a = guess.location, let b = answer.location else { return }
         let geo = GuessLogic.geography(from: a, to: b)
         var message = hintDirection ? geo.arrow : ""
-        if hintDistance { message += String(format: " %.1f %@ (%.1f%%)", geo.li, ui("里"), 100 - geo.li / 104) }
+        if hintDistance { message += String(format: " %.1f %@ (%.1f%%)", geo.kilometers, ui("公里"), 100 - geo.kilometers / 52) }
         append(message + " " + guess.fullName)
-        if GuessLogic.won(guess, answer: answer, rule: rule, diameter: diameter, dictionary: dictionary) {
+        if GuessLogic.won(guess, answer: answer, rule: rule, distanceKilometers: distanceKilometers, dictionary: dictionary) {
             append(ui("答對了！恭喜！") + " " + answer.fullName); answerTable = nil
         } else { append(ui("不是") + " " + guess.fullName) }
     }

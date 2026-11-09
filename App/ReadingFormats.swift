@@ -68,6 +68,7 @@ final class ReadingFormatEngine {
 }
 
 struct ReadingFormatSettingsView: View {
+    @State private var selectedSpec: ReadingFormatSpec?
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
     @AppStorage(ReadingFormatPreferences.key) private var raw = ""
@@ -89,15 +90,8 @@ struct ReadingFormatSettingsView: View {
             }
             ForEach(ReadingFormatEngine.shared.specs) { spec in
                 if spec.multiple {
-                    Section(ui(spec.title)) {
-                        ForEach(spec.options) { option in
-                            Toggle(ui(option.title), isOn: Binding(get: { settings.selected(spec).contains(option.id) }, set: { enabled in
-                                var values = Set(settings.selected(spec))
-                                if enabled { values.insert(option.id) } else { values.remove(option.id) }
-                                settings.values[spec.id] = spec.options.map(\.id).filter(values.contains)
-                            })).accessibilityIdentifier("readingFormat-" + spec.id + "-" + option.id)
-                        }
-                    }
+                    Button(ui(spec.title)) { selectedSpec = spec }
+                        .accessibilityIdentifier("readingFormat-" + spec.id)
                 } else {
                     Picker(ui(spec.title), selection: Binding(get: { settings.selected(spec).first ?? "0" }, set: { settings.values[spec.id] = [$0] })) {
                         ForEach(spec.options) { Text(ui($0.title)).tag($0.id) }
@@ -105,5 +99,17 @@ struct ReadingFormatSettingsView: View {
                 }
             }
         }.navigationTitle(ui("讀音格式")).navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $selectedSpec) { spec in
+            NavigationStack {
+                List(spec.options) { option in
+                    Toggle(ui(option.title), isOn: Binding(get: { settings.selected(spec).contains(option.id) }, set: { enabled in
+                        var values = Set(settings.selected(spec))
+                        if enabled { values.insert(option.id) } else { values.remove(option.id) }
+                        settings.values[spec.id] = spec.options.map(\.id).filter(values.contains)
+                    })).accessibilityIdentifier("readingFormat-" + spec.id + "-" + option.id)
+                }.navigationTitle(ui(spec.title)).navigationBarTitleDisplayMode(.inline)
+                    .toolbar { Button(ui("完成")) { selectedSpec = nil } }
+            }
+        }
     }
 }

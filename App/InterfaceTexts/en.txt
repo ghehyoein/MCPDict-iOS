@@ -676,9 +676,6 @@ Dialect subdivision
 [省會]
 Provincial capital
 
-[里]
-li
-
 [方向提示]
 Direction hint
 
@@ -1224,3 +1221,6 @@ Hepburn romanization
 
 [複製]
 Copy
+
+[公里]
+km

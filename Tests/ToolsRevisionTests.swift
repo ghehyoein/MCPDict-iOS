@@ -24,8 +24,25 @@ final class ToolsRevisionTests: XCTestCase {
         let a = TableLocation(longitude: 0, latitude: 0)
         let east = GuessLogic.geography(from: a, to: TableLocation(longitude: 1, latitude: 0))
         XCTAssertEqual(east.arrow, "➡️")
-        XCTAssertEqual(east.li, 222.64, accuracy: 1)
-        XCTAssertEqual(GuessLogic.geography(from: a, to: a).li, 0)
+        XCTAssertEqual(east.kilometers, 111.32, accuracy: 0.5)
+        XCTAssertEqual(GuessLogic.geography(from: a, to: a).kilometers, 0)
+    }
+    func testKilometerThresholdAndLegacyDistanceMigration() throws {
+        func table(_ id: String, longitude: Double) throws -> TablePackage {
+            var json = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(UITestFixtures.catalog.tables[0])) as? [String: Any])
+            json["id"] = id; json["location"] = ["longitude": longitude, "latitude": 0]
+            return try JSONDecoder().decode(TablePackage.self, from: JSONSerialization.data(withJSONObject: json))
+        }
+        let answer = try table("answer", longitude: 0), nearby = try table("guess", longitude: 0.1)
+        XCTAssertFalse(GuessLogic.won(nearby, answer: answer, rule: .distance, distanceKilometers: 10, dictionary: false))
+        XCTAssertTrue(GuessLogic.won(nearby, answer: answer, rule: .distance, distanceKilometers: 15, dictionary: false))
+        let suite = "GuessDistance." + UUID().uuidString
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(80, forKey: "guessDiameter")
+        XCTAssertEqual(GuessDistanceSettings.loadKilometers(defaults: defaults), 40)
+        defaults.set(200, forKey: "guessDiameter")
+        XCTAssertEqual(GuessDistanceSettings.loadKilometers(defaults: defaults), 40)
     }
     func testGuessCorpusAndReferenceHints() async throws {
         let character = try await CharacterReferenceIndex.shared.guessCharacter(level: 1)

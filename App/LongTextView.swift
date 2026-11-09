@@ -43,6 +43,7 @@ enum LongTextAnnotation {
 
 struct LongTextView: View {
     @EnvironmentObject private var model: AppModel
+    @AppStorage(ReadingFormatPreferences.key) private var readingFormats = ""
     @AppStorage("longTextLanguage") private var language = ""
     @AppStorage("longTextFormat") private var format = 8
     @State private var input = ""
@@ -62,6 +63,7 @@ struct LongTextView: View {
         return rows
     }
     var body: some View {
+        let _ = readingFormats
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
                 Text(ui("長文注音，每次最多 400 字。藍點表示多音或異體字，可點擊切換。"))
@@ -104,7 +106,7 @@ struct LongTextView: View {
         .sheet(isPresented: $languageSheet) {
             NavigationStack {
                 List(tables.filter { languageFilter.isEmpty || $0.name.localizedCaseInsensitiveContains(languageFilter) }) { table in
-                    Button { language = table.name; languageSheet = false } label: {
+                    Button { language = table.name; characters = []; languageSheet = false } label: {
                         HStack { LanguageBadge(name: table.name, table: table); Spacer(); if language == table.name { Image(systemName: "checkmark") } }
                     }
                 }.searchable(text: $languageFilter, prompt: ui("搜尋語言或分區"))
@@ -131,6 +133,7 @@ struct LongTextView: View {
         let text = input
         do {
             let rows = try await model.repository.searchAllCharacters(CharacterVariants.expand(text).joined(), language: language)
+            guard language == table.name else { return }
             characters = LongTextAnnotation.build(text, rows: rows); submittedTable = table
         } catch { model.error = error.localizedDescription }
     }
