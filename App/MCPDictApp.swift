@@ -117,7 +117,7 @@ final class AppModel: ObservableObject {
             installed = TableInstallation(catalogVersion: "ui-test", tables: fixture.tables, databaseFile: nil)
             languages = fixture.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
-                for key in ["favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
+                for key in [CharacterSearchRange.preferenceKey, "resultArrangement", "favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
                 for namespace in ["dictionary", "map", "downloads"] {
                     selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace)
                     selectionCache.defaults.removeObject(forKey: "selectionMode." + namespace)
@@ -170,12 +170,16 @@ final class AppModel: ObservableObject {
         // Selecting a result variant must never overwrite the editable input.
         let input = (queryOverride ?? query, modeOverride ?? mode, language, selectedLanguages)
         let request = more ? (lastSearch ?? input) : input
+        let characterRange = CharacterSearchRange(rawValue: UserDefaults.standard.string(forKey: CharacterSearchRange.preferenceKey) ?? "") ?? .all
         let ranks = ResultOrdering.ranks(installed?.tables ?? [], namespace: "dictionary")
         do {
             let found: [Reading]
-            let variants = request.1 == .character ? await Task.detached(priority: .userInitiated) { CharacterVariants.expand(request.0) }.value : []
+            let variants = request.1 == .character ? try await CharacterRangeIndex.shared.filter(CharacterVariants.expand(request.0), range: characterRange) : []
             if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
-            else { found = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3) }
+            else {
+                let rows = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3)
+                found = request.1 == .pronunciation ? try await CharacterRangeIndex.shared.filter(rows, range: characterRange) : rows
+            }
             guard token == generation else { return }
             let previous = more ? results : []
             let prepared = await Task.detached {
@@ -200,7 +204,7 @@ final class AppModel: ObservableObject {
         let defaults = selectionCache.defaults
         let keys = ["appearance", "uiLanguage", AppTypography.interfaceKey, AppTypography.mapKey,
                     AppTypography.readingKey, "toneStyle", "pitchStyle", "colorScheme", "dictionaryPalette",
-                    "mapPalette", "baseMapStyle", "resultArrangement", "preferredMapApp", ReferencePreferences.key]
+                    "mapPalette", "baseMapStyle", "resultArrangement", CharacterSearchRange.preferenceKey, "preferredMapApp", ReferencePreferences.key]
         let prefixes = ["languageSelection.", "selectionMode.", "grouping.", "roles.", "regionNode.", "island.", "history.", "transitions."]
         for key in defaults.dictionaryRepresentation().keys where keys.contains(key) || prefixes.contains(where: key.hasPrefix) {
             defaults.removeObject(forKey: key)
@@ -501,6 +505,7 @@ struct ReadingView: View {
 }
 
 struct SearchView: View {
+    @AppStorage(CharacterSearchRange.preferenceKey) private var characterRange = ""
     @AppStorage("resultArrangement") private var arrangement = "list"
     @State private var showArrangement = false
     @AppStorage("colorScheme") private var palette = "atlas"
@@ -545,6 +550,9 @@ struct SearchView: View {
             .toolbarBackground(resultHeaderPinned ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
             .toolbarBackground(resultHeaderPinned ? .visible : .automatic, for: .navigationBar)
             .toolbarColorScheme(resultHeaderPinned ? .dark : nil, for: .navigationBar)
+            .onChange(of: characterRange) { _, _ in
+                if !model.resultQuery.isEmpty { Task { await model.search(queryOverride: model.resultQuery, modeOverride: model.resultMode) } }
+            }
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(ui("排列")) { showArrangement = true }.foregroundStyle(AppAccent.color) } }
@@ -574,13 +582,16 @@ struct SearchView: View {
                                 searchFocused = false
                                 Task { await model.search(queryOverride: variant, modeOverride: .note) }
                             } }
-                            if hasCharacters && !chars.isEmpty {
+                            if hasCharacters {
+                                HStack(spacing: 4) {
                                 ScrollView(.horizontal) {
                                     HStack {
                                         ForEach(chars, id: \.self) { char in
                                             Button(char) { selectedCharacter = char }.buttonStyle(.bordered).tint(char == current ? AppAccent.color : .gray)
                                         }
                                     }
+                                }
+                                CharacterRangeButton()
                                 }
                             }
                         }.textCase(nil).frame(maxWidth: .infinity, alignment: .leading)

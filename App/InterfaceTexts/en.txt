@@ -900,3 +900,45 @@ Tone
 
 [這個字就是部首]
 This character is itself a radical
+
+[漢字檢索範圍]
+Character search range
+
+[不限]
+Unrestricted
+
+[廣韻]
+Guangyun
+
+[說文解字]
+Shuowen Jiezi
+
+[集韻]
+Jiyun
+
+[康熙字典]
+Kangxi Dictionary
+
+[古音匯纂]
+Guyin Huizuan
+
+[漢語大字典]
+Hanyu Da Zidian
+
+[方言調查字表]
+Dialect Survey Character List
+
+[古籍印刷通用字規範字形表]
+Standard Glyph List for Printing Ancient Books
+
+[常用字字形表]
+List of Graphemes of Commonly-used Chinese Characters
+
+[常用國字標準字體表]
+Standard Forms of Common National Characters
+
+[大五碼]
+Big5
+
+[缺少漢字範圍資料]
+Character range data is unavailable

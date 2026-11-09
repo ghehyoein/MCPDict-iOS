@@ -10,6 +10,8 @@ def build_references(checkout, output):
     import re
     books = "說文 集韻 康熙 匯纂 漢大".split()
     fields = "異體字 字形變體 字形描述 部件檢索 兩分 總筆畫數 部首餘筆 五筆畫 五筆86 五筆98 五筆06 倉頡三代 倉頡五代 倉頡六代 山人".split()
+    range_members = {key: set() for key in ["GY", "SW", "JY", "KX", "HZ", "HD", "FD", "GJ", "kHKGlyph", "T1", "kBigFive"]}
+    book_tokens = dict(zip(books, ["SW", "JY", "KX", "HZ", "HD"]))
     with sqlite3.connect(output/'references.db') as db:
         db.executescript("CREATE TABLE entries(hz TEXT, field TEXT, value TEXT, PRIMARY KEY(hz,field)) WITHOUT ROWID; CREATE TABLE ranges(lo INTEGER, hi INTEGER, label TEXT);")
         # Use HanZi.getUnicodeExt ranges from the pinned Android version, including supplementary planes.
@@ -28,8 +30,17 @@ def build_references(checkout, output):
                         value = value.replace('UCS2003','2003').translate(str.maketrans('GHMTJKPVUSB','陸港澳臺日韓朝越統大英')).replace('2003','UCS2003').replace(' ','')
                     if field not in books: value = value.replace(',',' ')
                     if value and value not in entries[hz]: entries[hz].append(value)
+            if field in book_tokens:
+                range_members[book_tokens[field]].update(entries)
             sep = '\n\n' if field in books else ' '
             db.executemany("INSERT INTO entries VALUES(?,?,?)", ((hz,field,sep.join(values)) for hz,values in entries.items()))
+        for line in (checkout/'tools/tables/output/分類.tsv').read_text(encoding='utf-8').splitlines():
+            if not line or line.startswith('#'): continue
+            parts = line.split('\t')
+            if len(parts) < 2: continue
+            for token in re.split(r'[\s,]+', parts[1]):
+                if token in range_members: range_members[token].add(parts[0])
+        (output/'character-ranges.json').write_text(json.dumps({key: sorted(values) for key, values in range_members.items()}, ensure_ascii=False), encoding='utf-8')
         assert db.execute("SELECT count(*) FROM entries WHERE hz='一'").fetchone()[0] == len(books+fields)
         assert db.execute("PRAGMA quick_check").fetchone()[0] == 'ok'
 

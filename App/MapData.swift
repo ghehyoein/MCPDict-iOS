@@ -52,11 +52,12 @@ struct MapSearchResult {
 }
 
 extension DictionaryRepository {
-    func mapSearch(_ query: String, mode: SearchMode, names: Set<String>) throws -> MapSearchResult {
+    func mapSearch(_ query: String, mode: SearchMode, names: Set<String>, characterRange: CharacterSearchRange = .all) async throws -> MapSearchResult {
         var result = MapSearchResult(mode: mode, query: query)
-        if mode == .character { result.choices = CharacterVariants.expand(query) }
+        if mode == .character { result.choices = try await CharacterRangeIndex.shared.filter(CharacterVariants.expand(query), range: characterRange) }
         guard !names.isEmpty else { return result }
-        let rows = try searchAll(mode == .character ? result.choices.joined() : query, mode: mode, language: "", languages: Array(names))
+        let found = try searchAll(mode == .character ? result.choices.joined() : query, mode: mode, language: "", languages: Array(names))
+        let rows = mode == .pronunciation ? try await CharacterRangeIndex.shared.filter(found, range: characterRange) : found
         var known = Set(result.choices)
         var seen = [String: [String: Set<MapSearchResult.Line>]]()
         for row in rows {

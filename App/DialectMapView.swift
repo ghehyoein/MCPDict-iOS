@@ -6,6 +6,7 @@ enum MapSearchKind: String, CaseIterable, Identifiable {
 }
 
 struct DialectMapView: View {
+    @AppStorage(CharacterSearchRange.preferenceKey) private var characterRange = ""
     @EnvironmentObject var model: AppModel
     @AppStorage("colorScheme") private var colorScheme = "atlas"
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
@@ -122,6 +123,9 @@ struct DialectMapView: View {
         .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
         .onChange(of: toneStyle) { _, _ in rebuildPoints() }
         .onChange(of: pitchStyle) { _, _ in rebuildPoints() }
+        .onChange(of: characterRange) { _, _ in
+            if let previous = result { Task { await query(queryOverride: previous.query, modeOverride: previous.mode, replaceInFlight: true) } }
+        }
         .onChange(of: colorScheme) { _, _ in recolorPoints() }
     }
     private var menu: some View {
@@ -146,7 +150,8 @@ struct DialectMapView: View {
                 }.padding(.horizontal)
     }
     @ViewBuilder private var variantBar: some View {
-                if let variants = result?.choices, !variants.isEmpty {
+                if let variants = result?.choices {
+                    HStack(spacing: 4) {
                     ScrollView(.horizontal) {
                         HStack {
                             ForEach(variants, id: \.self) { variant in
@@ -154,6 +159,8 @@ struct DialectMapView: View {
                                     .buttonStyle(.bordered).tint(variant == activeCharacter ? AppAccent.color : .gray)
                             }
                         }.padding(.horizontal)
+                    }
+                    CharacterRangeButton().padding(.trailing)
                     }
                 }
     }
@@ -185,17 +192,17 @@ struct DialectMapView: View {
     private func resetResults() {
         generation += 1; querying = false; result = nil; activeCharacter = ""; rebuildPoints()
     }
-    @MainActor private func query(queryOverride: String? = nil, modeOverride: SearchMode? = nil) async {
+    @MainActor private func query(queryOverride: String? = nil, modeOverride: SearchMode? = nil, replaceInFlight: Bool = false) async {
         inputFocused = false
         let text = (queryOverride ?? character).trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !text.isEmpty, !querying else { return }
+        guard !text.isEmpty, (!querying || replaceInFlight) else { return }
         let requestedNames = names, requestedMode = modeOverride ?? mode
         generation += 1
         let token = generation
         querying = true
         defer { if token == generation { querying = false } }
         do {
-            let found = try await model.repository.mapSearch(text, mode: requestedMode, names: requestedNames)
+            let found = try await model.repository.mapSearch(text, mode: requestedMode, names: requestedNames, characterRange: CharacterSearchRange(rawValue: characterRange) ?? .all)
             guard token == generation else { return }
             submittedNames = requestedNames; result = found; activeCharacter = found.choices.first ?? ""
             rebuildPoints(); fit += 1

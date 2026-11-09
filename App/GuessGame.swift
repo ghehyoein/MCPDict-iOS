@@ -192,7 +192,7 @@ struct GuessGameView: View {
                 let rows = try await model.repository.searchAllCharacters(character, language: "")
                 guard let row = rows.randomElement() else { throw DictionaryFailure(message: ui("此字在已下載字表中沒有讀音")) }
                 readings = [row]
-                append("\(ui("讀音提示"))：\(model.table(named: row.language)?.fullName ?? row.language)")
+                append("\(ui("讀音提示"))：\(model.table(named: row.language)?.fullName ?? row.language) \(row.pronunciation)")
                 if !language.isEmpty { await readingHint() }
             }
         } catch { self.error = error.localizedDescription; answerCharacter = ""; answerTable = nil }
