@@ -89,6 +89,7 @@ struct CharacterReferenceHeader: View {
                                 Button(contentUI(item)) { show(.init(data: data, book: item)) }
                             }
                         }
+                        OnlineDictionaryMenu(character: character)
                     }
                 }
             }

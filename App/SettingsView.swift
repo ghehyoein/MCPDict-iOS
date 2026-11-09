@@ -18,6 +18,7 @@ struct SettingsView: View {
                     NavigationLink { DataView() } label: { Text(ui("字表下載")) }
                     Button(ui("字頭資料顯示")) { referenceSettings = true }.foregroundStyle(AppAccent.color)
                 }
+                Section { NavigationLink(ui("讀音格式")) { ReadingFormatSettingsView() } }
                 FavoriteSettingsSection()
 
 

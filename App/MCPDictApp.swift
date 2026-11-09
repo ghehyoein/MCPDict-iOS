@@ -117,7 +117,7 @@ final class AppModel: ObservableObject {
             installed = TableInstallation(catalogVersion: "ui-test", tables: fixture.tables, databaseFile: nil)
             languages = fixture.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
-                for key in [CharacterSearchRange.preferenceKey, "resultArrangement", "favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
+                for key in [CharacterSearchRange.preferenceKey, "resultArrangement", "favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, OnlineDictionaryPreferences.key, ReadingFormatPreferences.key, "longTextFormat", "longTextLanguage", "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
                 for namespace in ["dictionary", "map", "downloads"] {
                     selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace)
                     selectionCache.defaults.removeObject(forKey: "selectionMode." + namespace)
@@ -204,8 +204,8 @@ final class AppModel: ObservableObject {
         let defaults = selectionCache.defaults
         let keys = ["appearance", "uiLanguage", AppTypography.interfaceKey, AppTypography.mapKey,
                     AppTypography.readingKey, "toneStyle", "pitchStyle", "colorScheme", "dictionaryPalette",
-                    "mapPalette", "baseMapStyle", "resultArrangement", CharacterSearchRange.preferenceKey, "preferredMapApp", ReferencePreferences.key]
-        let prefixes = ["languageSelection.", "selectionMode.", "grouping.", "roles.", "regionNode.", "island.", "history.", "transitions."]
+                    "mapPalette", "baseMapStyle", "resultArrangement", CharacterSearchRange.preferenceKey, "preferredMapApp", ReferencePreferences.key, OnlineDictionaryPreferences.key, ReadingFormatPreferences.key, "longTextFormat", "longTextLanguage"]
+        let prefixes = ["languageSelection.", "selectionMode.", "grouping.", "roles.", "regionNode.", "island.", "history.", "islandMode.", "historyMode.", "transitions."]
         for key in defaults.dictionaryRepresentation().keys where keys.contains(key) || prefixes.contains(where: key.hasPrefix) {
             defaults.removeObject(forKey: key)
         }

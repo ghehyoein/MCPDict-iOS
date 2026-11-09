@@ -30,6 +30,7 @@ struct DialectMapView: View {
     @State private var fit = 0
     private var tables: [TablePackage] { model.catalog?.tables ?? model.installed?.tables ?? [] }
     private var colorGrouping: TableGrouping { colorScheme == "dictionary" ? .dictionary : .atlas }
+    @AppStorage(ReadingFormatPreferences.key) private var readingFormats = ""
     @State private var points = [DialectPoint]()
     @State private var pointsRevision = UUID()
     @State private var tableByName = [String: TablePackage]()
@@ -123,6 +124,7 @@ struct DialectMapView: View {
         .onChange(of: names) { _, _ in if result == nil { rebuildPoints() } }
         .onChange(of: submittedNames) { _, _ in rebuildPoints() }
         .onChange(of: activeCharacter) { _, _ in rebuildPoints() }
+        .onChange(of: readingFormats) { _, _ in rebuildPoints() }
         .onChange(of: toneStyle) { _, _ in rebuildPoints() }
         .onChange(of: pitchStyle) { _, _ in rebuildPoints() }
         .onChange(of: characterRange) { _, _ in

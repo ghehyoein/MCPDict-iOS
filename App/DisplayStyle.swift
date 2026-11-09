@@ -92,6 +92,7 @@ enum ToneDisplay {
         let pitch: String
         let tone: String
         let stacked: Bool
+        var italic: Bool = false
     }
     private final class ToneMap {
         let values: [String: [String]]
@@ -120,6 +121,9 @@ enum ToneDisplay {
     }
     // Only recognized tone tokens are changed. Unknown readings remain verbatim.
     static func parts(_ raw: String, table: TablePackage?, style: String, pitchStyle: String) -> [Part] {
+        ReadingFormatEngine.shared.parts(raw, table: table, style: style, pitch: pitchStyle) ?? rawParts(raw, table: table, style: style, pitchStyle: pitchStyle)
+    }
+    static func rawParts(_ raw: String, table: TablePackage?, style: String, pitchStyle: String) -> [Part] {
         let map = mapping(table)
         guard !map.isEmpty else {
             return [Part(id: 0, base: raw, pitch: "", tone: "", stacked: false)]
@@ -158,6 +162,7 @@ struct PronunciationView: View {
     let table: TablePackage?
     var pointSize: Double? = nil
     var scrollable = true
+    @AppStorage(ReadingFormatPreferences.key) private var formats = ""
     @AppStorage("toneStyle") private var style = "baSheng"
     @AppStorage("pitchStyle") private var pitch = "curve"
     var body: some View {
@@ -168,7 +173,8 @@ struct PronunciationView: View {
         }
     }
     private var content: some View {
-        SystemText(ToneDisplay.text(raw, table: table, style: style, pitch: pitch), pointSize: pointSize.map { CGFloat($0) },
+        let _ = formats
+        return SystemText(ToneDisplay.text(raw, table: table, style: style, pitch: pitch), pointSize: pointSize.map { CGFloat($0) },
                    parts: ToneDisplay.parts(raw, table: table, style: style, pitchStyle: pitch), smallerPitch: pitch == "number")
             .fixedSize(horizontal: true, vertical: false)
     }

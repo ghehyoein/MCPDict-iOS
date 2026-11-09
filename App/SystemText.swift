@@ -100,7 +100,8 @@ enum ToneAttributedText {
     static func make(_ parts: [ToneDisplay.Part], font: UIFont, color: UIColor = .label, pitchFont: UIFont? = nil) -> NSAttributedString {
         let text = NSMutableAttributedString(string: "")
         for part in parts {
-            text.append(NSAttributedString(string: part.base, attributes: [.font: font, .foregroundColor: color]))
+            let baseFont = part.italic ? UIFont(descriptor: font.fontDescriptor.withSymbolicTraits(.traitItalic) ?? font.fontDescriptor, size: font.pointSize) : font
+            text.append(NSAttributedString(string: part.base, attributes: [.font: baseFont, .foregroundColor: color]))
             if part.stacked {
                 let tiny = UIFont.systemFont(ofSize: font.pointSize * 0.55)
                 let attrs: [NSAttributedString.Key: Any] = [.font: tiny, .foregroundColor: color]

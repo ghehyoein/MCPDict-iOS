@@ -999,3 +999,225 @@ New
 
 [保存]
 Save
+
+[在線字典]
+Online dictionaries
+
+[漢典]
+Hanzi Dictionary (Zdic)
+
+[字海]
+Zisea
+
+[萌典]
+Moe Dictionary
+
+[字統網]
+Zi Tools
+
+[古今文字集成]
+Chinese Character Database
+
+[將該語言加入自選語言]
+Add this language to custom languages
+
+[將該語言移出自選語言]
+Remove this language from custom languages
+
+[長文注音]
+Text annotation
+
+[長文注音，每次最多 400 字。藍點表示多音或異體字，可點擊切換。]
+Annotate up to 400 characters. A blue dot marks multiple readings or variants; tap to choose.
+
+[長文注音格式]
+Text annotation format
+
+[讀音格式]
+Pronunciation formats
+
+[IPA]
+IPA
+
+[IPA＋字]
+IPA + character
+
+[IPA＋曲折線調值]
+IPA + Chao tone letters
+
+[IPA＋曲折線調值＋字]
+IPA + Chao tone letters + character
+
+[IPA＋調類]
+IPA + tone category
+
+[IPA＋調類＋字]
+IPA + tone category + character
+
+[IPA＋曲折線調值＋調類]
+IPA + Chao tone letters + tone category
+
+[IPA＋曲折線調值＋調類＋字]
+IPA + Chao tone letters + tone category + character
+
+[廣韻拼音、擬音及音韻地位描述格式]
+Guangyun romanization, reconstructions and phonological descriptions
+
+[切韻拼音]
+Tshet-uinh Romanization
+
+[白一平轉寫]
+Baxter's transcription
+
+[古韻羅馬字]
+Romatzyh
+
+[有女羅馬字]
+Younu romanization
+
+[髙本漢擬音]
+Karlgren's reconstruction
+
+[王力（1957）擬音]
+Wang Li (1957)
+
+[王力（1985）擬音]
+Wang Li (1985)
+
+[李榮擬音]
+Li Rong's reconstruction
+
+[邵榮芬擬音]
+Shao Rongfen's reconstruction
+
+[蒲立本擬音]
+Pulleyblank's reconstruction
+
+[鄭張尙芳擬音]
+Zhengzhang Shangfang's reconstruction
+
+[潘悟雲（2000）擬音]
+Pan Wuyun (2000)
+
+[潘悟雲（2013）擬音]
+Pan Wuyun (2013)
+
+[潘悟雲（2023）擬音]
+Pan Wuyun (2023)
+
+[unt（2026）擬音，RTR方案]
+unt (2026), RTR system
+
+[unt（2026）擬音，ATR方案]
+unt (2026), ATR system
+
+[unt通俗擬音]
+unt's accessible reconstruction
+
+[msoeg擬音]
+msoeg's reconstruction
+
+[切韻音系描述]
+Qieyun phonological description
+
+[方音字彙描述]
+Fangyan Zihui description
+
+[廣韻韻目原貌]
+Original Guangyun rhyme headings
+
+[折合平水韻目原貌]
+Corresponding Pingshui rhyme headings
+
+[反切]
+Fanqie
+
+[中原音韻擬音]
+Zhongyuan Yinyun reconstructions
+
+[楊耐思]
+Yang Naisi
+
+[寧繼福]
+Ning Jifu
+
+[薛鳳生（音位形式）]
+Hsueh Feng-sheng (phonemic)
+
+[unt（音位形式）]
+unt (phonemic)
+
+[unt]
+unt
+
+[普通話]
+Standard Mandarin
+
+[音標]
+IPA
+
+[漢語拼音]
+Hanyu Pinyin
+
+[注音符號]
+Bopomofo
+
+[香港粵語拼音（用於輸入和顯示）]
+Hong Kong Cantonese notation (input and display)
+
+[香港語言學學會式（粵拼）]
+Linguistic Society of Hong Kong (Jyutping)
+
+[教院式]
+Cantonese Pinyin
+
+[耶魯式]
+Yale romanization
+
+[劉錫祥式]
+Sidney Lau romanization
+
+[高雄閩南語]
+Kaohsiung Southern Min
+
+[臺羅拼音]
+Tâi-lô
+
+[東干甘肅話]
+Gansu Dungan
+
+[西里爾字母]
+Cyrillic
+
+[越南語]
+Vietnamese
+
+[舊式（hòa, thủy）]
+Traditional tone placement (hòa, thủy)
+
+[新式（hoà, thuỷ）]
+Modern tone placement (hoà, thuỷ)
+
+[朝鮮語]
+Korean
+
+[諺文]
+Hangul
+
+[文觀部2000年式羅馬字]
+Revised Romanization (2000)
+
+[日語]
+Japanese
+
+[平假名]
+Hiragana
+
+[片假名]
+Katakana
+
+[日本式羅馬字]
+Nihon-shiki romanization
+
+[黑本式羅馬字]
+Hepburn romanization

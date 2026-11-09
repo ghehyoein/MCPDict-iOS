@@ -36,9 +36,10 @@ import SwiftUI
         self.namespace = namespace; self.defaults = defaults
         kind = defaults.string(forKey: "selectionMode." + namespace).flatMap(MapSearchKind.init(rawValue:)) ?? .language
         custom = defaults.data(forKey: "customSchemes." + namespace).flatMap { try? JSONDecoder().decode(CustomLanguageSchemes.self, from: $0) } ?? CustomLanguageSchemes(legacy: Set(defaults.stringArray(forKey: "languageSelection." + namespace + ".自選") ?? []))
-        flags = LanguageFlags(island: defaults.bool(forKey: "island." + namespace), history: defaults.bool(forKey: "history." + namespace))
-        if let mode = defaults.string(forKey: "islandMode." + namespace).flatMap(LanguageVisibility.init(rawValue:)) { flags.islandMode = mode }
-        if let mode = defaults.string(forKey: "historyMode." + namespace).flatMap(LanguageVisibility.init(rawValue:)) { flags.historyMode = mode }
+        var loadedFlags = LanguageFlags(island: defaults.bool(forKey: "island." + namespace), history: defaults.bool(forKey: "history." + namespace))
+        if let mode = defaults.string(forKey: "islandMode." + namespace).flatMap(LanguageVisibility.init(rawValue:)) { loadedFlags.islandMode = mode }
+        if let mode = defaults.string(forKey: "historyMode." + namespace).flatMap(LanguageVisibility.init(rawValue:)) { loadedFlags.historyMode = mode }
+        flags = loadedFlags
         includeTransitions = defaults.bool(forKey: "transitions." + namespace)
         restoreControls()
         if let data = try? JSONEncoder().encode(custom) { defaults.set(data, forKey: "customSchemes." + namespace) }
@@ -49,7 +50,7 @@ import SwiftUI
         filter = ""; expandedNodes = []; region = nil
     }
     #if DEBUG
-    func resetFixture() { resetDefaults() }
+    func resetFixture() { resetDefaults(); custom = CustomLanguageSchemes() }
     #endif
     private func restoreControls() {
         let saved = defaults.string(forKey: "grouping." + key).flatMap(TableGrouping.init(rawValue:)) ?? .atlas

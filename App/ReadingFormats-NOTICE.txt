@@ -1,0 +1,9 @@
+ReadingFormats.js and ReadingFormatsData.json adapt osfans/MCPDict Orth/*.java,
+res/raw/orthography_* and res/values/strings.xml at
+911a151d9d19ffaf637d3695a4669516957a1c50. See Upstream-LICENSE.txt.
+
+LongTextView.swift implements the LongSearch behavior of
+https://github.com/vearvip/mcpdict-frontend at 9dffa7a78abcf4bceab785cc5c7653d71dff149b
+and the /long query contract of https://github.com/vearvip/mcpdict-backend at
+4ddf5e9f98b73840039f2c06bbb78989c4084e7f using the local iOS dictionary.
+See LongText-LICENSE.txt.

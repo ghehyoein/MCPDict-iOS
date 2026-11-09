@@ -60,6 +60,7 @@ struct ReferenceSettingsView: View {
                         }
                     }.onMove { settings.order.move(fromOffsets: $0, toOffset: $1) }
                 }
+                OnlineDictionarySettingsSection()
             }
             .font(.system(size: fontSize))
             .dynamicTypeSize(AppTypography.size(fontSize))

@@ -7,6 +7,7 @@ struct ToolsHomeView: View {
             List {
                 NavigationLink(ui("猜方言")) { GuessGameView(kind: .language) }
                 NavigationLink(ui("猜字")) { GuessGameView(kind: .character) }
+                NavigationLink(ui("長文注音")) { LongTextView() }
                 NavigationLink(ui("音典小工具")) { YindianToolsView() }
             }.navigationTitle(ui("工具"))
         }
