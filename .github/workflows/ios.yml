@@ -1,5 +1,5 @@
 {
-  "name": "Export three historical dictionary icons",
+  "name": "Check approved icon and historical archive upgrade",
   "on": {
     "push": {
       "branches": [
@@ -11,24 +11,29 @@
     "contents": "read"
   },
   "jobs": {
-    "export": {
+    "check": {
       "runs-on": "macos-15",
+      "timeout-minutes": 25,
       "env": {
         "DEVELOPER_DIR": "/Applications/Xcode_26.3.app/Contents/Developer"
       },
       "steps": [
         {
-          "uses": "actions/checkout@v4"
+          "uses": "actions/checkout@v4",
+          "with": {
+            "ref": "ec10ae0564811a166cfc7676d950c840b3a37adc"
+          }
         },
         {
-          "name": "Render public icon code only",
-          "run": "set -euo pipefail\nmkdir -p Export.app output\nSDK=$(xcrun --sdk iphonesimulator --show-sdk-path)\nxcrun swiftc icon-export.swift -sdk \"$SDK\" -target arm64-apple-ios18.0-simulator -o Export.app/Export\ncat > Export.app/Info.plist <<'PLIST'\n<?xml version=\"1.0\" encoding=\"UTF-8\"?><plist version=\"1.0\"><dict><key>CFBundleIdentifier</key><string>org.mcpdict.iconexport</string><key>CFBundleExecutable</key><string>Export</string><key>CFBundleName</key><string>Export</string><key>CFBundlePackageType</key><string>APPL</string><key>CFBundleVersion</key><string>1</string><key>CFBundleShortVersionString</key><string>1</string><key>LSRequiresIPhoneOS</key><true/></dict></plist>\nPLIST\ncodesign --force --sign - Export.app\nDEVICE=$(xcrun simctl create IconExport com.apple.CoreSimulator.SimDeviceType.iPhone-13 com.apple.CoreSimulator.SimRuntime.iOS-26-2)\nxcrun simctl boot \"$DEVICE\"\nxcrun simctl bootstatus \"$DEVICE\" -b\nxcrun simctl install \"$DEVICE\" Export.app\nxcrun simctl launch \"$DEVICE\" org.mcpdict.iconexport\nDIR=$(xcrun simctl get_app_container \"$DEVICE\" org.mcpdict.iconexport data)\nfor i in {1..30}; do test -f \"$DIR/Documents/done\" && break; sleep 1; done\ncp \"$DIR\"/Documents/*.png output/\npython3 - <<'PYTHON'\nimport pathlib,base64\nfor p in sorted(pathlib.Path('output').glob('*.png')):\n print('ICON_FILE:'+p.name+':'+base64.b64encode(p.read_bytes()).decode())\nPYTHON\n"
+          "name": "Build and run six focused checks",
+          "run": "set -euo pipefail\nmkdir -p App/BundledTables\npython3 tools/prepare_assets.py\nbrew install xcodegen\nxcodegen generate\nDEVICE=$(xcrun simctl create FocusedArchiveCheck com.apple.CoreSimulator.SimDeviceType.iPhone-13 com.apple.CoreSimulator.SimRuntime.iOS-26-2)\nxcrun simctl boot \"$DEVICE\"\nxcrun simctl bootstatus \"$DEVICE\" -b\nxcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination \"platform=iOS Simulator,id=$DEVICE\" -derivedDataPath DerivedData -resultBundlePath FocusedResults CODE_SIGNING_ALLOWED=NO -parallel-testing-enabled NO \\\n  -only-testing:MCPDictIOSTests/BundledTablesTests/testUpgradeSynchronizesHistoricalArchivesWithoutRestoringRemovedTables \\\n  -only-testing:MCPDictIOSTests/BundledTablesTests/testUpgradePreservesManuallyRefreshedArchives \\\n  -only-testing:MCPDictIOSTests/CatalogRefreshTests/testRefreshSynchronizesArchivesButPreservesReadingsAndDownloadIdentity \\\n  -only-testing:MCPDictIOSTests/PresentationRevisionTests/testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory \\\n  -only-testing:MCPDictIOSTests/RequestedChangesTests/testDictionaryTabLoadsApprovedArtworkAtOriginalSize \\\n  -only-testing:MCPDictIOSTests/RequestedChangesTests/testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot test\n"
         },
         {
           "uses": "actions/upload-artifact@v4",
+          "if": "always()",
           "with": {
-            "name": "dictionary-icons-three-versions",
-            "path": "output/*.png"
+            "name": "focused-icon-history-results",
+            "path": "FocusedResults.xcresult"
           }
         }
       ]
