@@ -1,5 +1,5 @@
 {
-  "name": "Check approved icon and historical archive upgrade",
+  "name": "Publish authorized 0.9.5 after focused checks",
   "on": {
     "push": {
       "branches": [
@@ -8,33 +8,20 @@
     }
   },
   "permissions": {
+    "actions": "write",
     "contents": "read"
   },
   "jobs": {
-    "check": {
-      "runs-on": "macos-15",
-      "timeout-minutes": 25,
+    "dispatch": {
+      "runs-on": "ubuntu-latest",
       "env": {
-        "DEVELOPER_DIR": "/Applications/Xcode_26.3.app/Contents/Developer"
+        "GH_TOKEN": "${{ github.token }}",
+        "GH_REPO": "ghehyoein/MCPDict-iOS"
       },
       "steps": [
         {
-          "uses": "actions/checkout@v4",
-          "with": {
-            "ref": "ec10ae0564811a166cfc7676d950c840b3a37adc"
-          }
-        },
-        {
-          "name": "Build and run six focused checks",
-          "run": "set -euo pipefail\nmkdir -p App/BundledTables\npython3 tools/prepare_assets.py\nbrew install xcodegen\nxcodegen generate\nDEVICE=$(xcrun simctl create FocusedArchiveCheck com.apple.CoreSimulator.SimDeviceType.iPhone-13 com.apple.CoreSimulator.SimRuntime.iOS-26-2)\nxcrun simctl boot \"$DEVICE\"\nxcrun simctl bootstatus \"$DEVICE\" -b\nxcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination \"platform=iOS Simulator,id=$DEVICE\" -derivedDataPath DerivedData -resultBundlePath FocusedResults CODE_SIGNING_ALLOWED=NO -parallel-testing-enabled NO \\\n  -only-testing:MCPDictIOSTests/BundledTablesTests/testUpgradeSynchronizesHistoricalArchivesWithoutRestoringRemovedTables \\\n  -only-testing:MCPDictIOSTests/BundledTablesTests/testUpgradePreservesManuallyRefreshedArchives \\\n  -only-testing:MCPDictIOSTests/CatalogRefreshTests/testRefreshSynchronizesArchivesButPreservesReadingsAndDownloadIdentity \\\n  -only-testing:MCPDictIOSTests/PresentationRevisionTests/testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory \\\n  -only-testing:MCPDictIOSTests/RequestedChangesTests/testDictionaryTabLoadsApprovedArtworkAtOriginalSize \\\n  -only-testing:MCPDictIOSTests/RequestedChangesTests/testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot test\n"
-        },
-        {
-          "uses": "actions/upload-artifact@v4",
-          "if": "always()",
-          "with": {
-            "name": "focused-icon-history-results",
-            "path": "FocusedResults.xcresult"
-          }
+          "name": "Validate target and dispatch gated publication",
+          "run": "test \"$(gh api repos/ghehyoein/MCPDict-iOS/commits/main --jq .sha)\" = 3ef91abdafbaec2543f9c93b4e7d3b7de735aaa7\ngh workflow run ios.yml --ref main -f tests='MCPDictIOSTests/BundledTablesTests/testUpgradeSynchronizesHistoricalArchivesWithoutRestoringRemovedTables MCPDictIOSTests/BundledTablesTests/testUpgradePreservesManuallyRefreshedArchives MCPDictIOSTests/CatalogRefreshTests/testRefreshSynchronizesArchivesButPreservesReadingsAndDownloadIdentity MCPDictIOSTests/CatalogRefreshTests/testPackagedArchivesContainHistoricalGrayMarkers MCPDictIOSTests/PresentationRevisionTests/testHistoricalFlagReadsGrayMarkerRatherThanTransitionOrCategory MCPDictIOSTests/RequestedChangesTests/testDictionaryTabLoadsApprovedArtworkAtOriginalSize MCPDictIOSTests/RequestedChangesTests/testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot'\ngh workflow run device.yml --ref main -f publish=true\n"
         }
       ]
     }
