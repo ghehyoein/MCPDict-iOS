@@ -68,6 +68,8 @@ final class ReadingFormatEngine {
 }
 
 struct ReadingFormatSettingsView: View {
+    @AppStorage("toneStyle") private var toneStyle = "baSheng"
+    @AppStorage("pitchStyle") private var pitchStyle = "curve"
     @AppStorage(ReadingFormatPreferences.key) private var raw = ""
     private var settings: ReadingFormatPreferences {
         get { .load(raw) }
@@ -75,6 +77,16 @@ struct ReadingFormatSettingsView: View {
     }
     var body: some View {
         List {
+            Section(ui("聲調顯示")) {
+                Picker(ui("聲調顯示"), selection: $toneStyle) {
+                    ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
+                }.pickerStyle(.menu)
+                Picker(ui("調值樣式"), selection: $pitchStyle) {
+                    Text(ui("曲線")).tag("curve")
+                    Text(ui("數字")).tag("number")
+                    Text(ui("隱藏")).tag("hidden")
+                }.pickerStyle(.menu)
+            }
             ForEach(ReadingFormatEngine.shared.specs) { spec in
                 if spec.multiple {
                     Section(ui(spec.title)) {

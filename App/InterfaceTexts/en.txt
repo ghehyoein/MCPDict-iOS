@@ -1221,3 +1221,6 @@ Nihon-shiki romanization
 
 [黑本式羅馬字]
 Hepburn romanization
+
+[複製]
+Copy
