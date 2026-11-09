@@ -942,3 +942,12 @@ Big5
 
 [缺少漢字範圍資料]
 Character range data is unavailable
+
+[全部]
+All
+
+[省]
+Province
+
+[行政區級別]
+Administrative level
