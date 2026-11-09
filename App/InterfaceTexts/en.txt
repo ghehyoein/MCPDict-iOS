@@ -867,3 +867,33 @@ Rime group (multiple)
 
 [聲調（多選）]
 Tone (multiple)
+
+[結果]
+Result
+
+[今音]
+Modern
+
+[查看詳情]
+View details
+
+[涉及音韻地位數]
+Phonological position count
+
+[切韻聲母]
+Qieyun initial
+
+[切韻韻母]
+Qieyun final
+
+[切韻聲調]
+Qieyun tone
+
+[沒有符合當前條件的語言。]
+No languages match the current filters.
+
+[沒有符合當前中古篩選條件的對應關係。]
+No correspondences match the current Middle Chinese filters.
+
+[聲調]
+Tone

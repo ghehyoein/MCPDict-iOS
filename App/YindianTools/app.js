@@ -1287,7 +1287,7 @@
       <th class="result-column">結果</th>
     </tr>`;
 
-    const visible = rows.slice(0, 600);
+    const visible = rows; // Keep every matching language point; do not silently truncate.
     $('compareBody').innerHTML = visible.map((row) => {
       const d = row.dialect;
       const region = d.location || '';

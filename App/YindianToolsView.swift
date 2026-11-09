@@ -140,9 +140,11 @@ struct ToolsWebView: UIViewRepresentable {
             }
         }
         private func display(_ row: Reading) -> String {
-            // Tool analysis needs numeric source tone categories; these are the
-            // same source readings that the Android tool's tone parser accepts.
-            row.pronunciation
+            let style = UserDefaults.standard.string(forKey: "toneStyle") ?? "baSheng"
+            let pitch = UserDefaults.standard.string(forKey: "pitchStyle") ?? "curve"
+            return row.pronunciation.components(separatedBy: "\t").map {
+                ToneDisplay.text($0, table: model.table(named: row.language), style: style, pitch: pitch)
+            }.joined(separator: "\t")
         }
     }
 }

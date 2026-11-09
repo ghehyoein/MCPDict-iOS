@@ -3,7 +3,8 @@ Revision: 911a151d9d19ffaf637d3695a4669516957a1c50
 Original files: app/src/main/assets/yindian-tools/{app.js,index.html,styles.css}
 License: see App/Upstream-LICENSE.txt in this distribution.
 
-The analysis JavaScript and stylesheet are retained from upstream. The iOS app
+The analysis algorithms and stylesheet are retained from upstream. The result
+renderer keeps all matching rows instead of silently capping the table at 600. The iOS app
 provides a read-only local database bridge and native comparison map. index.html
 also loads interface.js to translate interface controls from the app's independent
 text catalogs; source character, language and pronunciation data is not translated.
