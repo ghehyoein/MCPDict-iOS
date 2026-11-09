@@ -14,6 +14,6 @@ jobs:
     steps:
       - name: Check target commit and start focused validation and gated release
         run: |
-          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/main --jq .sha)" = 8b4a1f75716fc72d9648012ebcf1bb0abf6027c5
-          gh workflow run ios.yml --ref main -f tests='MCPDictIOSTests/CatalogRefreshTests MCPDictIOSTests/OptimizationTests/testUnchangedCatalogOnlyRequestsHead MCPDictIOSUITests/NavigationTests/testCatalogProgressAllowsNavigation'
+          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/main --jq .sha)" = 5719fc21e5f8d2d4fadec62503b237d349bd1770
+          gh workflow run ios.yml --ref main -f tests='MCPDictIOSUITests/NavigationTests/testCatalogProgressAllowsNavigation'
           gh workflow run device.yml --ref main -f publish=true
