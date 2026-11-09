@@ -897,3 +897,6 @@ No correspondences match the current Middle Chinese filters.
 
 [聲調]
 Tone
+
+[這個字就是部首]
+This character is itself a radical

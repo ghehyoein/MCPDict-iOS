@@ -93,7 +93,7 @@ struct GuessGameView: View {
             if !province.isEmpty && t.metadata?["省"] != province { return false }
             let parts = dictionary ? t.dictionary : t.atlas
             if !division.isEmpty && !parts.contains(division) { return false }
-            if !level.isEmpty {
+            if rule == .language && !level.isEmpty {
                 let value = t.metadata?["行政區級別"] ?? ""
                 if !GuessLogic.matchesLevel(value, level) { return false }
             }
@@ -226,7 +226,7 @@ struct GuessGameView: View {
         do {
             var rows = try await model.repository.searchAllCharacters(query, language: lang)
             if rows.isEmpty { rows = try await model.repository.searchAllCharacters(CharacterVariants.expand(query).joined(), language: lang) }
-            guard !Task.isCancelled, revision == generation else { return }
+            guard !Task.isCancelled, revision == generation, query == (kind == .character ? answerCharacter : input), lang == (kind == .character ? language : answerTable?.name ?? "") else { return }
             readings = rows
             if kind == .character && !rows.isEmpty {
                 append((model.table(named: lang)?.fullName ?? lang) + "：" + rows.map(\.pronunciation).joined(separator: " / "))
@@ -246,7 +246,10 @@ struct GuessGameView: View {
             case "首筆", "末筆":
                 let strokes = reference.values["五筆畫"] ?? ""
                 if let c = key == "首筆" ? strokes.first : strokes.last, let index = c.wholeNumberValue, (1...5).contains(index) { value = ["橫", "豎", "撇", "捺", "折"][index - 1] }
-            case "部首": value = reference.values["部首餘筆"].map { String($0.prefix(1)) } ?? ""
+            case "部首":
+                if let radical = reference.values["部首餘筆"] {
+                    value = radical.dropFirst() == "0" ? ui("這個字就是部首") : String(radical.prefix(1))
+                }
             case "結構":
                 if let first = reference.values["字形描述"]?.first { value = "⿰⿱⿲⿳⿴⿵⿶⿷⿸⿹⿺⿻⿼⿽㇯".contains(first) ? String(first) : ui("獨體字") }
             default: break
