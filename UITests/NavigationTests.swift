@@ -86,8 +86,10 @@ final class NavigationTests: XCTestCase {
         tab(app, "設定").tap()
         let map = app.sliders["mapSizeSlider"]
         let other = app.sliders["fontSizeSlider"]
+        // Keep the slider above the floating tab bar before synthesizing a drag.
+        // A partially obscured slider may still report isHittable.
         for _ in 0..<4 {
-            if other.isHittable { break }
+            if other.isHittable && other.frame.maxY < app.frame.height * 0.7 { break }
             app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.7)).press(forDuration: 0.01, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)))
         }
         XCTAssertTrue(map.waitForExistence(timeout: 5), app.debugDescription)
