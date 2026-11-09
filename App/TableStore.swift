@@ -81,11 +81,27 @@ actor TableStore {
         guard let bundledRoot, FileManager.default.fileExists(atPath: bundledRoot.appendingPathComponent("catalog.json").path) else { return }
         try prepare()
         let marker = root.appendingPathComponent("bundled-installed")
-        // User removals and manual updates survive every subsequent launch.
-        guard !FileManager.default.fileExists(atPath: marker.path) else { return }
         let data = try Data(contentsOf: bundledRoot.appendingPathComponent("catalog.json"))
         let catalog = try JSONDecoder().decode(TableCatalog.self, from: data)
         try catalog.validate()
+        let metadataMarker = root.appendingPathComponent("bundled-metadata-installed")
+        if FileManager.default.fileExists(atPath: marker.path) {
+            let processedBundle = try? String(contentsOf: metadataMarker, encoding: .utf8)
+            guard processedBundle != catalog.sourceCommit else { return }
+            let previousBundle = processedBundle ?? (try? String(contentsOf: marker, encoding: .utf8))
+            let cached = cachedCatalog()
+            // A different cached commit may be a newer manual update. SHA values
+            // cannot establish its age, so preserve that catalog as authoritative.
+            let useBundle = cached == nil || cached?.sourceCommit == previousBundle
+            _ = try synchronizeMetadata(useBundle ? catalog : cached!)
+            if useBundle {
+                try data.write(to: root.appendingPathComponent("catalog.json"), options: .atomic)
+            }
+            // Track metadata separately: never reinstall removed tables or replace
+            // the user's readings just because a new app bundles newer archives.
+            try Data(catalog.sourceCommit.utf8).write(to: metadataMarker, options: .atomic)
+            return
+        }
         let previous = try await restore()
         var merged = Dictionary(uniqueKeysWithValues: catalog.tables.map { ($0.id, $0) })
         var overrides = [String]()
@@ -115,6 +131,7 @@ actor TableStore {
         } catch { try? FileManager.default.removeItem(at: destination); throw error }
         if !FileManager.default.fileExists(atPath: root.appendingPathComponent("catalog.json").path) { try data.write(to: root.appendingPathComponent("catalog.json"), options: .atomic) }
         try Data(catalog.version.utf8).write(to: marker, options: .atomic)
+        try Data(catalog.sourceCommit.utf8).write(to: metadataMarker, options: .atomic)
     }
     private func bundledData(for table: TablePackage) throws -> Data? {
         guard table.isUpstream, let bundledRoot else { return nil }

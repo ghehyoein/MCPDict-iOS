@@ -2,6 +2,16 @@ import XCTest
 @testable import MCPDictIOS
 
 final class RequestedChangesTests: XCTestCase {
+    func testDictionaryTabLoadsApprovedArtworkAtOriginalSize() throws {
+        let image = DictionaryTabIcon.image
+        let pixels = try XCTUnwrap(image.cgImage)
+        XCTAssertEqual(pixels.width, 520)
+        XCTAssertEqual(pixels.height, 520)
+        XCTAssertEqual(image.size.width, 26)
+        XCTAssertEqual(image.size.height, 26)
+        XCTAssertEqual(image.renderingMode, .alwaysTemplate)
+    }
+
     func testOnlyMarkedHistoricalColorMatchesAndRootCategoryDoesNot() {
         let table = UITestFixtures.catalog.tables[0]
         // TablePackage has immutable identity; construct variants using Codable.
