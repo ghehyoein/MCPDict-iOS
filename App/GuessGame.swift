@@ -7,6 +7,16 @@ enum GuessRule: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 enum GuessLogic {
+    static func matchesLevel(_ value: String, _ level: String) -> Bool {
+        if level.isEmpty { return true }
+        let levels = Set(value.split(separator: ",").map(String.init))
+        return level == "縣級" ? !levels.isDisjoint(with: ["縣級", "地級"]) : levels.contains(level)
+    }
+    static func isCharacter(_ value: Character) -> Bool {
+        guard let scalar = value.unicodeScalars.first else { return false }
+        let n = scalar.value
+        return (0x3400...0x9FFF).contains(n) || (0xF900...0xFAFF).contains(n) || (0x20000...0x3347F).contains(n) || n == 0x3007
+    }
     static func area(_ table: TablePackage, rule: GuessRule) -> String {
         let m = table.metadata ?? [:]
         let province = m["省"] ?? ""
@@ -61,9 +71,9 @@ struct GuessGameView: View {
     @State private var level = ""
     @State private var province = ""
     @State private var division = ""
-    @State private var diameter = 200.0
-    @State private var hintDirection = true
-    @State private var hintDistance = true
+    @AppStorage("guessDiameter") private var diameter = 200.0
+    @AppStorage("guessHintDirection") private var hintDirection = true
+    @AppStorage("guessHintDistance") private var hintDistance = true
     @State private var answerCharacter = ""
     @State private var answerTable: TablePackage?
     @State private var input = ""
@@ -74,6 +84,7 @@ struct GuessGameView: View {
     @State private var busy = false
     @State private var error: String?
     @State private var generation = 0
+    @State private var lastGuess = ""
     private var tables: [TablePackage] { (model.installed?.tables ?? []).sorted { $0.fullName.localizedStandardCompare($1.fullName) == .orderedAscending } }
     private var dictionary: Bool { palette == "dictionary" }
     private var candidates: [TablePackage] {
@@ -84,8 +95,7 @@ struct GuessGameView: View {
             if !division.isEmpty && !parts.contains(division) { return false }
             if !level.isEmpty {
                 let value = t.metadata?["行政區級別"] ?? ""
-                if level == "縣級" { if value != "縣級" && value != "地級" { return false } }
-                else if value != level { return false }
+                if !GuessLogic.matchesLevel(value, level) { return false }
             }
             if [.province, .city, .county].contains(rule) && GuessLogic.area(t, rule: rule).isEmpty { return false }
             if [.division, .subdivision].contains(rule) && GuessLogic.division(t, rule: rule, dictionary: dictionary).isEmpty { return false }
@@ -106,6 +116,7 @@ struct GuessGameView: View {
                 if let error { SystemText(error).foregroundStyle(.red) }
                 TextField(ui(kind == .character ? "請輸入猜測的漢字" : "請輸入漢字"), text: $input).autocorrectionDisabled()
                     .onSubmit { if kind == .character { checkCharacter() } }
+                    .onChange(of: input) { _, _ in if kind == .character { checkCharacter() } }
                 if kind == .character {
                     Button(ui("提交")) { checkCharacter() }
                     Picker(ui("字形提示"), selection: $hint) {
@@ -138,6 +149,8 @@ struct GuessGameView: View {
                 }
             }
             .task(id: input) { if kind == .language { await readingHint() } }
+            .onChange(of: rule) { _, _ in Task { await newGame() } }
+            .onChange(of: level) { _, _ in Task { await newGame() } }
             .onChange(of: language) { _, _ in
                 if kind == .language { checkLanguage() } else { Task { await readingHint() } }
             }
@@ -159,12 +172,13 @@ struct GuessGameView: View {
             if rule == .distance { VStack { Text("\(ui("距離"))：\(Int(diameter)) \(ui("里"))"); Slider(value: $diameter, in: 10...200, step: 10) } }
             Toggle(ui("方向提示"), isOn: $hintDirection)
             Toggle(ui("距離提示"), isOn: $hintDistance)
-        }.disabled(answerTable != nil)
+        }
     }
     private func append(_ text: String) { log.insert(text, at: 0) }
     @MainActor private func newGame() async {
+        guard !busy else { return }
         busy = true; error = nil; log = []; readings = []; generation += 1
-        answerCharacter = ""; answerTable = nil; hint = ""
+        answerCharacter = ""; answerTable = nil; hint = ""; lastGuess = ""
         defer { busy = false }
         do {
             if kind == .language {
@@ -184,7 +198,8 @@ struct GuessGameView: View {
         } catch { self.error = error.localizedDescription; answerCharacter = ""; answerTable = nil }
     }
     private func checkCharacter() {
-        guard !answerCharacter.isEmpty, let last = input.last else { return }
+        guard !answerCharacter.isEmpty, let last = input.last, GuessLogic.isCharacter(last), String(last) != lastGuess else { return }
+        lastGuess = String(last)
         if String(last) == answerCharacter { append(ui("答對了！恭喜！")); answerCharacter = "" }
         else { append("\(ui("不是"))：\(last)") }
     }
@@ -213,6 +228,9 @@ struct GuessGameView: View {
             if rows.isEmpty { rows = try await model.repository.searchAllCharacters(CharacterVariants.expand(query).joined(), language: lang) }
             guard !Task.isCancelled, revision == generation else { return }
             readings = rows
+            if kind == .character && !rows.isEmpty {
+                append((model.table(named: lang)?.fullName ?? lang) + "：" + rows.map(\.pronunciation).joined(separator: " / "))
+            }
             if rows.isEmpty { append(ui("此字在已下載字表中沒有讀音")) }
         } catch { self.error = error.localizedDescription }
     }

@@ -708,3 +708,162 @@ Download the Guangyun table first
 
 [缺少猜字資料]
 Guess-character data is unavailable
+
+[古今演化]
+Historical sound changes
+
+[工具切換]
+Switch tools
+
+[搜尋或選擇語言]
+Search or select a language
+
+[展開語言列表]
+Show languages
+
+[中古分組維度]
+Middle Chinese grouping
+
+[今音觀察維度]
+Modern pronunciation dimension
+
+[聲母]
+Initial
+
+[韻母]
+Final
+
+[清濁]
+Voicing
+
+[等]
+Division
+
+[開合]
+Openness
+
+[攝]
+Rime group
+
+[完整音韻地位]
+Full phonological position
+
+[完整讀音]
+Full pronunciation
+
+[忽略聲調]
+Ignore tone
+
+[生成對應表]
+Generate correspondence table
+
+[中古條件篩選]
+Middle Chinese filters
+
+[恢復全部]
+Reset filters
+
+[起首介音歸入韻母]
+Include initial glides in the final
+
+[統計]
+Statistics
+
+[匹配字]
+Matching characters
+
+[對應]
+Correspondences
+
+[音韻地位]
+Phonological positions
+
+[結果內篩選]
+Filter results
+
+[輸入中古類別、今讀或漢字]
+Enter a Middle Chinese category, modern reading, or character
+
+[要比較的漢字（最多 10 個）]
+Characters to compare (up to 10)
+
+[例如：雞溪低]
+For example: 雞溪低
+
+[比較方式]
+Comparison mode
+
+[開始比較]
+Compare
+
+[地圖圖例]
+Map legend
+
+[全同]
+All identical
+
+[部分相同]
+Partially identical
+
+[全異]
+All different
+
+[比較統計]
+Comparison statistics
+
+[查看地圖]
+View map
+
+[顯示缺資料點]
+Show points with missing data
+
+[各語言比較結果]
+Comparison by language
+
+[篩選方言]
+Filter dialects
+
+[方言名稱 / 地區]
+Dialect name / region
+
+[例字]
+Example characters
+
+[關閉]
+Close
+
+[沒有匹配的語言]
+No matching language
+
+[語言列表尚未載入完成。]
+Languages are still loading.
+
+[請至少勾選兩個漢字。]
+Select at least two characters.
+
+[一次最多比較 10 個漢字。]
+Compare up to 10 characters at a time.
+
+[正在查詢 MCPDict 並計算各語言的分合關係……]
+Querying MCPDict and comparing language correspondences…
+
+[聲母（多選）]
+Initial (multiple)
+
+[韻母（多選）]
+Final (multiple)
+
+[清濁（多選）]
+Voicing (multiple)
+
+[等（多選）]
+Division (multiple)
+
+[開合（多選）]
+Openness (multiple)
+
+[攝（多選）]
+Rime group (multiple)
+
+[聲調（多選）]
+Tone (multiple)

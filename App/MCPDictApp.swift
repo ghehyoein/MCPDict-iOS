@@ -564,7 +564,7 @@ struct SearchView: View {
                             CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) })
                         }
                         if !model.resultQuery.isEmpty {
-                            if arrangement != "list" { DictionaryResultTable(languagesAsRows: arrangement == "horizontal") }
+                            if arrangement != "list" { DictionaryResultTable(languagesAsRows: arrangement == "horizontal", viewportHeight: viewport.height) }
                             else if hasCharacters { CharacterResultsView(current: current) }
                             else { HomophoneResultsView() }
                         }

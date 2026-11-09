@@ -37,11 +37,12 @@ struct ResultTableIndex {
 struct DictionaryResultTable: View {
     @EnvironmentObject var model: AppModel
     let languagesAsRows: Bool
+    var viewportHeight: CGFloat = 500
     var body: some View {
         let index = ResultTableIndex(model.results)
         let rows = languagesAsRows ? index.languages : index.characters
         let columns = languagesAsRows ? index.characters : index.languages
-        ScrollView(.horizontal) {
+        ScrollView([.horizontal, .vertical]) {
             LazyVStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top, spacing: 0) {
                     Text("").frame(width: 150)
@@ -66,7 +67,7 @@ struct DictionaryResultTable: View {
                     Divider()
                 }
             }
-        }.accessibilityIdentifier("dictionary-result-table")
+        }.frame(height: max(240, viewportHeight * 0.65)).accessibilityIdentifier("dictionary-result-table")
     }
     @ViewBuilder private func header(_ value: String, language: Bool) -> some View {
         if language {

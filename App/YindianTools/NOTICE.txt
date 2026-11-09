@@ -1,0 +1,9 @@
+Upstream: https://github.com/osfans/MCPDict
+Revision: 911a151d9d19ffaf637d3695a4669516957a1c50
+Original files: app/src/main/assets/yindian-tools/{app.js,index.html,styles.css}
+License: see App/Upstream-LICENSE.txt in this distribution.
+
+The analysis JavaScript and stylesheet are retained from upstream. The iOS app
+provides a read-only local database bridge and native comparison map. index.html
+also loads interface.js to translate interface controls from the app's independent
+text catalogs; source character, language and pronunciation data is not translated.

@@ -93,15 +93,17 @@ struct ToolsWebView: UIViewRepresentable {
             let tables = model.installed?.tables ?? []
             switch name {
             case "getApiVersion": return 3
+            case "getInterfaceTexts":
+                guard let url = Bundle.main.url(forResource: UserDefaults.standard.string(forKey: "uiLanguage") ?? "hant", withExtension: "txt", subdirectory: "InterfaceTexts") else { return "{}" }
+                return try json(InterfaceTranslations.parse(String(contentsOf: url, encoding: .utf8)))
             case "getLanguages":
                 return try json(tables.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }.map { table -> [String: Any] in
                     let meta = table.metadata ?? [:]
                     return ["language": table.fullName, "label": table.name, "coordinate": table.location.map { "\($0.longitude),\($0.latitude)" } ?? "", "mapLevel": Int(meta["地圖級別"] ?? "0") ?? 0, "toneConfig": meta["聲調"] ?? "", "location": meta["地點"] ?? "", "historical": meta["歷史音"] ?? "", "color": TableColors.hexes(UserDefaults.standard.string(forKey: "colorScheme") == "dictionary" ? table.dictionaryColor : table.atlasColor).first ?? "#64748b", "subColor": TableColors.hexes(table.dictionaryColor).first ?? "#64748b"]
                 })
             case "searchLanguages":
-                let forms = [input] + CharacterVariants.expand(input)
-                return try json(tables.filter { t in forms.contains { (t.fullName + t.name + (t.metadata?["地點"] ?? "")).localizedCaseInsensitiveContains($0) } }.map { ["language": $0.fullName] })
-            case "getTextVariants": return try json([input] + CharacterVariants.expand(input))
+                return try json(tables.filter { InterfaceLanguage.matches($0.fullName + $0.name + ($0.metadata?["地點"] ?? ""), input) }.map { ["language": $0.fullName] })
+            case "getTextVariants": return try json(Array(Set([input, input.applyingTransform(StringTransform("Traditional-Simplified"), reverse: false) ?? input, input.applyingTransform(StringTransform("Simplified-Traditional"), reverse: false) ?? input])))
             case "resolveCharacters":
                 var result = [[String: Any]]()
                 for char in CharacterResults.characters(input) {
@@ -128,7 +130,7 @@ struct ToolsWebView: UIViewRepresentable {
                 return try json(rows.map { ["字組": $0.characters, "語言": $0.language, "讀音": display($0), "原始讀音": $0.pronunciation, "註釋": $0.note] })
             case "showCompareMap":
                 guard let data = input.data(using: .utf8), let rows = try JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { throw DictionaryFailure(message: "無效的地圖資料") }
-                let colors = ["same": "#16a34a", "partial": "#d97706", "different": "#dc2626", "missing": "#64748b"]
+                let colors = ["same": "#15803d", "partial": "#ca8a04", "different": "#b91c1c", "missing": "#94a3b8"]
                 let points = rows.enumerated().compactMap { index, row -> DialectPoint? in
                     guard let coordinate = row["coordinate"] as? String, let location = TableLocation.parse(coordinate) else { return nil }
                     return DialectPoint(id: String(index), name: row["label"] as? String ?? "", longitude: location.longitude, latitude: location.latitude, color: colors[row["status"] as? String ?? ""] ?? "#64748b", reading: "", copyText: row["detail"] as? String)
