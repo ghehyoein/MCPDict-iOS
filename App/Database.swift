@@ -270,6 +270,13 @@ actor DictionaryRepository {
         try search(input, mode: .character, language: language, languages: languages, limit: -1)
     }
 
+    func toolLanguageRows(_ language: String) throws -> [Reading] {
+        guard let connection else { throw DictionaryFailure(message: "請先在「字表」頁下載詞典") }
+        return try connection.rows("SELECT rowid AS id, 字組, 語言, 讀音, 註釋 FROM langs WHERE langs MATCH ? AND 語言 = ?", ["語言 : \"" + language.replacingOccurrences(of: "\"", with: "\"\"") + "\"", language]).map {
+            Reading(id: Int64($0["id"] ?? "0") ?? 0, characters: $0["字組"] ?? "", language: $0["語言"] ?? "", pronunciation: $0["讀音"] ?? "", note: $0["註釋"] ?? "")
+        }
+    }
+
     func tableStatistics(_ language: String) throws -> [String: String] {
         guard let connection else { return [:] }
         if let cached = statisticsCache[language] { return cached }

@@ -573,3 +573,138 @@ Parsing log
 
 [下載字表後統計]
 Calculated once the table is downloaded
+
+[工具]
+Tools
+
+[排列]
+Arrangement
+
+[呈列排列]
+List
+
+[呈橫向表格排列]
+Horizontal table (language rows)
+
+[呈縱向表格排列]
+Vertical table (character rows)
+
+[猜方言]
+Guess the dialect
+
+[猜字]
+Guess the character
+
+[音典小工具]
+MCPDict tools
+
+[字音比較]
+Compare character readings
+
+[難度]
+Difficulty
+
+[隨機]
+Random
+
+[簡單]
+Easy
+
+[普通]
+Normal
+
+[困難]
+Hard
+
+[出題]
+New game
+
+[請輸入猜測的漢字]
+Enter your character guess
+
+[提交]
+Submit
+
+[字形提示]
+Character hints
+
+[選擇提示]
+Choose a hint
+
+[首筆]
+First stroke
+
+[末筆]
+Last stroke
+
+[部首]
+Radical
+
+[結構]
+Structure
+
+[讀音提示]
+Pronunciation hint
+
+[猜測語言]
+Guess a language
+
+[答案]
+Answer
+
+[出題模式]
+Game mode
+
+[距離]
+Distance
+
+[省級]
+Province
+
+[地級]
+Prefecture
+
+[縣級]
+County
+
+[方言片]
+Dialect division
+
+[方言小片]
+Dialect subdivision
+
+[省會]
+Provincial capital
+
+[里]
+li
+
+[方向提示]
+Direction hint
+
+[距離提示]
+Distance hint
+
+[未找到符合條件的方言，請重新出題]
+No matching dialect. Start a new game.
+
+[根據指定漢字的讀音或相對地理位置猜方言]
+Guess the dialect from character readings or relative location.
+
+[答對了！恭喜！]
+Correct!
+
+[不是]
+Not
+
+[獨體字]
+Single-component character
+
+[缺資料]
+Missing data
+
+[請先下載廣韻字表]
+Download the Guangyun table first
+
+[缺少猜字資料]
+Guess-character data is unavailable

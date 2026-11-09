@@ -43,6 +43,8 @@ def build(checkout, output):
     output.mkdir(parents=True, exist_ok=True)
     entries, total = [], 0
     build_references(checkout, output)
+    from build_guess_characters import build_guess_characters
+    build_guess_characters(checkout, output)
     db = sqlite3.connect(output/'bundled.db')
     db.executescript("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋, tokenize='unicode61 remove_diacritics 0'); CREATE VIRTUAL TABLE info USING fts5(簡稱, 語言); CREATE VIRTUAL TABLE mcpdict USING fts5(漢字);")
     for file in sorted(source.glob('*.tsv')):

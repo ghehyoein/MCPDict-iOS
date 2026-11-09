@@ -13,7 +13,10 @@ targets:
     platform: iOS
     sources:
       - path: App
-        excludes: [BundledTables, InterfaceTexts]
+        excludes: [BundledTables, InterfaceTexts, YindianTools]
+      - path: App/YindianTools
+        type: folder
+        buildPhase: resources
       - path: App/InterfaceTexts
         type: folder
         buildPhase: resources
@@ -31,7 +34,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: 汉字音典
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        MARKETING_VERSION: "0.9.10"
+        MARKETING_VERSION: "0.10.1"
         CURRENT_PROJECT_VERSION: 1
     dependencies:
       - sdk: libsqlite3.tbd

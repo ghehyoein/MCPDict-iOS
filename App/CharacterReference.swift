@@ -12,6 +12,18 @@ struct CharacterReference {
 actor CharacterReferenceIndex {
     static let shared = CharacterReferenceIndex()
     private var db: SQLiteConnection?
+    func guessCharacter(level: Int) throws -> String {
+        guard let url = Bundle.main.url(forResource: "guess-characters", withExtension: "json", subdirectory: "BundledTables") else {
+            throw DictionaryFailure(message: "缺少猜字資料")
+        }
+        let all = try JSONDecoder().decode([String].self, from: Data(contentsOf: url))
+        let left = level == 0 ? 2 : max(1, (level - 1) * 2000)
+        let right = level == 0 ? 6000 : level * 2000
+        guard all.count >= right, let character = Array(all[left..<right]).randomElement() else {
+            throw DictionaryFailure(message: "缺少猜字資料")
+        }
+        return character
+    }
     func lookup(_ character: String) throws -> CharacterReference {
         if db == nil, let url = Bundle.main.resourceURL?.appendingPathComponent("BundledTables/references.db") {
             db = try SQLiteConnection(url: url)

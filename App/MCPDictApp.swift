@@ -200,7 +200,7 @@ final class AppModel: ObservableObject {
         let defaults = selectionCache.defaults
         let keys = ["appearance", "uiLanguage", AppTypography.interfaceKey, AppTypography.mapKey,
                     AppTypography.readingKey, "toneStyle", "pitchStyle", "colorScheme", "dictionaryPalette",
-                    "mapPalette", "baseMapStyle", "preferredMapApp", ReferencePreferences.key]
+                    "mapPalette", "baseMapStyle", "resultArrangement", "preferredMapApp", ReferencePreferences.key]
         let prefixes = ["languageSelection.", "selectionMode.", "grouping.", "roles.", "regionNode.", "island.", "history.", "transitions."]
         for key in defaults.dictionaryRepresentation().keys where keys.contains(key) || prefixes.contains(where: key.hasPrefix) {
             defaults.removeObject(forKey: key)
@@ -471,6 +471,7 @@ struct RootView: View {
             ResettableTabContent(revision: pageIdentity) { SearchView() }.tag(0).tabItem { Label { Text(ui("字典")) } icon: { Image(uiImage: DictionaryTabIcon.image) } }
             ResettableTabContent(revision: pageIdentity) { FavoritesView() }.tag(1).tabItem { Label(ui("生字本"), systemImage: "star") }
             ResettableTabContent(revision: pageIdentity) { DialectMapView() }.tag(2).tabItem { Label(ui("地圖"), systemImage: "map") }
+            ResettableTabContent(revision: pageIdentity) { ToolsHomeView() }.tag(3).tabItem { Label(ui("工具"), systemImage: "wrench.and.screwdriver") }
             ResettableTabContent(revision: pageIdentity) { SettingsView() }.tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
         .environmentObject(model.languageSelection)
@@ -500,6 +501,8 @@ struct ReadingView: View {
 }
 
 struct SearchView: View {
+    @AppStorage("resultArrangement") private var arrangement = "list"
+    @State private var showArrangement = false
     @AppStorage("colorScheme") private var palette = "atlas"
     @FocusState private var searchFocused: Bool
     @EnvironmentObject private var selector: LanguageSelectionState
@@ -544,6 +547,8 @@ struct SearchView: View {
             .toolbarColorScheme(resultHeaderPinned ? .dark : nil, for: .navigationBar)
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
+            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(ui("排列")) { showArrangement = true }.foregroundStyle(AppAccent.color) } }
+            .sheet(isPresented: $showArrangement) { ResultArrangementSettings() }
             .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }
             }
 
@@ -559,7 +564,8 @@ struct SearchView: View {
                             CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) })
                         }
                         if !model.resultQuery.isEmpty {
-                            if hasCharacters { CharacterResultsView(current: current) }
+                            if arrangement != "list" { DictionaryResultTable(languagesAsRows: arrangement == "horizontal") }
+                            else if hasCharacters { CharacterResultsView(current: current) }
                             else { HomophoneResultsView() }
                         }
                     } header: {
