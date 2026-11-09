@@ -7,7 +7,6 @@ enum InterfaceLanguage {
         return cache
     }()
     static func text(_ text: String, script: String) -> String {
-        if script == "ja" || script == "en" { return InterfaceTranslations.text(text, language: script) }
         guard script == "hans" else { return text }
         let key = text as NSString
         if let existing = cache.object(forKey: key) { return existing as String }
@@ -22,7 +21,9 @@ enum InterfaceLanguage {
 }
 
 func ui(_ text: String) -> String {
-    InterfaceLanguage.text(text, script: UserDefaults.standard.string(forKey: "uiLanguage") ?? "hant")
+    let language = UserDefaults.standard.string(forKey: "uiLanguage") ?? "hant"
+    return InterfaceTranslations.text(text, language: language)
+        ?? text
 }
 
 // Source names and descriptive material keep their original text in Japanese/English.

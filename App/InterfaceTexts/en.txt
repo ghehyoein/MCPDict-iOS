@@ -1,0 +1,539 @@
+[Unicode 碼]
+Unicode code
+
+[統一碼區段]
+Unicode block
+
+[異體字]
+Variant characters
+
+[字形變體]
+Glyph variants
+
+[字形描述]
+Glyph description
+
+[部件檢索]
+Component lookup
+
+[兩分]
+Two-part decomposition
+
+[總筆畫數]
+Total strokes
+
+[部首餘筆]
+Radical and remaining strokes
+
+[五筆畫]
+Five-stroke code
+
+[五筆86]
+Wubi 86
+
+[五筆98]
+Wubi 98
+
+[五筆06]
+Wubi 06
+
+[倉頡三代]
+Cangjie 3
+
+[倉頡五代]
+Cangjie 5
+
+[倉頡六代]
+Cangjie 6
+
+[山人]
+Shanren
+
+[僅查已下載字表]
+Downloaded tables only
+
+[字典]
+Dictionary
+
+[生字本]
+Notebooks
+
+[地圖]
+Map
+
+[設定]
+Settings
+
+[漢字音典]
+Hanzi Yindian
+
+[顯示語言]
+Interface language
+
+[字體大小]
+Text size
+
+[地圖語言點]
+Map labels
+
+[地圖搜索結果]
+Map results
+
+[顯示介面]
+Interface
+
+[聲調顯示]
+Tone display
+
+[聲調預覽：]
+Tone preview:
+
+[調值樣式]
+Pitch style
+
+[曲線]
+Curve
+
+[數字]
+Numbers
+
+[隱藏]
+Hidden
+
+[界面外觀]
+Appearance
+
+[跟隨系統]
+System
+
+[淺色]
+Light
+
+[深色]
+Dark
+
+[還原默認設定]
+Reset settings
+
+[是否還原默認設定？]
+Reset settings to defaults?
+
+[還原]
+Reset
+
+[取消]
+Cancel
+
+[好]
+OK
+
+[完成]
+Done
+
+[儲存]
+Save
+
+[刪除]
+Delete
+
+[重新命名]
+Rename
+
+[管理]
+Manage
+
+[更新]
+Refresh
+
+[更新目錄]
+Refresh catalog
+
+[字表下載]
+Download tables
+
+[字表移除]
+Remove tables
+
+[字表處理進度]
+Table progress
+
+[取消下載]
+Cancel download
+
+[正在取得字表目錄…]
+Fetching catalog…
+
+[正在移除]
+Removing
+
+[查詢中…]
+Searching…
+
+[字頭資料顯示]
+Character information
+
+[收藏]
+Favorites
+
+[點擊收藏星號]
+When tapping the star
+
+[詢問加入哪些生字本]
+Ask which notebooks
+
+[直接加入預設生字本]
+Add to preset notebooks
+
+[設定預設生字本]
+Set preset notebooks
+
+[預設生字本]
+Default notebook
+
+[新建生字本]
+New notebook
+
+[生字本名稱]
+Notebook name
+
+[生字本分類]
+Notebook grouping
+
+[生字本匯入]
+Import notebooks
+
+[加入生字本]
+Add to notebooks
+
+[匯入及匯出]
+Import and export
+
+[匯入生字本]
+Import notebooks
+
+[匯出所選生字本]
+Export selected notebooks
+
+[刪除所選生字本？]
+Delete selected notebooks?
+
+[名稱已被使用]
+This name is already in use
+
+[個人筆記]
+Personal note
+
+[已收藏]
+Saved
+
+[多選]
+Select multiple
+
+[全選]
+Select all
+
+[清空]
+Deselect all
+
+[清除]
+Clear
+
+[已選]
+Selected
+
+[未選]
+Not selected
+
+[已選 ]
+Selected: 
+
+[選擇]
+Select
+
+[漢字]
+Character
+
+[讀音]
+Pronunciation
+
+[註釋]
+Notes
+
+[語言]
+Language
+
+[發音]
+Pronunciation
+
+[單字]
+Character
+
+[自選]
+Custom
+
+[分區]
+Regions
+
+[行政區]
+Administrative areas
+
+[分類方式]
+Group by
+
+[分區方式]
+Region scheme
+
+[地圖集二分區]
+Language Atlas II
+
+[音典分區]
+Yindian regions
+
+[行政區劃]
+Administrative divisions
+
+[語言點]
+Language point
+
+[錄入人]
+Contributors
+
+[維護人]
+Maintainers
+
+[方言島]
+Dialect islands
+
+[歷史音]
+Historical varieties
+
+[過渡色]
+Transition colors
+
+[查字]
+Search
+
+[查詢]
+Search
+
+[查詢方式]
+Search mode
+
+[檢索選項]
+Search options
+
+[請輸入漢字]
+Enter characters
+
+[請輸入讀音]
+Enter pronunciation
+
+[請輸入註釋]
+Enter notes
+
+[漢字、U+4E2D 或原始讀音]
+Characters, U+4E2D or original pronunciation
+
+[搜尋語言或分區]
+Search languages or regions
+
+[選擇語言]
+Select languages
+
+[選擇本區全部語言]
+Select all languages in this region
+
+[全部已下載語言]
+All downloaded languages
+
+[先選擇字表]
+Select tables first
+
+[語言地圖]
+Language map
+
+[地圖中心]
+Map center
+
+[底圖]
+Map type
+
+[App 內底圖]
+In-app map
+
+[標準]
+Standard
+
+[衛星]
+Satellite
+
+[混合]
+Hybrid
+
+[全覽]
+Fit all
+
+[在地圖上顯示]
+Show on map
+
+[在地圖 App 中開啟]
+Open in Maps
+
+[其他 App／分享位置]
+Other apps / share location
+
+[開啟位置的預設 App]
+Default map app
+
+[預設]
+Default
+
+[Apple 地圖]
+Apple Maps
+
+[高德地圖]
+Amap
+
+[百度地圖]
+Baidu Maps
+
+[顯示顏色]
+Display colors
+
+[顏色切換說明]
+About display colors
+
+[地圖集二／音典分區配色]
+Atlas II / Yindian colors
+
+[提示]
+Notice
+
+[漢字資料]
+Character details
+
+[字典說明]
+Dictionary links
+
+[展開顯示]
+Expanded
+
+[折疊顯示]
+Collapsed
+
+[不顯示]
+Hidden
+
+[更多字形資料]
+More character information
+
+[拼音：12345678]
+Numeric: 12345678
+
+[八聲：①③⑤⑦]
+Eight tones: ①③⑤⑦
+
+[四聲：①②③④]
+Four tones: ①②③④
+
+[漢字：平上去入]
+Characters: 平上去入
+
+[四角：꜀平꜂上去꜄入꜆]
+Corner marks: ꜀平꜂上去꜄入꜆
+
+[並排：上排調值、下排調類]
+Stacked: pitch above tone class
+
+[已下載]
+Downloaded
+
+[未下載]
+Not downloaded
+
+[可更新]
+Update available
+
+[請先新建生字本。]
+Create a notebook first.
+
+[請選擇要查看的生字本。]
+Select notebooks to view.
+
+[點擊查詢結果旁的星號，即可加入所選生字本。]
+Tap the star beside a result to add it to selected notebooks.
+
+[已合併匯入生字本，原有內容已保留。]
+Notebooks imported; existing content was preserved.
+
+[只屬於這些生字本的條目也會刪除；其他生字本中的條目會保留。]
+Entries belonging only to these notebooks will also be deleted. Entries in other notebooks are kept.
+
+[點「完成」儲存勾選的生字本；不勾選任何表會取消收藏。]
+Tap Done to save your selection. Deselect all notebooks to remove the favorite.
+
+[此字在已下載字表中沒有讀音]
+No pronunciation for this character in downloaded tables
+
+[前往「設定 → 字表下載」恢復所需字表，或手動檢查上游更新。]
+Go to Settings → Download tables to restore tables or check for updates.
+
+[尚未下載字表，請先到「字表」選擇字表。]
+No tables downloaded. Select tables first.
+
+[輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。]
+Enter a query. If no results appear, try another language or the original character or pronunciation.
+
+[載入更多（每次 100 筆）]
+Load more (100 at a time)
+
+[自選功能後續待更新，目前與語言模式相同]
+Custom mode currently works like Language mode; further updates are planned.
+
+[無法開啟所選地圖，請確認已安裝，或使用分享位置。]
+Cannot open the selected map app. Check that it is installed, or share the location.
+
+[此開關切換語言點顯示顏色。「地」使用地圖集二分區配色，「音」使用音典分區配色]
+Switch language-point colors. “地” uses Language Atlas II colors; “音” uses Yindian region colors.
+
+[* 表示過渡分區按相同色值推定，或尚無對應分區記錄。]
+* indicates a transition region inferred from an identical color, or one without a matching region record.
+
+[已選 {0} 個語言點]
+{0} language points selected
+
+[已選 {0} 份]
+{0} selected
+
+[已下載 {0} 份]
+{0} downloaded
+
+[{0} 個語言點]
+{0} language points
+
+[網上字表 {0} 份 · 本地字表 {1} 份]
+Online: {0} tables · Local: {1} tables
+
+[目錄已更新 · 已下載 {0} 份字表]
+Catalog updated · {0} tables downloaded
+
+[已下載 {0} 份字表]
+{0} tables downloaded
+
+[正在準備內置字表…]
+Preparing bundled tables…
+
+[檢查失敗，現有資料仍可使用]
+Update check failed; existing data remains available
+
+[简体中文]
+简体中文
+
+[元來是正體ɵɤ̞ɵ(]
+元來是正體ɵɤ̞ɵ(
+
+[日本語]
+日本語
+
+[English]
+English

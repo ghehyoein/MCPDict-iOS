@@ -1,204 +1,60 @@
 import Foundation
 
+// Shared [key] identifiers in four UTF-8 files. Source data never enters this catalog.
 enum InterfaceTranslations {
-    static let entries: [String: [String]] = [
-        "Unicode 碼": ["Unicodeコード", "Unicode code"],
-        "統一碼區段": ["Unicodeブロック", "Unicode block"],
-        "異體字": ["異体字", "Variant characters"],
-        "字形變體": ["字形のバリエーション", "Glyph variants"],
-        "字形描述": ["字形の記述", "Glyph description"],
-        "部件檢索": ["部品検索", "Component lookup"],
-        "兩分": ["二分構成", "Two-part decomposition"],
-        "總筆畫數": ["総画数", "Total strokes"],
-        "部首餘筆": ["部首と残りの画数", "Radical and remaining strokes"],
-        "五筆畫": ["五筆画", "Five-stroke code"],
-        "五筆86": ["五筆86", "Wubi 86"],
-        "五筆98": ["五筆98", "Wubi 98"],
-        "五筆06": ["五筆06", "Wubi 06"],
-        "倉頡三代": ["倉頡第3世代", "Cangjie 3"],
-        "倉頡五代": ["倉頡第5世代", "Cangjie 5"],
-        "倉頡六代": ["倉頡第6世代", "Cangjie 6"],
-        "山人": ["山人", "Shanren"],
-        "僅查已下載字表": ["ダウンロード済みの字表のみ", "Downloaded tables only"],
-        "字典": ["辞書", "Dictionary"],
-        "生字本": ["単語帳", "Notebooks"],
-        "地圖": ["地図", "Map"],
-        "設定": ["設定", "Settings"],
-        "漢字音典": ["漢字音典", "Hanzi Yindian"],
-        "顯示語言": ["表示言語", "Interface language"],
-        "字體大小": ["文字サイズ", "Text size"],
-        "地圖語言點": ["地図の言語地点", "Map labels"],
-        "地圖搜索結果": ["地図の検索結果", "Map results"],
-        "顯示介面": ["インターフェース", "Interface"],
-        "聲調顯示": ["声調表示", "Tone display"],
-        "聲調預覽：": ["声調プレビュー：", "Tone preview:"],
-        "調值樣式": ["調値の表示", "Pitch style"],
-        "曲線": ["曲線", "Curve"],
-        "數字": ["数字", "Numbers"],
-        "隱藏": ["非表示", "Hidden"],
-        "界面外觀": ["外観", "Appearance"],
-        "跟隨系統": ["システムに従う", "System"],
-        "淺色": ["ライト", "Light"],
-        "深色": ["ダーク", "Dark"],
-        "還原默認設定": ["設定を初期化", "Reset settings"],
-        "是否還原默認設定？": ["設定を初期化しますか？", "Reset settings to defaults?"],
-        "還原": ["初期化", "Reset"],
-        "取消": ["キャンセル", "Cancel"],
-        "好": ["OK", "OK"],
-        "完成": ["完了", "Done"],
-        "儲存": ["保存", "Save"],
-        "刪除": ["削除", "Delete"],
-        "重新命名": ["名前を変更", "Rename"],
-        "管理": ["管理", "Manage"],
-        "更新": ["更新", "Refresh"],
-        "更新目錄": ["一覧を更新", "Refresh catalog"],
-        "字表下載": ["字表のダウンロード", "Download tables"],
-        "字表移除": ["字表を削除", "Remove tables"],
-        "字表處理進度": ["字表の処理状況", "Table progress"],
-        "取消下載": ["ダウンロードを中止", "Cancel download"],
-        "正在取得字表目錄…": ["字表一覧を取得中…", "Fetching catalog…"],
-        "正在移除": ["削除中", "Removing"],
-        "查詢中…": ["検索中…", "Searching…"],
-        "字頭資料顯示": ["見出し字の情報表示", "Character information"],
-        "收藏": ["お気に入り", "Favorites"],
-        "點擊收藏星號": ["星印を押したとき", "When tapping the star"],
-        "詢問加入哪些生字本": ["追加先を確認する", "Ask which notebooks"],
-        "直接加入預設生字本": ["指定した単語帳に直接追加", "Add to preset notebooks"],
-        "設定預設生字本": ["既定の単語帳を設定", "Set preset notebooks"],
-        "預設生字本": ["既定の単語帳", "Default notebook"],
-        "新建生字本": ["単語帳を作成", "New notebook"],
-        "生字本名稱": ["単語帳の名前", "Notebook name"],
-        "生字本分類": ["単語帳の分類", "Notebook grouping"],
-        "生字本匯入": ["単語帳のインポート", "Import notebooks"],
-        "加入生字本": ["単語帳に追加", "Add to notebooks"],
-        "匯入及匯出": ["インポートとエクスポート", "Import and export"],
-        "匯入生字本": ["単語帳をインポート", "Import notebooks"],
-        "匯出所選生字本": ["選択した単語帳をエクスポート", "Export selected notebooks"],
-        "刪除所選生字本？": ["選択した単語帳を削除しますか？", "Delete selected notebooks?"],
-        "名稱已被使用": ["この名前は既に使われています", "This name is already in use"],
-        "個人筆記": ["自分のメモ", "Personal note"],
-        "已收藏": ["登録済み", "Saved"],
-        "多選": ["複数選択", "Select multiple"],
-        "全選": ["すべて選択", "Select all"],
-        "清空": ["選択を解除", "Deselect all"],
-        "清除": ["クリア", "Clear"],
-        "已選": ["選択済み", "Selected"],
-        "未選": ["未選択", "Not selected"],
-        "已選 ": ["選択済み：", "Selected: "],
-        "選擇": ["選択", "Select"],
-        "漢字": ["漢字", "Character"],
-        "讀音": ["読み", "Pronunciation"],
-        "註釋": ["注釈", "Notes"],
-        "語言": ["言語", "Language"],
-        "發音": ["発音", "Pronunciation"],
-        "單字": ["文字", "Character"],
-        "自選": ["カスタム", "Custom"],
-        "分區": ["地域区分", "Regions"],
-        "行政區": ["行政区", "Administrative areas"],
-        "分類方式": ["分類方法", "Group by"],
-        "分區方式": ["地域区分", "Region scheme"],
-        "地圖集二分區": ["中国語言地図集 第2版", "Language Atlas II"],
-        "音典分區": ["音典の地域区分", "Yindian regions"],
-        "行政區劃": ["行政区画", "Administrative divisions"],
-        "語言點": ["言語地点", "Language point"],
-        "錄入人": ["入力者", "Contributors"],
-        "維護人": ["管理者", "Maintainers"],
-        "方言島": ["方言島", "Dialect islands"],
-        "歷史音": ["歴史音", "Historical varieties"],
-        "過渡色": ["移行色", "Transition colors"],
-        "查字": ["検索", "Search"],
-        "查詢": ["検索", "Search"],
-        "查詢方式": ["検索方法", "Search mode"],
-        "檢索選項": ["検索オプション", "Search options"],
-        "請輸入漢字": ["漢字を入力", "Enter characters"],
-        "請輸入讀音": ["読みを入力", "Enter pronunciation"],
-        "請輸入註釋": ["注釈を入力", "Enter notes"],
-        "漢字、U+4E2D 或原始讀音": ["漢字、U+4E2D、または元の読み", "Characters, U+4E2D or original pronunciation"],
-        "搜尋語言或分區": ["言語または地域を検索", "Search languages or regions"],
-        "選擇語言": ["言語を選択", "Select languages"],
-        "選擇本區全部語言": ["この地域のすべての言語を選択", "Select all languages in this region"],
-        "全部已下載語言": ["ダウンロード済みの全言語", "All downloaded languages"],
-        "先選擇字表": ["字表を選択してください", "Select tables first"],
-        "語言地圖": ["言語地図", "Language map"],
-        "地圖中心": ["地図の中心", "Map center"],
-        "底圖": ["地図の種類", "Map type"],
-        "App 內底圖": ["アプリ内の地図", "In-app map"],
-        "標準": ["標準", "Standard"],
-        "衛星": ["衛星", "Satellite"],
-        "混合": ["ハイブリッド", "Hybrid"],
-        "全覽": ["全体を表示", "Fit all"],
-        "在地圖上顯示": ["地図に表示", "Show on map"],
-        "在地圖 App 中開啟": ["地図アプリで開く", "Open in Maps"],
-        "其他 App／分享位置": ["他のアプリ／位置を共有", "Other apps / share location"],
-        "開啟位置的預設 App": ["既定の地図アプリ", "Default map app"],
-        "預設": ["既定", "Default"],
-        "Apple 地圖": ["Appleマップ", "Apple Maps"],
-        "高德地圖": ["高徳地図", "Amap"],
-        "百度地圖": ["百度地図", "Baidu Maps"],
-        "顯示顏色": ["表示色", "Display colors"],
-        "顏色切換說明": ["配色切替について", "About display colors"],
-        "地圖集二／音典分區配色": ["地図集第2版／音典の配色", "Atlas II / Yindian colors"],
-        "提示": ["お知らせ", "Notice"],
-        "漢字資料": ["漢字情報", "Character details"],
-        "字典說明": ["辞書へのリンク", "Dictionary links"],
-        "展開顯示": ["展開して表示", "Expanded"],
-        "折疊顯示": ["折りたたんで表示", "Collapsed"],
-        "不顯示": ["表示しない", "Hidden"],
-        "更多字形資料": ["その他の字形情報", "More character information"],
-        "拼音：12345678": ["数字：12345678", "Numeric: 12345678"],
-        "八聲：①③⑤⑦": ["八声：①③⑤⑦", "Eight tones: ①③⑤⑦"],
-        "四聲：①②③④": ["四声：①②③④", "Four tones: ①②③④"],
-        "漢字：平上去入": ["漢字：平上去入", "Characters: 平上去入"],
-        "四角：꜀平꜂上去꜄入꜆": ["四隅：꜀平꜂上去꜄入꜆", "Corner marks: ꜀平꜂上去꜄入꜆"],
-        "並排：上排調值、下排調類": ["上下表示：調値／声調分類", "Stacked: pitch above tone class"],
-        "已下載": ["ダウンロード済み", "Downloaded"],
-        "未下載": ["未ダウンロード", "Not downloaded"],
-        "可更新": ["更新あり", "Update available"],
-        "請先新建生字本。": ["まず単語帳を作成してください。", "Create a notebook first."],
-        "請選擇要查看的生字本。": ["表示する単語帳を選択してください。", "Select notebooks to view."],
-        "點擊查詢結果旁的星號，即可加入所選生字本。": ["検索結果の星印を押すと、選択した単語帳に追加できます。", "Tap the star beside a result to add it to selected notebooks."],
-        "已合併匯入生字本，原有內容已保留。": ["既存の内容を保持して単語帳を取り込みました。", "Notebooks imported; existing content was preserved."],
-        "只屬於這些生字本的條目也會刪除；其他生字本中的條目會保留。": ["これらの単語帳だけにある項目も削除されます。他の単語帳の項目は保持されます。", "Entries belonging only to these notebooks will also be deleted. Entries in other notebooks are kept."],
-        "點「完成」儲存勾選的生字本；不勾選任何表會取消收藏。": ["「完了」で選択を保存します。すべて解除すると登録を取り消します。", "Tap Done to save your selection. Deselect all notebooks to remove the favorite."],
-        "此字在已下載字表中沒有讀音": ["ダウンロード済みの字表にこの字の読みがありません", "No pronunciation for this character in downloaded tables"],
-        "前往「設定 → 字表下載」恢復所需字表，或手動檢查上游更新。": ["「設定 → 字表のダウンロード」で字表を復元するか、更新を確認してください。", "Go to Settings → Download tables to restore tables or check for updates."],
-        "尚未下載字表，請先到「字表」選擇字表。": ["字表が未ダウンロードです。字表を選択してください。", "No tables downloaded. Select tables first."],
-        "輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。": ["検索語を入力してください。結果がない場合は、言語を変えるか元の字形・読みをお試しください。", "Enter a query. If no results appear, try another language or the original character or pronunciation."],
-        "載入更多（每次 100 筆）": ["さらに読み込む（100件ずつ）", "Load more (100 at a time)"],
-        "自選功能後續待更新，目前與語言模式相同": ["カスタム機能は今後更新予定です。現在は言語モードと同じです。", "Custom mode currently works like Language mode; further updates are planned."],
-        "無法開啟所選地圖，請確認已安裝，或使用分享位置。": ["地図アプリを開けません。インストールを確認するか、位置を共有してください。", "Cannot open the selected map app. Check that it is installed, or share the location."],
-        "此開關切換語言點顯示顏色。「地」使用地圖集二分區配色，「音」使用音典分區配色": ["言語地点の配色を切り替えます。「地」は地図集第2版、「音」は音典の地域区分の配色です。", "Switch language-point colors. “地” uses Language Atlas II colors; “音” uses Yindian region colors."],
-        "* 表示過渡分區按相同色值推定，或尚無對應分區記錄。": ["* は、同じ色から推定した移行区分、または対応する区分の記録がないことを示します。", "* indicates a transition region inferred from an identical color, or one without a matching region record."],
-        "已選 {0} 個語言點": ["選択中：{0}地点", "{0} language points selected"],
-        "已選 {0} 份": ["選択中：{0}件", "{0} selected"],
-        "已下載 {0} 份": ["ダウンロード済み：{0}件", "{0} downloaded"],
-        "{0} 個語言點": ["{0}地点", "{0} language points"],
-        "網上字表 {0} 份 · 本地字表 {1} 份": ["オンライン {0}件 · ローカル {1}件", "Online: {0} tables · Local: {1} tables"],
-        "目錄已更新 · 已下載 {0} 份字表": ["一覧を更新しました · {0}件ダウンロード済み", "Catalog updated · {0} tables downloaded"],
-        "已下載 {0} 份字表": ["ダウンロード済み：{0}件", "{0} tables downloaded"],
-        "正在準備內置字表…": ["内蔵字表を準備中…", "Preparing bundled tables…"],
-        "檢查失敗，現有資料仍可使用": ["更新の確認に失敗しました。既存のデータは利用できます", "Update check failed; existing data remains available"],
-    ]
-    private static let patterns: [(NSRegularExpression, [String])] = entries.compactMap { key, values in
+    enum FormatError: Error { case invalidLine, duplicateKey, emptyValue }
+    static func parse(_ input: String) throws -> [String: String] {
+        let source = input.hasPrefix("\u{FEFF}") ? String(input.dropFirst()) : input
+        let lines = source.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n")
+        var result = [String: String](), key: String?, value = [String]()
+        func finish() throws {
+            guard let current = key else { return }
+            while value.last == "" { value.removeLast() }
+            guard !value.isEmpty else { throw FormatError.emptyValue }
+            guard result[current] == nil else { throw FormatError.duplicateKey }
+            result[current] = value.joined(separator: "\n")
+        }
+        for line in lines {
+            if line.hasPrefix("["), line.hasSuffix("]"), line.count > 2 {
+                try finish()
+                key = String(line.dropFirst().dropLast()); value = []
+            } else if key != nil { value.append(line) }
+            else if !line.isEmpty { throw FormatError.invalidLine }
+        }
+        try finish()
+        return result
+    }
+    private static let catalogs: [String: [String: String]] = {
+        var loaded = [String: [String: String]]()
+        for language in ["hant", "hans", "ja", "en"] {
+            guard let url = Bundle.main.url(forResource: language, withExtension: "txt", subdirectory: "InterfaceTexts"),
+                  let source = try? String(contentsOf: url, encoding: .utf8),
+                  let values = try? parse(source) else {
+                assertionFailure("Missing or invalid interface text catalog: " + language)
+                continue
+            }
+            loaded[language] = values
+        }
+        return loaded
+    }()
+    private static let patterns: [(String, NSRegularExpression)] = (catalogs["hant"] ?? [:]).keys.sorted().compactMap { key in
         guard key.contains("{0}") else { return nil }
-        let parts = key.components(separatedBy: "{0}")
-        var pattern = parts.map(NSRegularExpression.escapedPattern(for:)).joined(separator: "([0-9]+)")
+        var pattern = key.components(separatedBy: "{0}").map(NSRegularExpression.escapedPattern(for:)).joined(separator: "([0-9]+)")
         pattern = pattern.replacingOccurrences(of: NSRegularExpression.escapedPattern(for: "{1}"), with: "([0-9]+)")
         guard let expression = try? NSRegularExpression(pattern: "^" + pattern + "$") else { return nil }
-        return (expression, values)
+        return (key, expression)
     }
-    static func text(_ source: String, language: String) -> String {
-        let index = language == "ja" ? 0 : 1
-        if let values = entries[source] { return values[index] }
+    static func text(_ source: String, language: String) -> String? {
+        let values = catalogs[language] ?? catalogs["hant"] ?? [:]
+        if let value = values[source] { return value }
         let range = NSRange(source.startIndex..., in: source)
-        for (pattern, values) in patterns {
-            guard let match = pattern.firstMatch(in: source, range: range) else { continue }
-            var result = values[index]
+        for (key, pattern) in patterns {
+            guard let match = pattern.firstMatch(in: source, range: range), var result = values[key] else { continue }
             for i in 1..<match.numberOfRanges {
                 result = result.replacingOccurrences(of: "{\(i - 1)}", with: (source as NSString).substring(with: match.range(at: i)))
             }
             return result
         }
-        return source
+        return nil
     }
 }

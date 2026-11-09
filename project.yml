@@ -13,7 +13,10 @@ targets:
     platform: iOS
     sources:
       - path: App
-        excludes: [BundledTables]
+        excludes: [BundledTables, InterfaceTexts]
+      - path: App/InterfaceTexts
+        type: folder
+        buildPhase: resources
       - path: App/BundledTables
         type: folder
         buildPhase: resources

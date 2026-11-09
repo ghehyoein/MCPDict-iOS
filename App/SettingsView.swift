@@ -22,10 +22,10 @@ struct SettingsView: View {
 
 
                 Section(ui("顯示語言")) {
-                    option("简体中文", value: "hans", selection: $uiLanguage)
-                    option("元來是正體ɵɤ̞ɵ(", value: "hant", selection: $uiLanguage)
-                    option("日本語", value: "ja", selection: $uiLanguage)
-                    option("English", value: "en", selection: $uiLanguage)
+                    option(ui("简体中文"), value: "hans", selection: $uiLanguage)
+                    option(ui("元來是正體ɵɤ̞ɵ("), value: "hant", selection: $uiLanguage)
+                    option(ui("日本語"), value: "ja", selection: $uiLanguage)
+                    option(ui("English"), value: "en", selection: $uiLanguage)
                 }
                 Section(ui("字體大小")) {
                     sizeSlider("地圖語言點", $mapSize, range: 5...25, identifier: "mapSizeSlider", sample: 0)
