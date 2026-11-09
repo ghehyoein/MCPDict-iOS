@@ -74,7 +74,7 @@ struct CharacterReferenceHeader: View {
                             if item == "地圖" {
                                 Button(action: map) { Image(systemName: "map") }.accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("characterMap")
                             } else if data.values[item] != nil {
-                                Button(ui(item)) { show(.init(data: data, book: item)) }
+                                Button(contentUI(item)) { show(.init(data: data, book: item)) }
                             }
                         }
                     }
@@ -103,7 +103,7 @@ struct CharacterReferenceDetail: View {
                         SystemText(page.data.code)
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading).padding().textSelection(.enabled)
-            }.navigationTitle(ui(page.book ?? "統一碼")).navigationBarTitleDisplayMode(.inline)
+            }.navigationTitle(contentUI(page.book ?? "統一碼")).navigationBarTitleDisplayMode(.inline)
             .toolbar { Button(ui("完成")) { dismiss() } }
         }
     }

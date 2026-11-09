@@ -26,7 +26,7 @@ struct ReferencePreferences: Codable {
     func value(_ field: String, data: CharacterReference) -> String? {
         if field == "Unicode" { return data.code }
         let text = field == "Unicode區段" ? data.block : data.values[field] ?? ""
-        return text.isEmpty ? nil : ui(field == "Unicode" ? "Unicode 碼" : field == "Unicode區段" ? "統一碼區段" : field) + "：" + text
+        return text.isEmpty ? nil : contentUI(field == "Unicode" ? "Unicode 碼" : field == "Unicode區段" ? "統一碼區段" : field) + "：" + text
     }
 }
 

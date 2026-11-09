@@ -476,7 +476,7 @@ struct RootView: View {
         .environmentObject(model.languageSelection)
         .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
         .id(rootIdentity)
-        .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : "zh-Hant"))
+        .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : uiLanguage == "ja" ? "ja" : uiLanguage == "en" ? "en" : "zh-Hant"))
         .dynamicTypeSize(AppTypography.size(fontSize))
         .tint(AppAccent.color)
         .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)

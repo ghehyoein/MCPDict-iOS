@@ -158,7 +158,7 @@ struct DialectMapView: View {
                 }
     }
     private var statusLabel: some View {
-                SystemText(ui("\(points.count) 個語言點" + (result.map { " ·「" + (activeCharacter.isEmpty ? $0.query : activeCharacter) + "」僅查已下載字表" } ?? "")), color: .secondaryLabel)
+                SystemText(ui("\(points.count) 個語言點") + (result.map { " ·「" + (activeCharacter.isEmpty ? $0.query : activeCharacter) + "」" + ui("僅查已下載字表") } ?? ""), color: .secondaryLabel)
                     .font(.caption).accessibilityIdentifier("mapPointStatus")
     }
     @ToolbarContentBuilder private var mapToolbar: some ToolbarContent {
