@@ -26,7 +26,7 @@ struct ReadingContentKey: Hashable {
 }
 
 enum SearchMode: String, CaseIterable, Identifiable {
-    case character = "漢字", pronunciation = "讀音", note = "註釋"
+    case character = "漢字", pronunciation = "發音", note = "註釋"
     var id: String { rawValue }
     var column: String {
         switch self {

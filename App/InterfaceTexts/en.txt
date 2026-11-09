@@ -1,5 +1,5 @@
 [Unicode 碼]
-Unicode code
+Unicode code point
 
 [統一碼區段]
 Unicode block
@@ -8,25 +8,25 @@ Unicode block
 Variant characters
 
 [字形變體]
-Glyph variants
+Variation sequences
 
 [字形描述]
-Glyph description
+Ideographic description sequences (IDS)
 
 [部件檢索]
 Component lookup
 
 [兩分]
-Two-part decomposition
+Two-component lookup
 
 [總筆畫數]
-Total strokes
+Total stroke count
 
 [部首餘筆]
-Radical and remaining strokes
+Radical and additional strokes
 
 [五筆畫]
-Five-stroke code
+Stroke code
 
 [五筆86]
 Wubi 86
@@ -38,16 +38,16 @@ Wubi 98
 Wubi 06
 
 [倉頡三代]
-Cangjie 3
+Tsang-chieh 3
 
 [倉頡五代]
-Cangjie 5
+Tsang-chieh 5
 
 [倉頡六代]
-Cangjie 6
+Tsang-chieh 6
 
 [山人]
-Shanren
+ShanRenMaLTS
 
 [僅查已下載字表]
 Downloaded tables only
@@ -56,7 +56,7 @@ Downloaded tables only
 Dictionary
 
 [生字本]
-Notebooks
+Word lists
 
 [地圖]
 Map
@@ -65,7 +65,7 @@ Map
 Settings
 
 [漢字音典]
-Hanzi Yindian
+MCPDict
 
 [顯示語言]
 Interface language
@@ -74,13 +74,13 @@ Interface language
 Text size
 
 [地圖語言點]
-Map labels
+Map label text
 
 [地圖搜索結果]
-Map results
+Map result text
 
 [顯示介面]
-Interface
+Interface text
 
 [聲調顯示]
 Tone display
@@ -89,10 +89,10 @@ Tone display
 Tone preview:
 
 [調值樣式]
-Pitch style
+Tone value display
 
 [曲線]
-Curve
+Chao tone letters
 
 [數字]
 Numbers
@@ -104,7 +104,7 @@ Hidden
 Appearance
 
 [跟隨系統]
-System
+Use system setting
 
 [淺色]
 Light
@@ -113,13 +113,13 @@ Light
 Dark
 
 [還原默認設定]
-Reset settings
+Restore default settings
 
 [是否還原默認設定？]
-Reset settings to defaults?
+Restore default settings?
 
 [還原]
-Reset
+Restore
 
 [取消]
 Cancel
@@ -155,73 +155,73 @@ Download tables
 Remove tables
 
 [字表處理進度]
-Table progress
+Table operation progress
 
 [取消下載]
 Cancel download
 
 [正在取得字表目錄…]
-Fetching catalog…
+Loading the table catalog…
 
 [正在移除]
-Removing
+Removing…
 
 [查詢中…]
 Searching…
 
 [字頭資料顯示]
-Character information
+Character information display
 
 [收藏]
 Favorites
 
 [點擊收藏星號]
-When tapping the star
+Star button action
 
 [詢問加入哪些生字本]
-Ask which notebooks
+Ask which word lists to use
 
 [直接加入預設生字本]
-Add to preset notebooks
+Add directly to default word lists
 
 [設定預設生字本]
-Set preset notebooks
+Choose default word lists
 
 [預設生字本]
-Default notebook
+Default word list
 
 [新建生字本]
-New notebook
+New word list
 
 [生字本名稱]
-Notebook name
+Word list name
 
 [生字本分類]
-Notebook grouping
+Group entries by
 
 [生字本匯入]
-Import notebooks
+Import word lists
 
 [加入生字本]
-Add to notebooks
+Add to word lists
 
 [匯入及匯出]
 Import and export
 
 [匯入生字本]
-Import notebooks
+Import word lists
 
 [匯出所選生字本]
-Export selected notebooks
+Export selected word lists
 
 [刪除所選生字本？]
-Delete selected notebooks?
+Delete the selected word lists?
 
 [名稱已被使用]
 This name is already in use
 
 [個人筆記]
-Personal note
+Personal notes
 
 [已收藏]
 Saved
@@ -253,11 +253,8 @@ Select
 [漢字]
 Character
 
-[讀音]
-Pronunciation
-
 [註釋]
-Notes
+Annotations
 
 [語言]
 Language
@@ -272,7 +269,7 @@ Character
 Custom
 
 [分區]
-Regions
+Classification
 
 [行政區]
 Administrative areas
@@ -281,22 +278,22 @@ Administrative areas
 Group by
 
 [分區方式]
-Region scheme
+Classification scheme
 
 [地圖集二分區]
-Language Atlas II
+Atlas classification (2nd ed.)
 
 [音典分區]
-Yindian regions
+MCPDict classification
 
 [行政區劃]
 Administrative divisions
 
 [語言點]
-Language point
+Language variety
 
 [錄入人]
-Contributors
+Data entry contributors
 
 [維護人]
 Maintainers
@@ -308,7 +305,7 @@ Dialect islands
 Historical varieties
 
 [過渡色]
-Transition colors
+Transitional colors
 
 [查字]
 Search
@@ -320,34 +317,34 @@ Search
 Search mode
 
 [檢索選項]
-Search options
+Selection mode
 
 [請輸入漢字]
 Enter characters
 
 [請輸入讀音]
-Enter pronunciation
+Enter a pronunciation
 
 [請輸入註釋]
-Enter notes
+Enter annotation text
 
 [漢字、U+4E2D 或原始讀音]
-Characters, U+4E2D or original pronunciation
+Characters, U+4E2D, or a pronunciation as recorded
 
 [搜尋語言或分區]
-Search languages or regions
+Search varieties or groups
 
 [選擇語言]
-Select languages
+Select varieties
 
 [選擇本區全部語言]
-Select all languages in this region
+Select all varieties in this group
 
 [全部已下載語言]
-All downloaded languages
+All downloaded varieties
 
 [先選擇字表]
-Select tables first
+Select pronunciation tables first
 
 [語言地圖]
 Language map
@@ -359,7 +356,7 @@ Map center
 Map type
 
 [App 內底圖]
-In-app map
+In-app map type
 
 [標準]
 Standard
@@ -371,16 +368,16 @@ Satellite
 Hybrid
 
 [全覽]
-Fit all
+Show all
 
 [在地圖上顯示]
 Show on map
 
 [在地圖 App 中開啟]
-Open in Maps
+Open in a map app
 
 [其他 App／分享位置]
-Other apps / share location
+Other apps / Share location
 
 [開啟位置的預設 App]
 Default map app
@@ -401,25 +398,25 @@ Baidu Maps
 Display colors
 
 [顏色切換說明]
-About display colors
+About classification colors
 
 [地圖集二／音典分區配色]
-Atlas II / Yindian colors
+Atlas / MCPDict classification colors
 
 [提示]
 Notice
 
 [漢字資料]
-Character details
+Character information
 
 [字典說明]
 Dictionary links
 
 [展開顯示]
-Expanded
+Show inline
 
 [折疊顯示]
-Collapsed
+Show under ⋯
 
 [不顯示]
 Hidden
@@ -428,22 +425,22 @@ Hidden
 More character information
 
 [拼音：12345678]
-Numeric: 12345678
+Tone category numbers: 12345678
 
 [八聲：①③⑤⑦]
-Eight tones: ①③⑤⑦
+Eight tone categories: ①③⑤⑦
 
 [四聲：①②③④]
-Four tones: ①②③④
+Four tone categories: ①②③④
 
 [漢字：平上去入]
-Characters: 平上去入
+Chinese tone names: 平上去入
 
 [四角：꜀平꜂上去꜄入꜆]
-Corner marks: ꜀平꜂上去꜄入꜆
+Corner tone marks: ꜀平꜂上去꜄入꜆
 
 [並排：上排調值、下排調類]
-Stacked: pitch above tone class
+Stacked: tone value above, tone category below
 
 [已下載]
 Downloaded
@@ -455,52 +452,52 @@ Not downloaded
 Update available
 
 [請先新建生字本。]
-Create a notebook first.
+Create a word list first.
 
 [請選擇要查看的生字本。]
-Select notebooks to view.
+Select the word lists you want to view.
 
 [點擊查詢結果旁的星號，即可加入所選生字本。]
-Tap the star beside a result to add it to selected notebooks.
+Tap the star next to a search result to add it to your word lists.
 
 [已合併匯入生字本，原有內容已保留。]
-Notebooks imported; existing content was preserved.
+Word lists imported and merged. Existing content has been preserved.
 
 [只屬於這些生字本的條目也會刪除；其他生字本中的條目會保留。]
-Entries belonging only to these notebooks will also be deleted. Entries in other notebooks are kept.
+Entries saved only in these word lists will also be deleted. Entries saved in other word lists will be kept.
 
 [點「完成」儲存勾選的生字本；不勾選任何表會取消收藏。]
-Tap Done to save your selection. Deselect all notebooks to remove the favorite.
+Tap Done to save your selection. Deselect every word list to remove this entry from your favorites.
 
 [此字在已下載字表中沒有讀音]
-No pronunciation for this character in downloaded tables
+No pronunciations found for this character in the downloaded tables
 
 [前往「設定 → 字表下載」恢復所需字表，或手動檢查上游更新。]
-Go to Settings → Download tables to restore tables or check for updates.
+Go to Settings → Download tables to restore the tables you need or check for updates.
 
 [尚未下載字表，請先到「字表」選擇字表。]
-No tables downloaded. Select tables first.
+No pronunciation tables are downloaded. Go to Settings → Download tables to select and download them.
 
 [輸入查詢內容；若沒有結果，可切換語言或使用原始字形／讀音。]
-Enter a query. If no results appear, try another language or the original character or pronunciation.
+Enter a search term. If no results appear, try a different language variety or use the character form or pronunciation as recorded in the table.
 
 [載入更多（每次 100 筆）]
-Load more (100 at a time)
+Load 100 more results
 
 [自選功能後續待更新，目前與語言模式相同]
-Custom mode currently works like Language mode; further updates are planned.
+Custom mode currently works the same as Language mode. More options are planned.
 
 [無法開啟所選地圖，請確認已安裝，或使用分享位置。]
-Cannot open the selected map app. Check that it is installed, or share the location.
+The selected map app could not be opened. Make sure it is installed, or use Share location.
 
 [此開關切換語言點顯示顏色。「地」使用地圖集二分區配色，「音」使用音典分區配色]
-Switch language-point colors. “地” uses Language Atlas II colors; “音” uses Yindian region colors.
+This switch changes the colors used for language varieties. “地” uses the classification in the Language Atlas of China (2nd edition); “音” uses the MCPDict classification.
 
 [* 表示過渡分區按相同色值推定，或尚無對應分區記錄。]
-* indicates a transition region inferred from an identical color, or one without a matching region record.
+* marks a transitional classification inferred from an exact color match, or a color with no corresponding classification record.
 
 [已選 {0} 個語言點]
-{0} language points selected
+{0} varieties selected
 
 [已選 {0} 份]
 {0} selected
@@ -509,10 +506,10 @@ Switch language-point colors. “地” uses Language Atlas II colors; “音”
 {0} downloaded
 
 [{0} 個語言點]
-{0} language points
+{0} varieties
 
 [網上字表 {0} 份 · 本地字表 {1} 份]
-Online: {0} tables · Local: {1} tables
+Available online: {0} tables · On this device: {1} tables
 
 [目錄已更新 · 已下載 {0} 份字表]
 Catalog updated · {0} tables downloaded
@@ -524,7 +521,7 @@ Catalog updated · {0} tables downloaded
 Preparing bundled tables…
 
 [檢查失敗，現有資料仍可使用]
-Update check failed; existing data remains available
+Could not check for updates. Existing data is still available.
 
 [名稱]
 Name
@@ -536,7 +533,7 @@ Location
 Longitude / latitude
 
 [音典分區過渡色]
-Yindian region transition colors
+MCPDict transitional classification colors
 
 [字數]
 Character count
@@ -548,7 +545,7 @@ Character count
 Syllable count
 
 [不帶調音節數]
-Syllable count excluding tones
+Syllable count ignoring tone
 
 [版本]
 Version
@@ -557,7 +554,7 @@ Version
 File name
 
 [字表來源]
-Table source
+Pronunciation table source
 
 [參考文獻]
 References
@@ -569,10 +566,10 @@ Table revision history
 Table quality
 
 [字表品質說明]
-Table quality notes
+Table quality details
 
 [解析日誌]
 Parsing log
 
 [下載字表後統計]
-Calculated after downloading the table
+Calculated once the table is downloaded
