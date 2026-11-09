@@ -16,7 +16,7 @@ struct TableInfoView: View {
         if key == "音典分區過渡色" { return DictionaryTransitions(tables: model.availableTables).description(current) }
         if key == "音典分區" { return current.dictionary.joined(separator: "－") }
         if key == "解析日志" { return log }
-        if ["字數", "□數", "音節數", "不帶調音節數"].contains(key) { return contentUI("下載字表後統計") }
+        if ["字數", "□數", "音節數", "不帶調音節數"].contains(key) { return ui("下載字表後統計") }
         return ""
     }
     private let first = ["名稱", "地點", "經緯度", "地圖集二分區", "音典分區", "音典分區過渡色", "字數", "□數", "音節數", "不帶調音節數"]
@@ -29,7 +29,7 @@ struct TableInfoView: View {
                     ForEach(first, id: \.self) { field($0) }
                     ForEach(second, id: \.self) { field($0) }
                     Color.clear.frame(height: 22)
-                    SystemText(contentUI("解析日誌"), weight: .bold).font(.title2)
+                    SystemText(ui("解析日誌"), weight: .bold).font(.title2)
                     SystemText(value("解析日志"))
                 }.frame(maxWidth: .infinity, alignment: .leading).padding()
             }
@@ -48,13 +48,13 @@ struct TableInfoView: View {
     @ViewBuilder private func field(_ key: String) -> some View {
         if key == "文件名" {
             HStack(alignment: .firstTextBaseline, spacing: 0) {
-                SystemText(contentUI(key) + "：", weight: .bold)
+                SystemText(ui(key) + "：", weight: .bold)
                 if let url = current.sourceFileURL {
                     Link(value(key), destination: url)
                 } else { SystemText(value(key)) }
             }
         } else {
-            SystemText(contentUI(key == "字表品質説明" ? "字表品質說明" : key) + "：" + value(key), boldPrefix: contentUI(key == "字表品質説明" ? "字表品質說明" : key) + "：")
+            SystemText(ui(key == "字表品質説明" ? "字表品質說明" : key) + "：" + value(key), boldPrefix: ui(key == "字表品質説明" ? "字表品質說明" : key) + "：")
             ForEach(MetadataText.links(current.metadata?[key] ?? ""), id: \.absoluteString) { url in
                 Link(url.absoluteString, destination: url).font(.caption)
             }
