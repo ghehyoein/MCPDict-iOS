@@ -1,87 +1,19 @@
-name: Check dense map text and latest snapshot
+name: Validate and publish authorized 0.9.4
 on:
   push:
     branches: [codex/performance-release-actions]
 permissions:
+  actions: write
   contents: read
 jobs:
-  check:
-    name: ${{ matrix.device }} / iOS ${{ matrix.ios }}
-    strategy:
-      fail-fast: false
-      matrix:
-        device: [iPhone-13]
-        ios: ['26.2']
-    runs-on: macos-15
+  dispatch:
+    runs-on: ubuntu-latest
     env:
-      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
-    timeout-minutes: 45
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ghehyoein/MCPDict-iOS
     steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: 65323d77ce69d65293e8bc4008dfaa8ef76eb224
-      - uses: actions/checkout@v4
-        with:
-          repository: osfans/MCPDict
-          ref: 5231117297c38822a1fd06c047df61f4f034500f
-          path: bundled-source
-      - name: Build complete bundled dictionary snapshot
+      - name: Check target commit and start focused validation and gated release
         run: |
-          python3 -m venv bundle-env
-          bundle-env/bin/pip install regex==2026.9.29
-          bundle-env/bin/python tools/bundle_tables.py bundled-source App/BundledTables
-      - name: Generate Xcode project
-        run: |
-          brew install xcodegen
-          python3 tools/prepare_assets.py
-          xcodegen generate
-      - name: Verify dense readings and native text selection
-        env:
-          DEVICE_TYPE: ${{ matrix.device }}
-          IOS_VERSION: ${{ matrix.ios }}
-        run: |
-          runtime="com.apple.CoreSimulator.SimRuntime.iOS-${IOS_VERSION//./-}"
-          device=$(xcrun simctl create "MCPDict-${DEVICE_TYPE}-${IOS_VERSION}" "com.apple.CoreSimulator.SimDeviceType.${DEVICE_TYPE}" "$runtime")
-          xcrun simctl boot "$device"
-          xcrun simctl bootstatus "$device" -b
-          xcrun simctl list devices | tee tested-device.txt
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "platform=iOS Simulator,id=$device" -derivedDataPath DerivedData -resultBundlePath TestResults CODE_SIGNING_ALLOWED=NO -only-testing:MCPDictIOSTests/MapTests -only-testing:MCPDictIOSTests/OptimizationTests/testNameOnlyMapDoesNotAllocate3306TextViews -only-testing:MCPDictIOSTests/OptimizationTests/testDenseReadingsDeferTextViewsUntilActuallyTouched -only-testing:MCPDictIOSTests/Revision092Tests/testMapRetainsAnnotationAndSelectionAcrossPaletteChanges -only-testing:MCPDictIOSTests/Revision092Tests/testDenseMapCameraUpdatesDoNotReplaceAnnotations -only-testing:MCPDictIOSUITests/NavigationTests/testMapTextSupportsNativeSelectionAndMenuFollowsInput -only-testing:MCPDictIOSUITests/NavigationTests/testMapSearchModeControlsAndVariantResults test
-      - name: Export test diagnostics and screenshots
-        if: always()
-        run: |
-          if [ -d TestResults.xcresult ]; then
-            mkdir -p TestAttachments
-            xcrun xcresulttool get test-results tests --path TestResults.xcresult > TestAttachments/tests.json
-            xcrun xcresulttool export attachments --path TestResults.xcresult --output-path TestAttachments
-          fi
-      - name: Show icon crops from test screenshots
-        if: always()
-        run: |
-          python3 - <<'PYTHON'
-          from pathlib import Path
-          import base64, subprocess, re
-          for i, source in enumerate(Path('TestAttachments').rglob('*.png')):
-              if i >= 4: break
-              info = subprocess.check_output(['sips', '-g', 'pixelWidth', '-g', 'pixelHeight', str(source)], text=True)
-              width = int(re.search(r'pixelWidth: (\d+)', info)[1])
-              height = int(re.search(r'pixelHeight: (\d+)', info)[1])
-              target = Path('/tmp') / ('map-tab-'+str(i)+'.png')
-              subprocess.run(['sips', '--cropToHeightWidth', '300', str(width), '--cropOffset', str(height-300), '0', str(source), '--out', str(target)], check=True, stdout=subprocess.DEVNULL)
-              print('ICON_CROP_'+str(i)+'='+base64.b64encode(target.read_bytes()).decode())
-          PYTHON
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: simulator-test-results-${{ matrix.device }}-${{ matrix.ios }}
-          path: |
-            tested-device.txt
-            TestResults.xcresult
-            TestAttachments
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: simulator-screenshots-${{ matrix.device }}-${{ matrix.ios }}
-          path: |
-            TestAttachments/**/*.png
-            TestAttachments/**/*.jpg
-            TestAttachments/**/*.json
+          test "$(gh api repos/ghehyoein/MCPDict-iOS/commits/main --jq .sha)" = 8b4a1f75716fc72d9648012ebcf1bb0abf6027c5
+          gh workflow run ios.yml --ref main -f tests='MCPDictIOSTests/CatalogRefreshTests MCPDictIOSTests/OptimizationTests/testUnchangedCatalogOnlyRequestsHead MCPDictIOSUITests/NavigationTests/testCatalogProgressAllowsNavigation'
+          gh workflow run device.yml --ref main -f publish=true
