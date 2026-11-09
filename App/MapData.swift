@@ -18,7 +18,7 @@ struct DialectPoint: Codable, Identifiable, Equatable {
     let name: String
     let longitude: Double
     let latitude: Double
-    let color: String
+    var color: String
     let reading: String
     var copyText: String? = nil
     var toneParts: [ToneDisplay.Part]? = nil

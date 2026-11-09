@@ -24,7 +24,10 @@ struct LanguageSelectionPanel: View {
     @State private var paletteInfo = false
     private let cache = LanguageSelectionCache()
     private var chosen: Binding<Set<String>> {
-        Binding(get: { names }, set: { names = $0; cache.save($0, for: state.key) })
+        Binding(get: { state.kind == .custom ? state.custom.members : names }, set: {
+            if state.kind == .custom { state.custom.members = $0; syncCustom() }
+            else { names = $0; cache.save($0, for: state.key) }
+        })
     }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -34,7 +37,10 @@ struct LanguageSelectionPanel: View {
             if alwaysExpanded || state.expanded { controls }
         }
         .onAppear { restoreInitial() }
-        .onChange(of: tables) { _, _ in restoreInitial() }
+        .onChange(of: tables) { _, _ in restoreInitial(); syncCustom() }
+        .onChange(of: state.custom) { _, _ in syncCustom() }
+        .onChange(of: state.flags) { _, _ in syncCustom() }
+        .environmentObject(state)
     }
     private var controls: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -43,14 +49,14 @@ struct LanguageSelectionPanel: View {
                 // refreshes must not overwrite it with the previous mode's names.
                 let saved = cache.load(state.namespace + "." + mode.rawValue) ?? []
                 state.kind = mode
-                names = restoredNames(saved)
+                names = state.kind == .custom ? customNames : restoredNames(saved)
                 cache.save(names, for: state.key)
             })) {
                 ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).labelsHidden()
             HStack(spacing: 10) {
-                flagButton("方言島", $state.flags.island)
-                flagButton("歷史音", $state.flags.history)
+                visibilityPicker("方言島", $state.flags.islandMode)
+                visibilityPicker("歷史音", $state.flags.historyMode)
                 if state.kind == .region && state.grouping == .dictionary { TransitionToggle(state: state) }
                 Spacer(minLength: 0)
                 PaletteSwitch()
@@ -60,25 +66,27 @@ struct LanguageSelectionPanel: View {
             .alert(ui("顯示顏色"), isPresented: $paletteInfo) {
                 Button(ui("好"), role: .cancel) {}
             } message: { Text(ui("此開關切換語言點顯示顏色。「地」使用地圖集二分區配色，「音」使用音典分區配色")) }
-            if state.kind == .custom { SystemText(ui("自選功能後續待更新，目前與語言模式相同"), color: .secondaryLabel).font(.caption) }
+            if state.kind == .custom { CustomSchemeControls(state: state) }
             LanguageDropdown(tables: tables, names: chosen, state: state, inspect: inspect, palette: palette == "dictionary" ? .dictionary : .atlas, showsDone: !alwaysExpanded) {
                 state.expanded = false; finished()
             }.id(state.key)
         }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
     }
-    private func flagButton(_ title: String, _ value: Binding<Bool>) -> some View {
-        HStack(spacing: 0) {
-            Button { value.wrappedValue.toggle() } label: {
-                Image(systemName: value.wrappedValue ? "checkmark.square.fill" : "square")
-                    .contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }
-            }.buttonStyle(.borderless).accessibilityLabel(ui(title))
-            SystemText(ui(title), color: AppAccent.uiColor, onTap: { value.wrappedValue.toggle() })
+    private func visibilityPicker(_ title: String, _ value: Binding<LanguageVisibility>) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            SystemText(ui(title), color: AppAccent.uiColor)
+            Picker(ui(title), selection: value) {
+                ForEach(LanguageVisibility.allCases, id: \.self) { Text(ui($0.title)).tag($0) }
+            }.pickerStyle(.menu).labelsHidden().accessibilityIdentifier("visibility-" + title)
         }
     }
-
+    private var customNames: Set<String> {
+        state.custom.selected.intersection(Set(tables.filter(state.flags.matches).map(\.name)))
+    }
+    private func syncCustom() { if state.kind == .custom { names = customNames } }
     private func restoreInitial() {
         guard !restored, !tables.isEmpty else { return }
-        names = restoredNames(cache.load(state.key) ?? names)
+        names = state.kind == .custom ? customNames : restoredNames(cache.load(state.key) ?? names)
         cache.save(names, for: state.key)
         restored = true
     }

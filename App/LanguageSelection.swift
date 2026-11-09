@@ -2,9 +2,21 @@ import Foundation
 
 enum PersonRole: String, CaseIterable { case editor = "錄入人", maintainer = "維護人" }
 
+enum LanguageVisibility: String, CaseIterable, Codable {
+    case only, show, hide
+    var title: String { switch self { case .only: return "僅顯示"; case .show: return "顯示"; case .hide: return "隱藏" } }
+    func accepts(_ marked: Bool) -> Bool { self == .show || (self == .only ? marked : !marked) }
+}
+
 struct LanguageFlags: Equatable {
-    var island = false
-    var history = false
+    var islandMode: LanguageVisibility = .show
+    var historyMode: LanguageVisibility = .show
+    var island: Bool { get { islandMode == .only } set { islandMode = newValue ? .only : .show } }
+    var history: Bool { get { historyMode == .only } set { historyMode = newValue ? .only : .show } }
+    init(island: Bool = false, history: Bool = false) {
+        islandMode = island ? .only : .show; historyMode = history ? .only : .show
+    }
+    var isFiltering: Bool { islandMode != .show || historyMode != .show }
     static func historicalMarker(_ table: TablePackage) -> String? {
         let fields = ["是否為語言歷史音", "是否为语言历史音", "是否為方言歷史音", "歷史音"]
         guard let raw = fields.lazy.compactMap({ table.metadata?[$0] }).first else { return nil }
@@ -21,7 +33,7 @@ struct LanguageFlags: Equatable {
             return !["", "0", "false", "null", "否"].contains(value)
         }
         let historical = Self.historicalMarker(table) != nil && ![table.atlas.first, table.dictionary.first].contains("歷史音")
-        return (!island || marked("方言島")) && (!history || historical)
+        return islandMode.accepts(marked("方言島")) && historyMode.accepts(historical)
     }
 }
 

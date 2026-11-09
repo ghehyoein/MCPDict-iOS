@@ -951,3 +951,51 @@ Province
 
 [行政區級別]
 Administrative level
+
+[僅顯示]
+Show only
+
+[顯示]
+Show
+
+[方案]
+Scheme
+
+[默認方案]
+Default scheme
+
+[自選範圍]
+Custom scope
+
+[全部方案]
+All schemes
+
+[當前方案]
+Current scheme
+
+[按方案配色]
+Color by scheme
+
+[改名]
+Rename
+
+[方案名稱（空格可分級，如：江淮 洪巢）]
+Scheme name (spaces create levels, e.g. 江淮 洪巢)
+
+[方案名稱不能為空或重複]
+Scheme name must be nonempty and unique
+
+[刪除方案]
+Delete scheme
+
+[移出當前自選方案]
+Remove from current custom scheme
+
+[加入當前自選方案]
+Add to current custom scheme
+
+[新建]
+New
+
+[保存]
+Save

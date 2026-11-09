@@ -100,7 +100,7 @@ struct LanguageDropdown: View {
             inferredTransitionIDs = Set(eligible.filter { transitions.needsAsterisk($0) }.map(\.id))
         } else { additionalPaths = [:]; inferredTransitionIDs = [] }
         index = state.indexCache.index(tables: eligible, grouping: state.grouping, roles: state.roles, paths: additionalPaths)
-        if prune { names = names.intersection(Set(eligible.map(\.name))) }
+        if prune && state.kind != .custom { names = names.intersection(Set(eligible.map(\.name))) }
         if updateRegion, state.scope == .terminalGroups, let region = state.region {
             if let ids = index.nodes["g:" + region]?.ids { names = Set(eligible.filter { ids.contains($0.id) }.map(\.name)) }
         }
@@ -158,17 +158,17 @@ struct LanguageDropdown: View {
             }.frame(height: 200).accessibilityIdentifier("languageTreeScroll")
             HStack {
                 if state.scope != .terminalGroups {
-                    Button(ui("全選")) { names = Set(eligible.map(\.name)) }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
+                    Button(ui("全選")) { if state.kind == .custom { names.formUnion(eligible.map(\.name)) } else { names = Set(eligible.map(\.name)) } }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
                 }
                 Spacer(minLength: 32)
-                Button(ui("清空")) { names = []; state.region = nil }.accessibilityIdentifier("clearLanguages").frame(minWidth: 60, minHeight: 44)
+                Button(ui("清空")) { if state.kind == .custom { names.subtract(eligible.map(\.name)) } else { names = [] }; state.region = nil }.accessibilityIdentifier("clearLanguages").frame(minWidth: 60, minHeight: 44)
                 if showsDone {
                     Spacer(minLength: 32)
                     Button(ui("完成"), action: done).accessibilityIdentifier("finishLanguages")
                 }
             }.buttonStyle(.borderless)
         }
-        .onAppear { refresh(prune: state.flags.island || state.flags.history || (state.grouping == .dictionary && state.includeTransitions)) }
+        .onAppear { refresh(prune: state.flags.isFiltering || (state.grouping == .dictionary && state.includeTransitions)) }
         .onChange(of: tables) { _, _ in refresh(prune: true) }
         .onChange(of: state.grouping) { _, _ in refresh(prune: true) }
         .onChange(of: state.includeTransitions) { _, _ in refresh(prune: true, updateRegion: true) }

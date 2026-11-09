@@ -45,6 +45,7 @@ enum TableColors {
 }
 
 struct LanguageBadge: View {
+    @EnvironmentObject private var selector: LanguageSelectionState
     @Environment(\.mapLabelSize) private var mapSize
     let name: String
     let table: TablePackage?
@@ -53,7 +54,7 @@ struct LanguageBadge: View {
     @AppStorage("colorScheme") private var colorScheme = "atlas"
     var body: some View {
         let scheme = grouping == .atlas || grouping == .dictionary ? grouping! : (colorScheme == "dictionary" ? .dictionary : .atlas)
-        let colors = table.map { TableColors.hexes(TableColors.raw($0, scheme)) } ?? []
+        let colors = selector.kind == .custom && selector.custom.colorByScheme ? [selector.custom.color(for: name)] : (table.map { TableColors.hexes(TableColors.raw($0, scheme)) } ?? [])
         Text(name).font(mapSize.map { Font.system(size: $0) } ?? .subheadline).foregroundStyle(.white)
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(TableColors.gradient(colors), in: RoundedRectangle(cornerRadius: 5))
@@ -65,6 +66,11 @@ struct LanguageBadge: View {
                 }
             }
             .padding(.trailing, transitionAsterisk ? 8 : 0)
+            .contextMenu {
+                Button(ui(selector.custom.members.contains(name) ? "移出當前自選方案" : "加入當前自選方案")) {
+                    if !selector.custom.members.insert(name).inserted { selector.custom.members.remove(name) }
+                }
+            }
     }
 }
 

@@ -18,11 +18,14 @@ import SwiftUI
         region = defaults.string(forKey: "regionNode." + key + grouping.rawValue)
     } }
     @Published var flags: LanguageFlags { didSet {
-        defaults.set(flags.island, forKey: "island." + namespace)
-        defaults.set(flags.history, forKey: "history." + namespace)
+        defaults.set(flags.islandMode.rawValue, forKey: "islandMode." + namespace)
+        defaults.set(flags.historyMode.rawValue, forKey: "historyMode." + namespace)
     } }
     @Published var roles = Set(PersonRole.allCases) { didSet { defaults.set(roles.map(\.rawValue), forKey: "roles." + key) } }
     @Published var includeTransitions = false { didSet { defaults.set(includeTransitions, forKey: "transitions." + namespace) } }
+    @Published var custom: CustomLanguageSchemes { didSet {
+        if let data = try? JSONEncoder().encode(custom) { defaults.set(data, forKey: "customSchemes." + namespace) }
+    } }
     @Published var filter = ""
     @Published var expandedNodes = Set<String>()
     @Published var region: String? { didSet { defaults.set(region, forKey: "regionNode." + key + grouping.rawValue) } }
@@ -32,9 +35,13 @@ import SwiftUI
     init(namespace: String, defaults: UserDefaults = .standard) {
         self.namespace = namespace; self.defaults = defaults
         kind = defaults.string(forKey: "selectionMode." + namespace).flatMap(MapSearchKind.init(rawValue:)) ?? .language
+        custom = defaults.data(forKey: "customSchemes." + namespace).flatMap { try? JSONDecoder().decode(CustomLanguageSchemes.self, from: $0) } ?? CustomLanguageSchemes(legacy: Set(defaults.stringArray(forKey: "languageSelection." + namespace + ".自選") ?? []))
         flags = LanguageFlags(island: defaults.bool(forKey: "island." + namespace), history: defaults.bool(forKey: "history." + namespace))
+        if let mode = defaults.string(forKey: "islandMode." + namespace).flatMap(LanguageVisibility.init(rawValue:)) { flags.islandMode = mode }
+        if let mode = defaults.string(forKey: "historyMode." + namespace).flatMap(LanguageVisibility.init(rawValue:)) { flags.historyMode = mode }
         includeTransitions = defaults.bool(forKey: "transitions." + namespace)
         restoreControls()
+        if let data = try? JSONEncoder().encode(custom) { defaults.set(data, forKey: "customSchemes." + namespace) }
     }
     func resetDefaults() {
         expanded = false; kind = .language; grouping = .atlas
