@@ -61,9 +61,9 @@ struct TableActions: View {
         HStack(spacing: 10) {
             Spacer(minLength: 0)
             SystemText(ui(model.removing ? "正在移除" : model.downloading ? "已下載 \(model.downloadedCount) 份" : model.updating ? model.status : "已選 \(selection.count) 份"), color: .white).accessibilityIdentifier("downloadCount")
-            if model.downloading || model.removing {
+            if model.updating {
                 ProgressView(value: model.tableProgress).progressViewStyle(.linear).frame(width: 60)
-                    .accessibilityLabel(ui("字表處理進度"))
+                    .accessibilityLabel(ui("字表處理進度")).accessibilityIdentifier("tableProcessingProgress")
             }
             if model.downloading {
                 Button(ui("取消下載")) { model.cancelDownload() }.accessibilityIdentifier("cancelDownload")

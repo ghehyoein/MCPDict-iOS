@@ -31,17 +31,21 @@ enum UpstreamTables {
         }
         return data
     }
-    static func catalog(cached: TableCatalog? = nil, fetch: @escaping @Sendable (URL) async throws -> Data = { try await UpstreamTables.get($0) }) async throws -> TableCatalog {
+    static func catalog(cached: TableCatalog? = nil, progress: @escaping @Sendable (Double) async -> Void = { _ in }, fetch: @escaping @Sendable (URL) async throws -> Data = { try await UpstreamTables.get($0) }) async throws -> TableCatalog {
+        await progress(0)
         struct Head: Decodable { let sha: String }
         let head = try JSONDecoder().decode(Head.self, from: await fetch(URL(string: "https://api.github.com/repos/osfans/MCPDict/commits/master")!))
         guard head.sha.range(of: "^[0-9a-f]{40}$", options: .regularExpression) != nil else { throw DictionaryFailure(message: "上游版本格式錯誤") }
-        if let cached, cached.sourceCommit == head.sha { try cached.validate(); return cached }
+        await progress(0.15)
+        if let cached, cached.sourceCommit == head.sha { try cached.validate(); await progress(1); return cached }
         let base = URL(string: "https://raw.githubusercontent.com/osfans/MCPDict/\(head.sha)/tools/tables/output/")!
         async let treeData = fetch(URL(string: "https://api.github.com/repos/osfans/MCPDict/git/trees/\(head.sha)?recursive=1")!)
         async let detailsData = fetch(base.appendingPathComponent("_詳情.json"))
         let tree = try JSONDecoder().decode(Tree.self, from: await treeData)
+        await progress(0.5)
         guard tree.truncated != true else { throw DictionaryFailure(message: "上游目錄過大，無法安全取得完整字表清單") }
         guard let metadata = try JSONSerialization.jsonObject(with: await detailsData) as? [String: [String: Any]] else { throw DictionaryFailure(message: "上游分區資料格式變更") }
+        await progress(0.8)
         let prefix = "tools/tables/output/"
         let sourcePaths = Set(tree.tree.filter { $0.type == "blob" }.map(\.path))
         var tables = [TablePackage]()
@@ -73,6 +77,7 @@ enum UpstreamTables {
         guard !tables.isEmpty else { throw DictionaryFailure(message: "上游目錄沒有可用字表") }
         let catalog = TableCatalog(schemaVersion: 1, version: head.sha, sourceRepository: repository, sourceCommit: head.sha, scope: "直接連接安卓上游 · \(tables.count) 份字表 · \(head.sha.prefix(7))", tables: tables.sorted { $0.name < $1.name })
         try catalog.validate()
+        await progress(1)
         return catalog
     }
 

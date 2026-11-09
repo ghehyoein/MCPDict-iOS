@@ -139,12 +139,44 @@ actor TableStore {
         return state
     }
     func catalog() async throws -> TableCatalog {
+        try await refreshCatalog().catalog
+    }
+    // Refresh archive information without replacing, adding or removing installed readings.
+    func refreshCatalog(progress: @escaping @Sendable (Double) async -> Void = { _ in },
+                        fetch: @escaping @Sendable (URL) async throws -> Data = { try await UpstreamTables.get($0) }) async throws -> (catalog: TableCatalog, installation: TableInstallation?) {
+        guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
+        busy = true
+        defer { busy = false }
         let cached = cachedCatalog()
-        let latest = try await UpstreamTables.catalog(cached: cached)
-        if cached?.sourceCommit == latest.sourceCommit { return latest }
+        let latest = try await UpstreamTables.catalog(cached: cached, progress: { await progress($0 * 0.85) }, fetch: fetch)
+        try Task.checkCancellation()
         try prepare()
-        try JSONEncoder().encode(latest).write(to: root.appendingPathComponent("catalog.json"), options: .atomic)
-        return latest
+        let installation = try synchronizeMetadata(latest)
+        await progress(0.95)
+        if cached?.sourceCommit != latest.sourceCommit {
+            try JSONEncoder().encode(latest).write(to: root.appendingPathComponent("catalog.json"), options: .atomic)
+        }
+        await progress(1)
+        return (latest, installation)
+    }
+    private func synchronizeMetadata(_ catalog: TableCatalog) throws -> TableInstallation? {
+        guard FileManager.default.fileExists(atPath: index.path) else { return nil }
+        let state = try JSONDecoder().decode(TableInstallation.self, from: Data(contentsOf: index))
+        let latest = Dictionary(uniqueKeysWithValues: catalog.tables.map { ($0.id, $0) })
+        let tables = state.tables.map { old -> TablePackage in
+            guard old.isUpstream, let new = latest[old.id], new.isUpstream, old.name == new.name else { return old }
+            // Keep the installed content identity: changed TSVs must still show as updatable.
+            return TablePackage(id: old.id, name: old.name, fullName: new.fullName,
+                atlas: new.atlas, dictionary: new.dictionary, administrative: new.administrative,
+                source: new.source, sourceCommit: old.sourceCommit, recordCount: old.recordCount,
+                size: old.size, sha256: old.sha256, url: old.url, metadata: new.metadata,
+                location: new.location, atlasColor: new.atlasColor, dictionaryColor: new.dictionaryColor,
+                format: old.format, gitBlob: old.gitBlob)
+        }
+        guard tables != state.tables else { return state }
+        let updated = TableInstallation(catalogVersion: state.catalogVersion, tables: tables, databaseFile: state.databaseFile)
+        try JSONEncoder().encode(updated).write(to: index, options: .atomic)
+        return updated
     }
     func cachedCatalog() -> TableCatalog? {
         guard let data = try? Data(contentsOf: root.appendingPathComponent("catalog.json")),

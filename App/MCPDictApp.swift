@@ -140,6 +140,9 @@ final class AppModel: ObservableObject {
             }
             if ProcessInfo.processInfo.arguments.contains("--busy-fixture") { updating = true; downloading = true }
             status = ""
+            if ProcessInfo.processInfo.arguments.contains("--catalog-progress-fixture") {
+                updating = true; tableProgress = 0.5; status = "正在取得字表目錄…"
+            }
             return
         }
         #endif
@@ -216,12 +219,16 @@ final class AppModel: ObservableObject {
     }
     func loadCatalog() async {
         guard !updating else { return }
-        updating = true
+        updating = true; tableProgress = 0
         status = "正在取得字表目錄…"
         let task = Task {
             defer { updating = false; updateTask = nil }
             do {
-                catalog = try await tableStore.catalog()
+                let refreshed = try await tableStore.refreshCatalog(progress: { fraction in
+                    await MainActor.run { self.tableProgress = fraction }
+                })
+                installed = refreshed.installation
+                catalog = refreshed.catalog
                 status = "目錄已更新 · 已下載 \(installed?.tables.count ?? 0) 份字表"
             } catch { status = "檢查失敗，現有資料仍可使用"; self.error = error.localizedDescription }
         }

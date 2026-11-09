@@ -667,4 +667,19 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "map-reading-" + String(repeating: "a", count: 24)).firstMatch.waitForExistence(timeout: 8))
     }
 
+    @MainActor func testCatalogProgressAllowsNavigation() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--catalog-progress-fixture"]; app.launch()
+        tab(app, "設定").tap(); app.buttons["字表下載"].tap()
+        let progress = app.progressIndicators["tableProcessingProgress"]
+        XCTAssertTrue(progress.waitForExistence(timeout: 5))
+        XCTAssertTrue(progress.isHittable)
+        XCTAssertTrue(app.textViews["downloadCount"].label.contains("正在取得字表目錄"))
+        XCTAssertTrue(app.buttons["selectAllLanguages"].isEnabled)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "更新目錄進度"; shot.lifetime = .keepAlways; add(shot)
+        app.navigationBars.buttons.firstMatch.tap()
+        tab(app, "地圖").tap()
+        XCTAssertTrue(app.buttons["mapLanguageSelection"].waitForExistence(timeout: 5))
+    }
+
 }
