@@ -109,12 +109,13 @@ final class RequestedChangesTests: XCTestCase {
         XCTAssertEqual(index["中"]?.last?.readings.map(\.id), [1, 3])
         XCTAssertEqual(index["輸"]?.first?.readings.map(\.id), [1])
     }
-    func testTonePreviewUsesYinShangAnd51() {
-        let part = ToneDisplay.parts("hæ3", table: ToneDisplay.previewTable, style: "hanzi", pitchStyle: "number")
-        XCTAssertEqual(part.first?.base, "hæ")
-        XCTAssertEqual(part.first?.tone, "陰上")
-        XCTAssertEqual(part.first?.pitch, "51")
-        XCTAssertEqual(ToneDisplay.parts("hæ3", table: ToneDisplay.previewTable, style: "baSheng", pitchStyle: "number").first?.tone, "③")
+    func testTonePreviewUsesYinPingAnd53() {
+        let part = ToneDisplay.parts(ToneDisplay.previewReading, table: ToneDisplay.previewTable, style: "hanzi", pitchStyle: "number")
+        XCTAssertEqual(ToneDisplay.previewCharacter, "身")
+        XCTAssertEqual(part.first?.base, "ɕiŋ")
+        XCTAssertEqual(part.first?.tone, "陰平")
+        XCTAssertEqual(part.first?.pitch, "53")
+        XCTAssertEqual(ToneDisplay.parts(ToneDisplay.previewReading, table: ToneDisplay.previewTable, style: "baSheng", pitchStyle: "number").first?.tone, "①")
     }
 
     func testLargeResultIndexMatchesExistingGrouping() {

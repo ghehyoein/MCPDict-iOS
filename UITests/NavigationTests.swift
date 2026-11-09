@@ -191,7 +191,8 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.buttons["dictionaryLanguageSelection"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["dictionaryLanguageSelection"].label.contains("已選 1"))
         tab(app, "設定").tap()
-        XCTAssertTrue(app.buttons["元來是正體ɵɤ̞ɵ("].exists)
+        XCTAssertTrue(app.buttons["interfaceLanguagePicker"].waitForExistence(timeout: 5))
+        app.buttons["interfaceLanguagePicker"].tap()
         let simplified = app.descendants(matching: .any).matching(identifier: "简体中文").firstMatch
         XCTAssertTrue(simplified.waitForExistence(timeout: 5)); simplified.tap()
         XCTAssertTrue(tab(app, "设置").waitForExistence(timeout: 5))

@@ -21,11 +21,13 @@ struct SettingsView: View {
                 FavoriteSettingsSection()
 
 
-                Section(ui("顯示語言")) {
-                    option("简体中文", value: "hans", selection: $uiLanguage)
-                    option("元來是正體ɵɤ̞ɵ(", value: "hant", selection: $uiLanguage)
-                    option("日本語", value: "ja", selection: $uiLanguage)
-                    option("English", value: "en", selection: $uiLanguage)
+                Section {
+                    Picker(ui("顯示語言"), selection: $uiLanguage) {
+                        Text(verbatim: "简体中文").tag("hans")
+                        Text(verbatim: "元來是正體ɵɤ̞ɵ(").tag("hant")
+                        Text(verbatim: "日本語").tag("ja")
+                        Text(verbatim: "English").tag("en")
+                    }.pickerStyle(.menu).accessibilityIdentifier("interfaceLanguagePicker")
                 }
                 Section(ui("字體大小")) {
                     sizeSlider("地圖語言點", $mapSize, range: 5...25, identifier: "mapSizeSlider", sample: 0)
@@ -33,7 +35,7 @@ struct SettingsView: View {
                     sizeSlider("顯示介面", $fontSize, range: 14...26, identifier: "fontSizeSlider", sample: 2)
                 }
                 Section(ui("聲調顯示")) {
-                    HStack { SystemText(ui("聲調預覽：")); Spacer(); HStack(spacing: 0) { SystemText("好"); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, scrollable: false) } }
+                    HStack { SystemText(ui("聲調預覽：")); Spacer(); HStack(spacing: 0) { SystemText(ToneDisplay.previewCharacter); PronunciationView(raw: ToneDisplay.previewReading, table: ToneDisplay.previewTable, scrollable: false) } }
                     Picker("", selection: $toneStyle) {
                         ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
                     }.pickerStyle(.inline).labelsHidden()
@@ -69,7 +71,7 @@ struct SettingsView: View {
                         LanguageBadge(name: "通東呂四", table: table).environment(\.mapLabelSize, mapSize)
                     }.buttonStyle(.plain).disabled(table == nil)
                 } else if sample == 1 {
-                    HStack(spacing: 0) { SystemText("好", pointSize: CGFloat(readingSize)); PronunciationView(raw: "hæ3", table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false) }
+                    HStack(spacing: 0) { SystemText(ToneDisplay.previewCharacter, pointSize: CGFloat(readingSize)); PronunciationView(raw: ToneDisplay.previewReading, table: ToneDisplay.previewTable, pointSize: readingSize, scrollable: false) }
                 } else { SystemText(ui("漢字音典"), pointSize: CGFloat(fontSize)) }
             }
             Slider(value: size, in: range) { Text(ui(label)) }.accessibilityIdentifier(identifier)
