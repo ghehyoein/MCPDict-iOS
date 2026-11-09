@@ -673,7 +673,12 @@ final class NavigationTests: XCTestCase {
         tab(app, "設定").tap(); app.buttons["字表下載"].tap()
         let progress = app.progressIndicators["tableProcessingProgress"]
         XCTAssertTrue(progress.waitForExistence(timeout: 5))
-        XCTAssertTrue(progress.isHittable)
+        // Progress indicators are read-only; visibility does not imply tap handling.
+        XCTAssertGreaterThan(progress.frame.width, 0)
+        XCTAssertGreaterThan(progress.frame.height, 0)
+        XCTAssertTrue(app.frame.contains(progress.frame))
+        let value = try XCTUnwrap(progress.value as? String)
+        XCTAssertTrue(value.contains("50") || value == "0.5", value)
         XCTAssertTrue(app.textViews["downloadCount"].label.contains("正在取得字表目錄"))
         XCTAssertTrue(app.buttons["selectAllLanguages"].isEnabled)
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "更新目錄進度"; shot.lifetime = .keepAlways; add(shot)
