@@ -21,6 +21,7 @@ final class AdditionalToolsUITests: XCTestCase {
         app.buttons["完成"].tap()
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "長文注音"; shot.lifetime = .keepAlways; add(shot)
         app.tabBars.buttons["設定"].tap()
+        XCTAssertTrue(app.navigationBars["設定"].waitForExistence(timeout: 5))
         app.buttons["讀音格式"].tap()
         app.buttons["readingFormat-mc_display"].tap()
         XCTAssertTrue(app.switches["readingFormat-mc_display-0"].waitForExistence(timeout: 5))

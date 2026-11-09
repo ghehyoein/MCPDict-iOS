@@ -47,6 +47,7 @@ struct LongTextView: View {
     @AppStorage("longTextLanguage") private var language = ""
     @AppStorage("longTextFormat") private var format = 8
     @State private var input = ""
+    @FocusState private var inputFocused: Bool
     @State private var characters = [AnnotatedCharacter]()
     @State private var submittedTable: TablePackage?
     @State private var languageSheet = false
@@ -68,13 +69,13 @@ struct LongTextView: View {
             VStack(alignment: .leading, spacing: 12) {
                 Text(ui("長文注音，每次最多 400 字。藍點表示多音或異體字，可點擊切換。"))
                     .font(.caption).foregroundStyle(.secondary)
-                TextEditor(text: $input).frame(height: 140).overlay(RoundedRectangle(cornerRadius: 6).stroke(.secondary))
+                TextEditor(text: $input).focused($inputFocused).frame(height: 140).overlay(RoundedRectangle(cornerRadius: 6).stroke(.secondary))
                     .accessibilityIdentifier("longTextInput")
                     .onChange(of: input) { _, value in if value.count > LongTextAnnotation.limit { input = String(value.prefix(LongTextAnnotation.limit)) } }
                 HStack {
                     Text("\(input.count) / 400").foregroundStyle(.secondary)
                     Spacer()
-                    Button { languageSheet = true } label: { Label(language.isEmpty ? ui("選擇語言") : language, systemImage: "gearshape") }.accessibilityIdentifier("longTextLanguage")
+                    Button { inputFocused = false; languageSheet = true } label: { Label(language.isEmpty ? ui("選擇語言") : language, systemImage: "gearshape") }.accessibilityIdentifier("longTextLanguage")
                     Button(ui("查詢")) { Task { await annotate() } }.disabled(busy || input.isEmpty).accessibilityIdentifier("annotateLongText")
                 }
                 Picker(ui("長文注音格式"), selection: $format) {
@@ -128,6 +129,7 @@ struct LongTextView: View {
         }
     }
     @MainActor private func annotate() async {
+        inputFocused = false
         guard let table = tables.first(where: { $0.name == language }) else { languageSheet = true; return }
         busy = true; defer { busy = false }
         let text = input
