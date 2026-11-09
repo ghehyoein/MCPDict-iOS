@@ -525,15 +525,3 @@ Preparing bundled tables…
 
 [檢查失敗，現有資料仍可使用]
 Update check failed; existing data remains available
-
-[简体中文]
-简体中文
-
-[元來是正體ɵɤ̞ɵ(]
-元來是正體ɵɤ̞ɵ(
-
-[日本語]
-日本語
-
-[English]
-English
