@@ -429,6 +429,7 @@ final class AppModel: ObservableObject {
     }
     func selectBooks(_ ids: Set<UUID>) { changeNotebook { $0.selected = ids.intersection($0.books.map(\.id)) } }
     func deleteBooks(_ ids: Set<UUID>) { changeNotebook { $0.remove(ids) } }
+    func duplicateBook(_ id: UUID) { changeNotebook { _ = $0.duplicate(id, suffix: ui("副本")) } }
     func addFavorites(_ ids: Set<UUID>, to book: UUID) {
         guard notebook.books.contains(where: { $0.id == book }) else { return }
         changeNotebook { next in

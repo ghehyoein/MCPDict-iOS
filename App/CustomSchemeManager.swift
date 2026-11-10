@@ -79,6 +79,13 @@ struct CustomSchemeManager: View {
                         Button(ui("改名")) { renaming = scheme.name; name = scheme.name; naming = true }.buttonStyle(.borderless)
                     }
                 }
+                .contextMenu {
+                    Button(ui("複製")) { state.custom.duplicateBranches([scheme.name], suffix: ui("副本")) }
+                }
+                .swipeActions(edge: .trailing) {
+                    Button(ui("刪除"), role: .destructive) { remove([scheme.name]) }
+                        .disabled(state.custom.branchNames([scheme.name]).count == state.custom.schemes.count)
+                }
             }.onMove { source, destination in
                 state.custom.retainColors()
                 state.custom.schemes.move(fromOffsets: source, toOffset: destination)
@@ -101,8 +108,9 @@ struct CustomSchemeManager: View {
                     HStack {
                         Button(ui("全選")) { selection = Set(state.custom.schemes.map(\.name)) }
                         Spacer(); Text(ui("已選 ") + String(selection.count))
+                        Button(ui("複製")) { state.custom.duplicateBranches(selection, suffix: ui("副本")) }.disabled(selection.isEmpty)
                         Button(ui("刪除"), role: .destructive) { remove(selection) }
-                            .disabled(selection.isEmpty || selection.count == state.custom.schemes.count)
+                            .disabled(selection.isEmpty || state.custom.branchNames(selection).count == state.custom.schemes.count)
                     }.buttonStyle(.borderless).padding(12)
                         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
                         .padding(.horizontal).padding(.bottom, 6)
@@ -135,12 +143,8 @@ struct CustomSchemeManager: View {
             } message: { Text(message ?? "") }
     }
     private func remove(_ names: Set<String>) {
-        let removed = Set(state.custom.schemes.filter { scheme in names.contains { scheme.name == $0 || scheme.name.hasPrefix($0 + "－") } }.map(\.name))
-        guard removed.count < state.custom.schemes.count else { return }
-        let current = state.custom.current
-        for name in removed { state.custom.current = name; _ = state.custom.delete() }
-        if state.custom.schemes.contains(where: { $0.name == current }) { state.custom.current = current }
-        selection.subtract(removed)
+        let removed = state.custom.branchNames(names)
+        if state.custom.removeBranches(names) { selection.subtract(removed) }
     }
 
 }
@@ -156,6 +160,8 @@ struct CustomSchemeEditor: View {
     @State private var addingChild = false
     @State private var childName = ""
     @State private var invalid = false
+    @State private var selecting = false
+    @State private var selection = Set<String>()
     private var children: [CustomLanguageSchemes.Scheme] {
         var seen = Set<String>()
         return state.custom.schemes.compactMap { scheme in
@@ -189,18 +195,27 @@ struct CustomSchemeEditor: View {
                         identity = normalized; name = normalized
                     }
                 }
-                ColorPicker(ui("方案顏色"), selection: color, supportsOpacity: false)
-                HStack {
+                HStack(spacing: 8) {
+                    Text(ui("方案顏色")).fixedSize()
+                    Spacer(minLength: 0)
                     TextField("#RRGGBB", text: $hex).textInputAutocapitalization(.characters).autocorrectionDisabled()
+                        .multilineTextAlignment(.trailing).frame(width: 88).minimumScaleFactor(0.7).lineLimit(1)
                         .accessibilityIdentifier("customSchemeHex")
+                    ColorPicker(ui("方案顏色"), selection: color, supportsOpacity: false).labelsHidden().frame(width: 32)
                     Button(ui("保存")) {
                         guard let i = index, let value = CustomLanguageSchemes.validColor(hex) else { invalid = true; return }
                         state.custom.schemes[i].colorHex = value; hex = value
-                    }
-                }
+                    }.fixedSize().buttonStyle(.borderless)
+                }.accessibilityIdentifier("customSchemeColorRow")
             }
             Section(ui("自選分區")) {
                 ForEach(children) { child in
+                    HStack {
+                    if selecting {
+                        Button { if !selection.insert(child.name).inserted { selection.remove(child.name) } } label: {
+                            Image(systemName: selection.contains(child.name) ? "checkmark.square.fill" : "square").padding(8)
+                        }.buttonStyle(.borderless).accessibilityIdentifier("selectChildScheme-" + child.name)
+                    }
                     Button { openedChild = child.name } label: {
                         HStack {
                             Text(child.name.components(separatedBy: "－").last ?? child.name).foregroundStyle(Color.primary)
@@ -208,6 +223,11 @@ struct CustomSchemeEditor: View {
                             Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
                         }
                     }.buttonStyle(.borderless).accessibilityIdentifier("childScheme-" + child.name)
+                    }
+                    .contextMenu { Button(ui("複製")) { state.custom.duplicateBranches([child.name], suffix: ui("副本")) } }
+                    .swipeActions(edge: .trailing) {
+                        Button(ui("刪除"), role: .destructive) { removeChildren([child.name]) }
+                    }
                 }.onMove { source, destination in
                     for child in children where !state.custom.schemes.contains(where: { $0.name == child.name }) { state.custom.schemes.append(child) }
                     state.custom.retainColors()
@@ -225,8 +245,27 @@ struct CustomSchemeEditor: View {
                     if let i = index { state.custom.schemes[i].languages = value }
                 }), state: model.customEditorSelection, inspect: { model.tableDetail = $0 }, showsDone: false, preservesHiddenSelection: true) {}
             }
-        }.environment(\.editMode, .constant(.active))
+        }.environment(\.editMode, .constant(selecting ? .active : .inactive))
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(ui(selecting ? "完成" : "編輯")) { selecting.toggle(); selection = [] }
+                        .accessibilityIdentifier("editChildSchemes")
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                if selecting {
+                    HStack {
+                        Button(ui("全選")) { selection = Set(children.map(\.name)) }
+                        Spacer(); Text(ui("已選 ") + String(selection.count))
+                        Button(ui("複製")) { state.custom.duplicateBranches(selection, suffix: ui("副本")) }.disabled(selection.isEmpty)
+                        Button(ui("刪除"), role: .destructive) { removeChildren(selection) }.disabled(selection.isEmpty)
+                    }.buttonStyle(.borderless).padding(12)
+                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal).padding(.bottom, 6)
+                        .accessibilityIdentifier("childSchemeSelectionActions")
+                }
+            }
             .navigationDestination(item: $openedChild) { path in CustomSchemeEditor(state: state, originalName: path) }
             .onAppear {
                 if identity.isEmpty {
@@ -250,5 +289,8 @@ struct CustomSchemeEditor: View {
                 }
             }
             .alert(ui("請輸入有效且不重複的名稱，或六位十六進制顏色碼。"), isPresented: $invalid) { Button(ui("好"), role: .cancel) {} }
+    }
+    private func removeChildren(_ names: Set<String>) {
+        if state.custom.removeBranches(names) { selection.subtract(names) }
     }
 }

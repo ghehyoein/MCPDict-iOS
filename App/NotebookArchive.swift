@@ -59,4 +59,19 @@ struct NotebookArchive: Codable {
         for i in entries.indices { entries[i].books = entries[i].membership.subtracting(ids) }
         entries.removeAll { $0.membership.isEmpty }
     }
+    @discardableResult mutating func duplicate(_ id: UUID, suffix: String) -> UUID? {
+        guard let original = books.first(where: { $0.id == id }) else { return nil }
+        var number = 1
+        var name: String
+        repeat {
+            name = original.title + "（" + suffix + (number == 1 ? "" : " \(number)") + "）"
+            number += 1
+        } while books.contains { $0.name == name }
+        let copy = VocabularyBook(id: UUID(), name: name)
+        books.append(copy)
+        for i in entries.indices where entries[i].membership.contains(id) {
+            entries[i].books = entries[i].membership.union([copy.id])
+        }
+        return copy.id
+    }
 }

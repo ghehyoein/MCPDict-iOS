@@ -4,6 +4,10 @@ struct YindianToolsView: View {
     var tool: BuiltinAnalysisTool = .evolution
     @EnvironmentObject private var model: AppModel
     @StateObject private var selector = LanguageSelectionState(namespace: "evolution")
+    @StateObject private var comparisonSelector = LanguageSelectionState(namespace: "comparisonResults")
+    @State private var comparisonLanguages = Set<String>()
+    @State private var exporting = false
+    @State private var evolutionCSV = ""
     @State private var language = ""
     @State private var dimension = "initial"
     @State private var mode = "full"
@@ -31,8 +35,12 @@ struct YindianToolsView: View {
     private let modes = [("full","完整讀音"),("initial","聲母"),("final","韻母"),("tone","聲調"),("notone","忽略聲調")]
     private let filterKeys = [("voicing","清濁"),("division","等"),("openness","開合"),("she","攝"),("tone","聲調"),("initial","聲母"),("rime","韻母")]
     private var tables: [TablePackage] { model.installed?.tables ?? [] }
+    private var comparisonTables: [TablePackage] {
+        let names = Set(comparison.map(\.name))
+        return tables.filter { names.contains($0.name) }
+    }
     private var shownComparisons: [ComparisonGroup] {
-        comparison.filter { resultStatuses.contains($0.status) && (search.isEmpty || InterfaceLanguage.matches(($0.name + (model.table(named: $0.name)?.fullName ?? "") + (model.table(named: $0.name)?.metadata?["地點"] ?? "")), search)) }
+        comparison.filter { comparisonLanguages.contains($0.name) && resultStatuses.contains($0.status) && (search.isEmpty || InterfaceLanguage.matches(($0.name + (model.table(named: $0.name)?.fullName ?? "") + (model.table(named: $0.name)?.metadata?["地點"] ?? "")), search)) }
     }
     var body: some View {
         List {
@@ -114,6 +122,9 @@ struct YindianToolsView: View {
                 }
             }
             .sheet(item: $map) { ToolsComparisonMap(points: $0.points) }
+            .fileExporter(isPresented: $exporting, document: EvolutionExportDocument(text: evolutionCSV), contentType: .commaSeparatedText, defaultFilename: "MCPDict-correspondences") { result in
+                if case .failure(let failure) = result { error = failure.localizedDescription }
+            }
     }
     private var evolutionFilters: some View {
         Section(ui("中古條件篩選")) {
@@ -137,6 +148,8 @@ struct YindianToolsView: View {
     @ViewBuilder private var evolutionResults: some View {
         if !evolution.isEmpty {
             Section {
+                Button(ui("匯出對應表"), systemImage: "square.and.arrow.up") { exporting = true }
+                    .disabled(busy).accessibilityIdentifier("exportEvolution")
                 Text("\(ui("匹配字"))：\(Set(evolution.flatMap(\.chars)).count) · \(ui("對應"))：\(evolution.count) · \(ui("音韻地位"))：\(Set(evolution.flatMap(\.positions)).count)")
                 TextField(ui("輸入中古類別、今讀或漢字"), text: $search).textFieldStyle(.roundedBorder)
                 ForEach(evolution.filter { search.isEmpty || InterfaceLanguage.matches([$0.oldValue,$0.modernValue,$0.chars.joined(),$0.readings.joined(),$0.subtypes.joined()].joined(), search) }) { group in
@@ -154,6 +167,11 @@ struct YindianToolsView: View {
     }
     @ViewBuilder private var comparisonResults: some View {
         if !comparison.isEmpty {
+            Section(ui("語言")) {
+                LanguageSelectionPanel(tables: comparisonTables,
+                    names: $comparisonLanguages, state: comparisonSelector, entryID: "comparisonLanguageSelection",
+                    inspect: { model.tableDetail = $0 }, languageOnly: true)
+            }
             Section(ui("比較統計")) {
                 ForEach(["same","partial","different","missing"], id: \.self) { status in
                     if let sample = comparison.first(where: { $0.status == status }) {
@@ -164,7 +182,7 @@ struct YindianToolsView: View {
                                 Image(systemName: resultStatuses.contains(status) ? "checkmark.square.fill" : "square")
                                 Text(ui(sample.title)).foregroundStyle(Color.primary)
                                 Spacer()
-                                Text(String(comparison.filter { $0.status == status }.count))
+                                Text(String(comparison.filter { comparisonLanguages.contains($0.name) && $0.status == status }.count))
                             }
                         }.buttonStyle(.borderless).accessibilityIdentifier("comparisonStatus-" + status)
                     }
@@ -253,6 +271,9 @@ struct YindianToolsView: View {
                 let input: [String: Any] = ["kind":"evolution","dialects":[dialect(table)],"guangyun":try await middleRows(),"rows":rows.map { ["漢字":$0.characters,"音標":display($0)] },"dimension":dimension,"mode":mode,"glides":glides,"filters":filters.mapValues { Array($0) }]
                 let data = try await NativeAnalysisEngine.run(JSONSerialization.data(withJSONObject: input))
                 evolution = try JSONDecoder().decode([EvolutionGroup].self, from: data)
+                evolutionCSV = EvolutionExportDocument.csv(groups: evolution, language: table.fullName,
+                    dimension: ui(dimensions.first { $0.0 == dimension }?.1 ?? dimension),
+                    mode: ui(modes.first { $0.0 == mode }?.1 ?? mode))
                 if evolution.isEmpty { error = ui("沒有符合當前中古篩選條件的對應關係。") }
             } else {
                 let chars = choices.filter(selected.contains)
@@ -261,7 +282,10 @@ struct YindianToolsView: View {
                 let rows = try await model.repository.searchAllCharacters(chars.joined(), language: "")
                 let input: [String: Any] = ["kind":"compare","chars":chars,"mode":mode,"glides":glides,"dialects":tables.map(dialect),"rows":rows.map { ["字組":$0.characters,"語言":$0.language,"讀音":display($0)] }]
                 let data = try await NativeAnalysisEngine.run(JSONSerialization.data(withJSONObject: input))
+                let firstResult = comparison.isEmpty
                 comparison = try JSONDecoder().decode([ComparisonGroup].self, from: data); resultChars = chars
+                if firstResult { comparisonLanguages = Set(comparison.map(\.name)) }
+                else { comparisonLanguages.formIntersection(comparison.map(\.name)) }
             }
         } catch { self.error = error.localizedDescription }
     }

@@ -1278,3 +1278,12 @@ Select a language first.
 
 [新建子分區]
 New subgroup
+
+[副本]
+Copy
+
+[匯出對應表]
+Export correspondence table
+
+[中古]
+Middle Chinese

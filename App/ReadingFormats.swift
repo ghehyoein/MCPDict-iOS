@@ -94,7 +94,7 @@ struct ReadingFormatSettingsView: View {
             }
             ForEach(ReadingFormatEngine.shared.specs) { spec in
                 if spec.multiple && spec.id != "dgy_display" {
-                    Button { selectedSpec = spec } label: { Text(ui(spec.title)).foregroundStyle(Color.primary) }
+                    Button { selectedSpec = spec } label: { Text(ui(spec.title)).foregroundStyle(AppAccent.color) }
                         .accessibilityIdentifier("readingFormat-" + spec.id)
                 } else {
                     Menu {

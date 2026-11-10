@@ -30,6 +30,7 @@ struct BookPicker: View {
                             }.buttonStyle(.plain).accessibilityValue(selected.contains(book.id) ? ui("已選") : ui("未選"))
                             Menu {
                                 Button(ui("重新命名")) { editID = book.id; name = book.name; editing = true }
+                                Button(ui("複製")) { model.duplicateBook(book.id) }
                             } label: { Image(systemName: "ellipsis.circle").padding(6) }
                             .accessibilityLabel(ui("管理") + book.title)
                         }

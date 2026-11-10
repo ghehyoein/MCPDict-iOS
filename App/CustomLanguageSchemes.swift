@@ -68,6 +68,38 @@ struct CustomLanguageSchemes: Codable, Equatable {
         retainColors()
         schemes.removeAll { $0.name == current }; current = schemes[0].name; validateScope(); return true
     }
+    func branchNames(_ roots: Set<String>) -> Set<String> {
+        Set(schemes.filter { scheme in roots.contains { scheme.name == $0 || scheme.name.hasPrefix($0 + "－") } }.map(\.name))
+    }
+    @discardableResult mutating func removeBranches(_ roots: Set<String>) -> Bool {
+        let removed = branchNames(roots)
+        guard !removed.isEmpty, removed.count < schemes.count else { return false }
+        retainColors()
+        schemes.removeAll { removed.contains($0.name) }
+        if removed.contains(current) { current = schemes[0].name }
+        validateScope()
+        return true
+    }
+    @discardableResult mutating func duplicateBranches(_ names: Set<String>, suffix: String) -> Set<String> {
+        retainColors()
+        let roots = names.filter { name in !names.contains { $0 != name && name.hasPrefix($0 + "－") } }.sorted()
+        var copies = Set<String>()
+        for root in roots {
+            let branch = schemes.filter { $0.name == root || $0.name.hasPrefix(root + "－") }
+            guard !branch.isEmpty else { continue }
+            var number = 1
+            var destination: String
+            repeat {
+                destination = root + "（" + suffix + (number == 1 ? "" : "\(number)") + "）"
+                number += 1
+            } while schemes.contains { $0.name == destination || $0.name.hasPrefix(destination + "－") }
+            schemes.append(contentsOf: branch.map {
+                Scheme(name: destination + String($0.name.dropFirst(root.count)), languages: $0.languages, colorHex: $0.colorHex)
+            })
+            copies.insert(destination)
+        }
+        return copies
+    }
     private mutating func validateScope() {
         if !scope.isEmpty && scope != "ALL" && !parents.contains(scope) { scope = "" }
     }
@@ -107,9 +139,12 @@ struct CustomLanguageSchemes: Codable, Equatable {
 struct CustomSchemeControls: View {
     @ObservedObject var state: LanguageSelectionState
     var body: some View {
-        Picker(ui("方案"), selection: $state.custom.current) {
-            ForEach(state.custom.schemes) { Text($0.name == "默認方案" ? ui("默認方案") : $0.name).tag($0.name) }
-        }.pickerStyle(.menu).accessibilityIdentifier("customSchemePicker")
-            .onAppear { state.custom.scope = "" }
+        HStack {
+            Text(ui("方案")).foregroundStyle(Color.primary)
+            Spacer(minLength: 8)
+            Picker(ui("方案"), selection: $state.custom.current) {
+                ForEach(state.custom.schemes) { Text($0.name == "默認方案" ? ui("默認方案") : $0.name).tag($0.name) }
+            }.labelsHidden().pickerStyle(.menu).accessibilityIdentifier("customSchemePicker")
+        }.onAppear { state.custom.scope = "" }
     }
 }
