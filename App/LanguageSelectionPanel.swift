@@ -57,7 +57,7 @@ struct LanguageSelectionPanel: View {
                 names = state.kind == .custom ? customNames : restoredNames(saved)
                 cache.save(names, for: state.key)
             })) {
-                ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
+                ForEach(MapSearchKind.allCases) { Text(compactUI($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).labelsHidden() }
             HStack(spacing: 10) {
                 visibilityPicker("方言島", $state.flags.islandMode)
@@ -83,7 +83,7 @@ struct LanguageSelectionPanel: View {
                 ForEach(LanguageVisibility.allCases, id: \.self) { Text(ui($0.title)).tag($0) }
             }
         } label: {
-            HStack(spacing: 2) { Text(ui(title)); Image(systemName: "chevron.up.chevron.down").font(.caption) }
+            HStack(spacing: 2) { Text(compactUI(title)); Image(systemName: "chevron.up.chevron.down").font(.caption) }
         }.accessibilityIdentifier("visibility-" + title)
     }
 

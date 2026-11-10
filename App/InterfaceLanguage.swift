@@ -33,6 +33,9 @@ func contentUI(_ text: String) -> String {
 }
 
 func compactUI(_ text: String) -> String {
-    if UserDefaults.standard.string(forKey: "uiLanguage") == "en", text == "發音" { return "Pron." }
+    if UserDefaults.standard.string(forKey: "uiLanguage") == "en", let short = [
+        "發音": "Pron.", "分區": "Classif.", "行政區": "Admin.",
+        "地圖集二分區": "Atlas 2nd ed.", "音典分區": "MCPDict", "歷史音": "Historical pron."
+    ][text] { return short }
     return ui(text)
 }

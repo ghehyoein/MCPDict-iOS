@@ -85,7 +85,7 @@ struct FavoritesView: View {
                         }
                     }.accessibilityIdentifier("chooseNotebooks")
                     Picker(ui("生字本分類"), selection: $stored) {
-                        ForEach(NotebookCategory.allCases, id: \.self) { Text(ui($0.rawValue)).tag($0.rawValue) }
+                        ForEach(NotebookCategory.allCases, id: \.self) { Text(compactUI($0.rawValue)).tag($0.rawValue) }
                     }.pickerStyle(.segmented).accessibilityIdentifier("notebookCategory")
                     choiceBar
 

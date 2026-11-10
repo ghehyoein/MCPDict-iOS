@@ -140,7 +140,7 @@ struct LanguageDropdown: View {
             if state.kind != .administrative && state.kind != .custom {
                 if state.kind == .region {
                     Picker(ui("分區方式"), selection: $state.grouping) {
-                        ForEach([TableGrouping.atlas, .dictionary]) { Text(ui($0.rawValue)).tag($0) }
+                        ForEach([TableGrouping.atlas, .dictionary]) { Text(compactUI($0.rawValue)).tag($0) }
                     }.pickerStyle(.segmented).accessibilityIdentifier("regionClassification")
                 } else {
                     HStack(spacing: 8) {
