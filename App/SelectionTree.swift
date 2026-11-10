@@ -95,7 +95,7 @@ struct LanguageDropdown: View {
     @State private var additionalPaths = [String: [[String]]]()
     @State private var inferredTransitionIDs = Set<String>()
     private var treeScope: LanguageSelectionScope {
-        state.grouping == .administrative && state.scope == .points ? .administrativeGroups : state.scope
+        singleSelection ? .points : (state.grouping == .administrative && state.scope == .points ? .administrativeGroups : state.scope)
     }
     private func refresh(prune: Bool, updateRegion: Bool = false) {
         eligible = treeScope.eligible(tables.filter(state.flags.matches), grouping: state.grouping, roles: state.roles)

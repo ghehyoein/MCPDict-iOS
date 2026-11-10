@@ -62,8 +62,8 @@ struct YindianToolsView: View {
                     .disabled(busy).accessibilityIdentifier("runNativeAnalysis")
                 if busy { ProgressView() }
                 if let error { SystemText(error).foregroundStyle(.red) }
-            }
-            if tool == .evolution { evolutionFilters; evolutionResults }
+            }.disabled(busy)
+            if tool == .evolution { evolutionFilters.disabled(busy); evolutionResults }
             else { comparisonResults }
         }.navigationTitle(ui(tool.title)).navigationBarTitleDisplayMode(.inline)
             .accessibilityIdentifier("nativeAnalysisView")
@@ -90,6 +90,19 @@ struct YindianToolsView: View {
             ForEach(filterKeys, id: \.0) { key, title in
                 Menu {
                     Button(ui("全部")) { filters[key] = [] }
+                    ForEach(filterOptions.keys.filter { $0.hasPrefix("group:" + key + ":") }.sorted(), id: \.self) { group in
+                        let members = Set(filterOptions[group] ?? [])
+                        if !members.isEmpty {
+                            Button {
+                                var values = filters[key] ?? []
+                                if values.isSuperset(of: members) { values.subtract(members) } else { values.formUnion(members) }
+                                filters[key] = values
+                            } label: {
+                                let title = String(group.split(separator: ":").last ?? "")
+                                Label(contentUI(title), systemImage: (filters[key] ?? []).isSuperset(of: members) ? "checkmark.square.fill" : "square")
+                            }
+                        }
+                    }
                     ForEach(filterOptions[key] ?? [], id: \.self) { value in
                         Button { var set = filters[key] ?? []; if !set.insert(value).inserted { set.remove(value) }; filters[key] = set } label: {
                             if filters[key]?.contains(value) == true { Label(contentUI(value), systemImage: "checkmark") }

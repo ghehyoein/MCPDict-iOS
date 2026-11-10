@@ -8,3 +8,7 @@ renderer keeps all matching rows instead of silently capping the table at 600. T
 provides a read-only local database bridge and native comparison map. index.html
 also loads interface.js to translate interface controls from the app's independent
 text catalogs; source character, language and pronunciation data is not translated.
+
+Since iOS 0.10.3, both tools use native SwiftUI controls, results and detail views.
+The bundled app.js exposes its existing analysis functions to JavaScriptCore;
+no web page is loaded by the iOS tools. Upstream HTML/CSS remain as source reference.

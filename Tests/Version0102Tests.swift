@@ -38,7 +38,7 @@ final class Version0102Tests: XCTestCase {
         games.grouping = .person; games.flags.islandMode = .hide
         XCTAssertEqual(LanguageSelectionState(namespace: "games", defaults: defaults).grouping, .person)
         for state in [longText, dictionary, downloads] {
-            XCTAssertEqual(state.grouping, .atlas); XCTAssertEqual(state.flags.islandMode, .show)
+            XCTAssertEqual(state.grouping, .name); XCTAssertEqual(state.flags.islandMode, .show)
         }
     }
     func testGlyphStandardsKeepTextAndHaveExplicitLanguageAttributes() {

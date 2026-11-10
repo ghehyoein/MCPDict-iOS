@@ -1423,7 +1423,13 @@
       filters[key] = [...new Set(entries.map(e => key === 'division' ? getDivisionFilterValue(e.middle) : e.middle[key]))].filter(Boolean)
         .sort((a,b) => compareMiddleValues(a,b,key));
     }
-    if (input.kind === 'filters') return filters;
+    if (input.kind === 'filters') {
+      for (const [key,groups] of [['initial',INITIAL_GROUPS],['rime',RIME_GROUPS]]) {
+        for (const group of groups) filters['group:'+key+':'+group.title] = group.values.filter(v=>filters[key].includes(v));
+      }
+      filters['group:division:三等'] = filters.division.filter(v=>v.startsWith('三'));
+      return filters;
+    }
     const modernByChar = groupModernRowsByChar(input.rows), grouped = new Map();
     const dialect = dialects[0] || {toneConfig:{}};
     for (const {char,middle} of entries) {

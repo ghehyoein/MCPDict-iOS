@@ -12,7 +12,7 @@ final class PresentationRevisionTests: XCTestCase {
         shared.includeTransitions = true
         let downloads = LanguageSelectionState(namespace: "downloads", defaults: defaults)
         XCTAssertEqual(downloads.kind, .language)
-        XCTAssertEqual(downloads.grouping, .atlas)
+        XCTAssertEqual(downloads.grouping, .name)
         XCTAssertFalse(downloads.flags.history)
         XCTAssertFalse(downloads.includeTransitions)
         let restored = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
