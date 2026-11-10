@@ -41,6 +41,19 @@ final class Version0104Tests: XCTestCase {
         XCTAssertEqual(value.schemes.first?.languages, ["不變"])
         XCTAssertEqual(value.selected, ["乙", "丁"])
     }
+    func testRenamingParentKeepsSelectedChildAndRejectsCollisionsAtomically() {
+        var value = CustomLanguageSchemes()
+        XCTAssertTrue(value.create("甲"))
+        XCTAssertTrue(value.create("甲－子")); value.members = ["語言"]
+        XCTAssertTrue(value.rename("乙", scheme: "甲"))
+        XCTAssertEqual(value.current, "乙－子")
+        XCTAssertEqual(value.members, ["語言"])
+        XCTAssertTrue(value.create("丙－子"))
+        value.current = "乙－子"
+        let original = value
+        XCTAssertFalse(value.rename("丙", scheme: "乙"))
+        XCTAssertEqual(value, original)
+    }
     @MainActor func testEditorControlsAreIsolatedAndPersistIndependently() throws {
         let suite = "Version0104." + UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))

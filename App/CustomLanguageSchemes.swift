@@ -48,9 +48,10 @@ struct CustomLanguageSchemes: Codable, Equatable {
         retainColors()
         schemes.append(Scheme(name: name, languages: [])); current = name; return true
     }
-    mutating func rename(_ raw: String) -> Bool {
+    mutating func rename(_ raw: String, scheme: String? = nil) -> Bool {
         let name = Self.normalize(raw)
-        let old = current
+        let old = scheme ?? current
+        let selected = current
         guard !name.isEmpty, !name.components(separatedBy: "－").contains(""), schemes.contains(where: { $0.name == old }),
               name == old || !name.hasPrefix(old + "－") else { return false }
         let renamed = schemes.map { scheme -> String in
@@ -59,7 +60,8 @@ struct CustomLanguageSchemes: Codable, Equatable {
         guard Set(renamed).count == renamed.count else { return false }
         for i in schemes.indices { schemes[i].name = renamed[i] }
         if scope == old || scope.hasPrefix(old + "－") { scope = name + String(scope.dropFirst(old.count)) }
-        current = name; validateScope(); return true
+        current = selected == old || selected.hasPrefix(old + "－") ? name + String(selected.dropFirst(old.count)) : selected
+        validateScope(); return true
     }
     mutating func delete() -> Bool {
         guard schemes.count > 1 else { return false }

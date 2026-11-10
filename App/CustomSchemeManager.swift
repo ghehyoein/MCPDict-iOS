@@ -113,10 +113,7 @@ struct CustomSchemeManager: View {
                 Button(ui("取消"), role: .cancel) {}
                 Button(ui("保存")) {
                     if let old = renaming {
-                        let current = state.custom.current
-                        state.custom.current = old
-                        if !state.custom.rename(name) { message = ui("方案名稱不能為空或重複") }
-                        if current != old { state.custom.current = state.custom.schemes.contains(where: { $0.name == current }) ? current : state.custom.current }
+                        if !state.custom.rename(name, scheme: old) { message = ui("方案名稱不能為空或重複") }
                         selection = []
                     } else if !state.custom.create(name) { message = ui("方案名稱不能為空或重複") }
                 }
@@ -155,6 +152,7 @@ struct CustomSchemeEditor: View {
     @State private var identity = ""
     @State private var name = ""
     @State private var hex = ""
+    @State private var openedChild: String?
     @State private var addingChild = false
     @State private var childName = ""
     @State private var invalid = false
@@ -187,10 +185,7 @@ struct CustomSchemeEditor: View {
                         let normalized = CustomLanguageSchemes.normalize(name)
                         guard let i = index, !normalized.isEmpty, !state.custom.schemes.contains(where: { $0.name == normalized && $0.name != identity }) else { invalid = true; return }
                         let old = state.custom.schemes[i].name
-                        let current = state.custom.current
-                        state.custom.current = old
-                        _ = state.custom.rename(normalized)
-                        if current != old { state.custom.current = current }
+                        guard state.custom.rename(normalized, scheme: old) else { invalid = true; return }
                         identity = normalized; name = normalized
                     }
                 }
@@ -206,9 +201,13 @@ struct CustomSchemeEditor: View {
             }
             Section(ui("自選分區")) {
                 ForEach(children) { child in
-                    NavigationLink(child.name.components(separatedBy: "－").last ?? child.name) {
-                        CustomSchemeEditor(state: state, originalName: child.name)
-                    }
+                    Button { openedChild = child.name } label: {
+                        HStack {
+                            Text(child.name.components(separatedBy: "－").last ?? child.name).foregroundStyle(Color.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        }
+                    }.buttonStyle(.borderless).accessibilityIdentifier("childScheme-" + child.name)
                 }.onMove { source, destination in
                     for child in children where !state.custom.schemes.contains(where: { $0.name == child.name }) { state.custom.schemes.append(child) }
                     state.custom.retainColors()
@@ -228,6 +227,7 @@ struct CustomSchemeEditor: View {
             }
         }.environment(\.editMode, .constant(.active))
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(item: $openedChild) { path in CustomSchemeEditor(state: state, originalName: path) }
             .onAppear {
                 if identity.isEmpty {
                     identity = originalName; name = originalName
