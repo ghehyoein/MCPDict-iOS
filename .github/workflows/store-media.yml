@@ -1,0 +1,47 @@
+name: Capture 0.9.10 store screenshots
+on:
+  push:
+    branches: ['store-media/0.9.10']
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: macos-15
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        device: ['iPhone 17 Pro','iPhone 17 Pro Max','iPad Pro 13-inch (M5)']
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      DEVICE: ${{ matrix.device }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Build project with original bundled dictionary
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download iphone-dev-72-59019d9 -R "$GITHUB_REPOSITORY" -p MCPDict-iPhone-unsigned.ipa -D "$RUNNER_TEMP"
+          ipa="$RUNNER_TEMP/MCPDict-iPhone-unsigned.ipa"
+          echo "b6f68ebe10f72683497cdc9e7155f4bd9b0b50e98aa15e22a914521cc101e561  $ipa" | shasum -a 256 -c -
+          unzip -q "$ipa" 'Payload/MCPDictIOS.app/BundledTables/*' -d "$RUNNER_TEMP"
+          mkdir -p App/BundledTables
+          cp -R "$RUNNER_TEMP/Payload/MCPDictIOS.app/BundledTables/." App/BundledTables/
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          python3 tools/prepare_assets.py
+          xcodegen generate
+      - name: Capture real dictionary screen
+        run: |
+          type=$(xcrun simctl list devicetypes -j | jq -er --arg n "$DEVICE" '.devicetypes[]|select(.name==$n)|.identifier')
+          id=$(xcrun simctl create StoreDevice "$type" com.apple.CoreSimulator.SimRuntime.iOS-26-2)
+          xcrun simctl boot "$id"
+          xcrun simctl bootstatus "$id" -b
+          xcrun simctl status_bar "$id" override --time '9:41'
+          xcodebuild -quiet -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "id=$id" -parallel-testing-enabled NO -only-testing:MCPDictIOSUITests/StoreMediaTests -resultBundlePath StoreMedia.xcresult CODE_SIGNING_ALLOWED=NO test
+          xcrun xcresulttool export attachments --path StoreMedia.xcresult --output-path captures
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-media-${{ matrix.device }}
+          path: captures
