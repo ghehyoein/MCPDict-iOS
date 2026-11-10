@@ -5,35 +5,33 @@ final class ToolsNavigationTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]
         app.launch()
-        XCTAssertTrue(app.buttons["排列"].waitForExistence(timeout: 15))
-        app.buttons["排列"].tap()
-        app.buttons["arrangement-horizontal"].tap()
-        app.buttons["完成"].tap()
+        XCTAssertTrue(app.buttons["resultArrangementMenu"].waitForExistence(timeout: 15))
+        app.buttons["resultArrangementMenu"].tap()
+        app.buttons["呈橫向表格排列"].tap()
         app.textFields.firstMatch.tap()
         app.textFields.firstMatch.typeText("中")
         app.buttons["查詢"].tap()
         XCTAssertTrue(app.scrollViews["dictionary-result-table"].waitForExistence(timeout: 10))
-        app.buttons["排列"].tap()
-        app.buttons["arrangement-vertical"].tap()
-        app.buttons["完成"].tap()
+        app.buttons["resultArrangementMenu"].tap()
+        app.buttons["呈縱向表格排列"].tap()
         XCTAssertTrue(app.scrollViews["dictionary-result-table"].exists)
-        app.buttons["排列"].tap()
-        app.buttons["arrangement-list"].tap()
-        app.buttons["完成"].tap()
+        app.buttons["resultArrangementMenu"].tap()
+        app.buttons["呈列排列"].tap()
         XCTAssertTrue(app.descendants(matching: .any).matching(identifier: "dictionary-reading-示例語言點").firstMatch.waitForExistence(timeout: 10))
         app.tabBars.buttons["工具"].tap()
         XCTAssertTrue(app.buttons["猜方言"].exists)
         XCTAssertTrue(app.buttons["猜字"].exists)
         app.buttons["字音比較"].tap()
-        let web = app.webViews.firstMatch
-        XCTAssertTrue(web.waitForExistence(timeout: 15))
-        let input = web.textFields.firstMatch
+        XCTAssertFalse(app.webViews.firstMatch.exists)
+        let input = app.textFields["compareCharacters"]
         XCTAssertTrue(input.waitForExistence(timeout: 10))
         input.tap(); input.typeText("中输")
-        web.buttons["開始比較"].tap()
-        XCTAssertTrue(web.staticTexts["各語言比較結果"].waitForExistence(timeout: 15))
+        let compare = app.buttons["runNativeAnalysis"]
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "中")).firstMatch.waitForExistence(timeout: 10))
+        compare.tap()
+        XCTAssertTrue(app.buttons["nativeComparisonMap"].waitForExistence(timeout: 15))
         let shot = XCTAttachment(screenshot: app.screenshot())
-        shot.name = "0.10.2-built-in-tools"
+        shot.name = "0.10.3-native-tools"
         shot.lifetime = .keepAlways
         add(shot)
     }
@@ -41,7 +39,7 @@ final class ToolsNavigationTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]
         app.launch()
-        XCTAssertTrue(app.buttons["排列"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.buttons["resultArrangementMenu"].waitForExistence(timeout: 15))
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中输")
         app.buttons["查詢"].tap()
         let rangeButton = app.buttons["characterRangeButton"]

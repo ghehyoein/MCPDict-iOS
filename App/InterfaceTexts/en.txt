@@ -1266,3 +1266,6 @@ Japan
 
 [韓國]
 Korea
+
+[編輯]
+Edit

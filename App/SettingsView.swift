@@ -15,9 +15,11 @@ struct SettingsView: View {
             Form {
                 Section {
                     NavigationLink { DataView() } label: { Text(ui("字表下載")) }
-                    Button(ui("字頭資料顯示")) { referenceSettings = true }.foregroundStyle(AppAccent.color)
                 }
-                Section { NavigationLink(ui("讀音格式")) { ReadingFormatSettingsView() } }
+                Section {
+                    Button(ui("字頭資料顯示")) { referenceSettings = true }.foregroundStyle(AppAccent.color)
+                    NavigationLink(ui("讀音格式")) { ReadingFormatSettingsView() }
+                } header: { Text(ui("字頭資料顯示") + " / " + ui("讀音格式")).foregroundStyle(.primary) }
                 FavoriteSettingsSection()
 
 
@@ -31,7 +33,7 @@ struct SettingsView: View {
                     Picker(ui("字形標準"), selection: $glyphStandard) {
                         ForEach(GlyphStandard.allCases) { Text(ui($0.title)).tag($0.rawValue) }
                     }.pickerStyle(.menu).accessibilityIdentifier("glyphStandardPicker")
-                }
+                } header: { Text(ui("顯示語言") + " / " + ui("字形標準")).foregroundStyle(.primary) }
                 Section(ui("字體大小")) {
                     sizeSlider("地圖語言點", $mapSize, range: 5...25, identifier: "mapSizeSlider", sample: 0)
                     sizeSlider("地圖搜索結果", $readingSize, range: 5...25, identifier: "mapReadingSlider", sample: 1)

@@ -31,7 +31,7 @@ import SwiftUI
     @Published var region: String? { didSet { defaults.set(region, forKey: "regionNode." + key + grouping.rawValue) } }
     var key: String { namespace + "." + kind.rawValue }
     var scope: LanguageSelectionScope { kind == .region ? .terminalGroups : kind == .administrative ? .administrativeGroups : .points }
-    var groupingChoices: [TableGrouping] { kind == .region ? [.atlas, .dictionary] : TableGrouping.allCases }
+    var groupingChoices: [TableGrouping] { kind == .region ? [.atlas, .dictionary] : TableGrouping.allCases.filter { kind == .language || $0 != .custom } }
     init(namespace: String, defaults: UserDefaults = .standard) {
         self.namespace = namespace; self.defaults = defaults
         kind = defaults.string(forKey: "selectionMode." + namespace).flatMap(MapSearchKind.init(rawValue:)) ?? .language
@@ -45,7 +45,7 @@ import SwiftUI
         if let data = try? JSONEncoder().encode(custom) { defaults.set(data, forKey: "customSchemes." + namespace) }
     }
     func resetDefaults() {
-        expanded = false; kind = .language; grouping = .atlas
+        expanded = false; kind = .language; grouping = .name
         flags = LanguageFlags(); roles = Set(PersonRole.allCases); includeTransitions = false
         filter = ""; expandedNodes = []; region = nil
     }
@@ -53,7 +53,7 @@ import SwiftUI
     func resetFixture() { resetDefaults(); custom = CustomLanguageSchemes() }
     #endif
     private func restoreControls() {
-        let saved = defaults.string(forKey: "grouping." + key).flatMap(TableGrouping.init(rawValue:)) ?? .atlas
+        let saved = defaults.string(forKey: "grouping." + key).flatMap(TableGrouping.init(rawValue:)) ?? (kind == .language ? .name : .atlas)
         grouping = kind == .administrative ? .administrative : (groupingChoices.contains(saved) ? saved : .atlas)
         roles = Set((defaults.stringArray(forKey: "roles." + key) ?? PersonRole.allCases.map(\.rawValue)).compactMap(PersonRole.init(rawValue:))).union([.editor])
         filter = ""; expandedNodes = []

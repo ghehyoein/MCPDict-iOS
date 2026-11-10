@@ -5,13 +5,14 @@ struct SingleLanguageSelectionPanel: View {
     @Binding var language: String
     @ObservedObject var state: LanguageSelectionState
     let entryID: String
+    var submitted: (() -> Void)? = nil
     var opened: () -> Void = {}
     private var names: Binding<Set<String>> {
         Binding(get: { language.isEmpty ? [] : [language] }, set: { language = $0.sorted().first ?? "" })
     }
     var body: some View {
         LanguageSelectionPanel(tables: tables, names: names, state: state, entryID: entryID,
-                               languageOnly: true, singleSelection: true)
+                               languageOnly: true, singleSelection: true, submitted: submitted)
             .onChange(of: state.expanded) { _, expanded in if expanded { opened() } }
     }
 }

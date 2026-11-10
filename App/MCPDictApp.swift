@@ -512,7 +512,6 @@ struct ReadingView: View {
 struct SearchView: View {
     @AppStorage(CharacterSearchRange.preferenceKey) private var characterRange = ""
     @AppStorage("resultArrangement") private var arrangement = "list"
-    @State private var showArrangement = false
     @AppStorage("colorScheme") private var palette = "atlas"
     @FocusState private var searchFocused: Bool
     @EnvironmentObject private var selector: LanguageSelectionState
@@ -560,8 +559,15 @@ struct SearchView: View {
             }
             .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
-            .toolbar { ToolbarItem(placement: .topBarTrailing) { Button(ui("排列")) { showArrangement = true }.foregroundStyle(AppAccent.color) } }
-            .sheet(isPresented: $showArrangement) { ResultArrangementSettings() }
+            .toolbar { ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Picker(ui("排列"), selection: $arrangement) {
+                        ForEach(ResultArrangementSettings.choices, id: \.0) { value, title in Text(ui(title)).tag(value) }
+                    }
+                } label: {
+                    HStack(spacing: 2) { Text(ui("排列")); Image(systemName: "chevron.up.chevron.down").font(.caption) }
+                }.foregroundStyle(AppAccent.color).accessibilityIdentifier("resultArrangementMenu")
+            } }
             .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }
             }
 

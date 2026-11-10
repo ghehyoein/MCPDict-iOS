@@ -21,6 +21,7 @@ struct LanguageSelectionPanel: View {
     var alwaysExpanded = false
     var languageOnly = false
     var singleSelection = false
+    var submitted: (() -> Void)? = nil
     @AppStorage("colorScheme") private var palette = "atlas"
     @State private var restored = false
     @State private var paletteInfo = false
@@ -71,7 +72,7 @@ struct LanguageSelectionPanel: View {
                 Button(ui("好"), role: .cancel) {}
             } message: { Text(ui("此開關切換語言點顯示顏色。「地」使用地圖集二分區配色，「音」使用音典分區配色")) }
             if state.kind == .custom { CustomSchemeControls(state: state) }
-            LanguageDropdown(tables: tables, names: chosen, state: state, inspect: inspect, palette: palette == "dictionary" ? .dictionary : .atlas, showsDone: !alwaysExpanded, singleSelection: singleSelection) {
+            LanguageDropdown(tables: tables, names: chosen, state: state, inspect: inspect, palette: palette == "dictionary" ? .dictionary : .atlas, showsDone: !alwaysExpanded, singleSelection: singleSelection, submitted: submitted) {
                 state.expanded = false; finished()
             }.id(state.key)
         }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))

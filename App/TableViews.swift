@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum TableGrouping: String, CaseIterable, Identifiable {
-    case atlas = "地圖集二分區", dictionary = "音典分區", administrative = "行政區劃", name = "語言點", person = "維護人"
+    case name = "語言點", atlas = "地圖集二分區", dictionary = "音典分區", administrative = "行政區劃", person = "維護人", custom = "自選分區"
     var id: String { rawValue }
     var displayName: String { self == .person ? "錄入人" : rawValue }
     func path(_ table: TablePackage) -> [String] {
@@ -15,7 +15,7 @@ enum TableGrouping: String, CaseIterable, Identifiable {
                 .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !missing.contains($0.lowercased()) }
             return parts.isEmpty ? ["未標註行政區"] : parts
-        case .name, .person: return []
+        case .name, .person, .custom: return []
         }
     }
 }

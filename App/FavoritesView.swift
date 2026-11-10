@@ -160,7 +160,7 @@ struct FavoritesView: View {
                     Button(ui("匯出所選生字本")) { exporting = true }.disabled(model.notebook.selected.isEmpty)
                     Button(ui("匯入生字本")) { importing = true }
                 } label: { Image(systemName: "square.and.arrow.up.on.square") }.accessibilityLabel(ui("匯入及匯出"))
-                Button(ui(selecting ? "完成" : "多選")) { selecting.toggle(); selection = [] }
+                Button(ui(selecting ? "完成" : "編輯")) { selecting.toggle(); selection = [] }
             }
         }
     }

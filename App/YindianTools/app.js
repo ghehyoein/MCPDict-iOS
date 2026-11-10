@@ -141,7 +141,7 @@
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
 
-  document.addEventListener('DOMContentLoaded', init);
+  if (typeof document !== 'undefined') document.addEventListener('DOMContentLoaded', init);
 
   async function init() {
     bindUi();
@@ -1395,4 +1395,50 @@
   function yieldToBrowser() {
     return new Promise((resolve) => setTimeout(resolve, 0));
   }
+  // Native iOS presentation calls the same parsing, grouping and comparison functions.
+  globalThis.nativeAnalysis = (input) => {
+    const dialects = (input.dialects || []).map(parseDialectRow);
+    if (input.kind === 'compare') {
+      const chars = input.chars, byDialect = new Map();
+      for (const row of input.rows) {
+        const name = row['語言'];
+        if (!byDialect.has(name)) byDialect.set(name, []);
+        byDialect.get(name).push(row);
+      }
+      return dialects.map(dialect => {
+        const rows = byDialect.get(dialect.shortName) || [];
+        const readings = chars.map(char => [...new Set(rows.filter(r => String(r['字組'] || '').includes(char)).flatMap(r => extractReadings(r['讀音'])))].sort());
+        const normalized = readings.map(values => values.map(raw => ({raw, parts: decomposeModern(raw, dialect, {glidesAsFinal: input.glides})})));
+        return {name: dialect.shortName, status: classifyReadings(normalized, input.mode, dialect), readings,
+          normalized: normalized.map(values => values.map(v => displayValueFromParts(v.parts, input.mode, dialect)))};
+      });
+    }
+    const entries = [];
+    for (const row of input.guangyun || []) {
+      const middle = parseMiddleRow(row);
+      if (middle) for (const char of Array.from(String(row.charGroup || '').replace(/\s+/g,''))) entries.push({char,middle});
+    }
+    const filters = {};
+    for (const key of ['voicing','division','openness','she','tone','initial','rime']) {
+      filters[key] = [...new Set(entries.map(e => key === 'division' ? getDivisionFilterValue(e.middle) : e.middle[key]))].filter(Boolean)
+        .sort((a,b) => compareMiddleValues(a,b,key));
+    }
+    if (input.kind === 'filters') return filters;
+    const modernByChar = groupModernRowsByChar(input.rows), grouped = new Map();
+    const dialect = dialects[0] || {toneConfig:{}};
+    for (const {char,middle} of entries) {
+      const rows = modernByChar.get(char);
+      if (!rows || !matchesMiddleFilters(middle,input.filters || {})) continue;
+      const oldValue = getMiddleDimensionValue(middle,input.dimension);
+      for (const row of rows) for (const phonetic of expandPhonetics(row['音標'])) {
+        const modernValue = getModernModeValue(decomposeModern(phonetic,dialect,{glidesAsFinal:input.glides}),input.mode,dialect);
+        if (!oldValue || !modernValue) continue;
+        const key=oldValue+'\u0000'+modernValue;
+        if (!grouped.has(key)) grouped.set(key,{oldValue,modernValue,chars:new Set(),readings:new Set(),positions:new Set(),subtypes:new Set()});
+        const g=grouped.get(key);g.chars.add(char);g.readings.add(phonetic);g.positions.add(middle.position);g.subtypes.add(formatMiddleSubtype(middle));
+      }
+    }
+    return [...grouped.values()].sort((a,b)=>compareMiddleValues(a.oldValue,b.oldValue,input.dimension)||b.chars.size-a.chars.size||a.modernValue.localeCompare(b.modernValue,'zh-CN'))
+      .map(g=>({...g,chars:[...g.chars],readings:[...g.readings],positions:[...g.positions],subtypes:[...g.subtypes]}));
+  };
 })();

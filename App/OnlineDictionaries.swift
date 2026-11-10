@@ -96,6 +96,15 @@ struct AddCustomLanguageButton: View {
         } label: {
             Text(ui(state.custom.members.contains(name) ? "將該語言移出自選語言" : "將該語言加入自選語言"))
                 .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
-        }.foregroundStyle(AppAccent.color).accessibilityIdentifier("tableCustomLanguage")
+        }.buttonStyle(StaticCustomLanguageButtonStyle()).accessibilityIdentifier("tableCustomLanguage")
+            .transaction { $0.animation = nil; $0.disablesAnimations = true }
+    }
+}
+
+struct StaticCustomLanguageButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label.padding(12).foregroundStyle(AppAccent.color)
+            .background(AppAccent.color.opacity(0.12), in: RoundedRectangle(cornerRadius: 8))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppAccent.color, lineWidth: 1))
     }
 }

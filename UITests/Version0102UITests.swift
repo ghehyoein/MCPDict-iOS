@@ -40,10 +40,6 @@ final class Version0102UITests: XCTestCase {
         app.buttons["gameLanguageSelection"].tap()
         XCTAssertFalse(app.buttons["自選"].exists)
         XCTAssertFalse(app.buttons["selectAllLanguages"].exists)
-        for name in ["漢語", "官話", "北京"] {
-            let group = app.buttons["expand-" + name]
-            XCTAssertTrue(group.waitForExistence(timeout: 5)); group.tap()
-        }
         app.buttons["check-示例語言點"].tap()
         app.buttons["finishLanguages"].tap()
         XCTAssertTrue(app.buttons["gameLanguageSelection"].label.contains("1"))
