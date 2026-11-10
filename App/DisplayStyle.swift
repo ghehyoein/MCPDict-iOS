@@ -45,6 +45,7 @@ enum TableColors {
 }
 
 struct LanguageBadge: View {
+    @AppStorage("glyphStandard") private var glyphStandard = ""
     @EnvironmentObject private var selector: LanguageSelectionState
     @Environment(\.mapLabelSize) private var mapSize
     let name: String
@@ -55,7 +56,8 @@ struct LanguageBadge: View {
     var body: some View {
         let scheme = grouping == .atlas || grouping == .dictionary ? grouping! : (colorScheme == "dictionary" ? .dictionary : .atlas)
         let colors = selector.kind == .custom && selector.custom.colorByScheme ? [selector.custom.color(for: name)] : (table.map { TableColors.hexes(TableColors.raw($0, scheme)) } ?? [])
-        Text(name).font(mapSize.map { Font.system(size: $0) } ?? .subheadline).foregroundStyle(.white)
+        Text(name).font(mapSize.map { Font.system(size: $0) } ?? .subheadline)
+            .environment(\.locale, Locale(identifier: (GlyphStandard(rawValue: glyphStandard) ?? .system).language)).foregroundStyle(.white)
             .padding(.horizontal, 6).padding(.vertical, 3)
             .background(TableColors.gradient(colors), in: RoundedRectangle(cornerRadius: 5))
             .fixedSize(horizontal: false, vertical: true)
@@ -66,11 +68,7 @@ struct LanguageBadge: View {
                 }
             }
             .padding(.trailing, transitionAsterisk ? 8 : 0)
-            .contextMenu {
-                Button(ui(selector.custom.members.contains(name) ? "移出當前自選方案" : "加入當前自選方案")) {
-                    if !selector.custom.members.insert(name).inserted { selector.custom.members.remove(name) }
-                }
-            }
+
     }
 }
 

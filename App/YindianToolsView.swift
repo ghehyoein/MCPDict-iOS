@@ -8,7 +8,8 @@ struct ToolsHomeView: View {
                 NavigationLink(ui("猜方言")) { GuessGameView(kind: .language) }
                 NavigationLink(ui("猜字")) { GuessGameView(kind: .character) }
                 NavigationLink(ui("長文注音")) { LongTextView() }
-                NavigationLink(ui("音典小工具")) { YindianToolsView() }
+                NavigationLink(ui("古今演化")) { YindianToolsView(tool: .evolution) }
+                NavigationLink(ui("字音比較")) { YindianToolsView(tool: .compare) }
             }.navigationTitle(ui("工具"))
         }
     }
@@ -18,12 +19,19 @@ struct ToolMapResult: Identifiable {
     let id = UUID()
     let points: [DialectPoint]
 }
+enum BuiltinAnalysisTool: String {
+    case evolution, compare
+    var title: String { self == .evolution ? "古今演化" : "字音比較" }
+}
 struct YindianToolsView: View {
+    var tool: BuiltinAnalysisTool = .evolution
+    @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
+    @AppStorage("glyphStandard") private var glyphStandard = ""
     @EnvironmentObject var model: AppModel
     @State private var map: ToolMapResult?
     var body: some View {
-        ToolsWebView(model: model) { map = ToolMapResult(points: $0) }
-            .navigationTitle(ui("音典小工具")).navigationBarTitleDisplayMode(.inline)
+        ToolsWebView(model: model, tool: tool, fontSize: fontSize, glyphStandard: glyphStandard) { map = ToolMapResult(points: $0) }
+            .navigationTitle(ui(tool.title)).navigationBarTitleDisplayMode(.inline)
             .sheet(item: $map) { value in ToolsComparisonMap(points: value.points) }
     }
 }
@@ -45,16 +53,20 @@ struct ToolsComparisonMap: View {
     }
 }
 
-// Retain the upstream tool algorithms and UI. Only the Android bridge is replaced.
+// Retain upstream analysis algorithms; presentation follows the iOS app.
 // A local-only prompt bridge preserves its synchronous JavaScript API while the
 // database actor performs requests away from the main thread.
 struct ToolsWebView: UIViewRepresentable {
     let model: AppModel
+    var tool: BuiltinAnalysisTool = .evolution
+    var fontSize: Double = 17
+    var glyphStandard = ""
     let showMap: ([DialectPoint]) -> Void
     func makeCoordinator() -> Coordinator { Coordinator(model: model, showMap: showMap) }
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
         let script = """
+        window.MCPDictTool = '\(tool.rawValue)';
         window.YindianBridge = new Proxy({}, {get: (_, name) => (...args) => {
             const result = JSON.parse(prompt('mcpdict-tools', JSON.stringify({name, args})) || '{"error":"Cancelled"}');
             if (result.error) throw new Error(result.error);
@@ -62,6 +74,8 @@ struct ToolsWebView: UIViewRepresentable {
         }});
         """
         config.userContentController.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        let presentation = "document.documentElement.style.setProperty('--app-font-size', '\(fontSize)px'); document.documentElement.lang = '\((GlyphStandard(rawValue: glyphStandard) ?? .system).language)';"
+        config.userContentController.addUserScript(WKUserScript(source: presentation, injectionTime: .atDocumentEnd, forMainFrameOnly: true))
         let view = WKWebView(frame: .zero, configuration: config)
         view.uiDelegate = context.coordinator
         view.navigationDelegate = context.coordinator
@@ -70,7 +84,10 @@ struct ToolsWebView: UIViewRepresentable {
         }
         return view
     }
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        let language = (GlyphStandard(rawValue: glyphStandard) ?? .system).language
+        uiView.evaluateJavaScript("document.documentElement.style.setProperty('--app-font-size', '\(fontSize)px'); document.documentElement.lang = '\(language)';", completionHandler: nil)
+    }
     @MainActor final class Coordinator: NSObject, WKUIDelegate, WKNavigationDelegate {
         let model: AppModel
         let showMap: ([DialectPoint]) -> Void

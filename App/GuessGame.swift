@@ -88,7 +88,8 @@ struct GuessGameView: View {
     @State private var answerCharacter = ""
     @State private var answerTable: TablePackage?
     @State private var input = ""
-    @State private var language = ""
+    @AppStorage("gameLanguage") private var language = ""
+    @FocusState private var inputFocused: Bool
     @State private var hint = ""
     @State private var log = [String]()
     @State private var readings = [Reading]()
@@ -122,26 +123,29 @@ struct GuessGameView: View {
                 }
             }
             Section {
-                Button(ui("出題")) { Task { await newGame() } }.disabled(busy)
+                HStack {
+                    Button(ui("出題")) { inputFocused = false; Task { await newGame() } }.disabled(busy)
+                    Spacer()
+                    Button(ui("答案")) { inputFocused = false; reveal() }
+                }.buttonStyle(.borderless)
                 if busy { ProgressView() }
                 if let error { SystemText(error).foregroundStyle(.red) }
-                TextField(ui(kind == .character ? "請輸入猜測的漢字" : "請輸入漢字"), text: $input).autocorrectionDisabled()
+                HStack {
+                TextField(ui(kind == .character ? "請輸入猜測的漢字" : "請輸入漢字"), text: $input).autocorrectionDisabled().focused($inputFocused)
                     .onSubmit { if kind == .character { checkCharacter() } }
                     .onChange(of: input) { _, _ in if kind == .character { checkCharacter() } }
+                    Button(ui("提交")) { inputFocused = false; if kind == .character { checkCharacter() } else { checkLanguage() } }
+                        .buttonStyle(.borderless)
+                }
                 if kind == .character {
-                    Button(ui("提交")) { checkCharacter() }
                     Picker(ui("字形提示"), selection: $hint) {
                         Text(ui("選擇提示")).tag("")
                         ForEach(["總筆畫數", "首筆", "末筆", "部首", "結構"], id: \.self) { Text(ui($0)).tag($0) }
                     }.onChange(of: hint) { _, value in if !value.isEmpty { Task { await characterHint(value) } } }
                 }
-                NavigationLink {
-                    GuessLanguagePicker(tables: kind == .language ? candidates : tables, selection: $language)
-                } label: {
-                    HStack { Text(ui(kind == .character ? "讀音提示" : "猜測語言")); Spacer(); Text(language).foregroundStyle(.secondary) }
-                }
-                Button(ui(kind == .character ? "讀音提示" : "提交")) {
-                    if kind == .character { Task { await readingHint() } } else { checkLanguage() }
+                SingleLanguageSelectionPanel(tables: tables, language: $language, state: model.gameLanguageSelection, entryID: "gameLanguageSelection") { inputFocused = false }
+                if kind == .character {
+                    Button(ui("讀音提示")) { inputFocused = false; Task { await readingHint() } }
                 }
             }
             if !readings.isEmpty {
@@ -155,7 +159,6 @@ struct GuessGameView: View {
         }.navigationTitle(ui(kind == .character ? "猜字" : "猜方言"))
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button(ui("答案")) { reveal() }
                     ShareLink(item: log.reversed().joined(separator: "\n")) { Image(systemName: "square.and.arrow.up") }.disabled(log.isEmpty)
                 }
             }

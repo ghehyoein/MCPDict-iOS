@@ -107,9 +107,14 @@ function readingFormat(raw,key,selected){
     }
     if(suffix)result.push(plain(suffix));return result;
   }
-  const result=[],regex=/[\p{L}\p{N}\p{M}\p{Sk}_]+/gu;let cursor=0,match;
-  while((match=regex.exec(raw))!==null){if(match.index>cursor)result.push(plain(raw.slice(cursor,match.index)));result.push(formatOne(match[0],key,+(choices[0]||spec.options[0]).id)||plain(match[0]));cursor=regex.lastIndex;}
-  if(cursor<raw.length)result.push(plain(raw.slice(cursor)));return result;
+  const result=[];
+  for (const option of choices) {
+    if(result.length)result.push(plain(' / '));
+    const regex=/[\p{L}\p{N}\p{M}\p{Sk}_]+/gu;let cursor=0,match;
+    while((match=regex.exec(raw))!==null){if(match.index>cursor)result.push(plain(raw.slice(cursor,match.index)));result.push(formatOne(match[0],key,+option.id)||plain(match[0]));cursor=regex.lastIndex;}
+    if(cursor<raw.length)result.push(plain(raw.slice(cursor)));
+  }
+  return result;
 }
 function canonicalCantonese(input,system){
   return input.replace(/[\p{L}\p{N}\p{M}\p{Sk}_]+/gu,s=>cantonese(s,system,true)||s);

@@ -11,6 +11,7 @@ struct SelectionTree: View {
     var selectedRegion: Binding<String?> = .constant(nil)
     var filterQuery = ""
     var inferredTransitionIDs = Set<String>()
+    var singleSelection = false
     @Binding var selection: Set<String>
     var inspect: ((TablePackage) -> Void)? = nil
     @Binding var expanded: Set<String>
@@ -24,11 +25,11 @@ struct SelectionTree: View {
                 let checked = scope == .terminalGroups ? selectedRegion.wrappedValue == row.node.region : selected.isSuperset(of: row.ids)
                 let mixed = scope == .terminalGroups ? RegionSelection.isAncestor(row.node.region, of: selectedRegion.wrappedValue) : !selected.isDisjoint(with: row.ids)
                 HStack {
-                    Button { toggle(row) } label: {
+                    if !singleSelection || row.node.table != nil { Button { toggle(row) } label: {
                         Image(systemName: checked ? "checkmark.square.fill" : (mixed ? "minus.square.fill" : "square")).contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }.font(.title3)
                             .frame(width: 44, height: 44).contentShape(Rectangle())
                     }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + row.node.title).accessibilityIdentifier("check-" + row.node.title)
-                        .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked"))
+                        .accessibilityValue(checked ? "checked" : (mixed ? "mixed" : "unchecked")) }
                     if let table = row.node.table {
                         Button { if let inspect { inspect(table) } else { model.tableDetail = table } } label: {
                             LanguageBadge(name: table.name, table: table, grouping: badgeGrouping ?? grouping, transitionAsterisk: inferredTransitionIDs.contains(table.id)).frame(minHeight: 44).contentShape(Rectangle())
@@ -64,7 +65,10 @@ struct SelectionTree: View {
     }
     private func refreshRows() { rows = index.rows(expanded: expanded, matching: matching, scope: scope) }
     private func toggle(_ row: SelectionIndex.Row) {
-        if scope == .terminalGroups {
+        if singleSelection {
+            guard row.node.table != nil else { return }
+            selection = selection == row.ids ? [] : row.ids
+        } else if scope == .terminalGroups {
             if selectedRegion.wrappedValue == row.node.region { selection = []; selectedRegion.wrappedValue = nil }
             else { selection = row.ids; selectedRegion.wrappedValue = row.node.region }
         } else {
@@ -83,6 +87,7 @@ struct LanguageDropdown: View {
     var inspect: ((TablePackage) -> Void)? = nil
     var palette: TableGrouping = .atlas
     var showsDone = true
+    var singleSelection = false
     let done: () -> Void
     @State private var eligible = [TablePackage]()
     @State private var index = SelectionIndex()
@@ -153,11 +158,11 @@ struct LanguageDropdown: View {
             ScrollView {
                 SelectionTree(index: index, grouping: state.grouping, badgeGrouping: palette,
                               scope: treeScope, selectedRegion: $state.region, filterQuery: state.filter, inferredTransitionIDs: inferredTransitionIDs,
-                              selection: selection, inspect: inspect, expanded: $state.expandedNodes)
+                              singleSelection: singleSelection, selection: selection, inspect: inspect, expanded: $state.expandedNodes)
                     .frame(maxWidth: .infinity).id(state.grouping.rawValue)
             }.frame(height: 200).accessibilityIdentifier("languageTreeScroll")
             HStack {
-                if state.scope != .terminalGroups {
+                if state.scope != .terminalGroups && !singleSelection {
                     Button(ui("全選")) { if state.kind == .custom { names.formUnion(eligible.map(\.name)) } else { names = Set(eligible.map(\.name)) } }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
                 }
                 Spacer(minLength: 32)

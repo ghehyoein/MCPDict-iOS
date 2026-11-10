@@ -59,11 +59,14 @@ final class ReadingFormatEngine {
         }
         return result
     }
-    func canonicalCantonese(_ input: String) -> String? {
-        guard let spec = specs.first(where: { $0.id == "cantonese_romanization" }) else { return nil }
+    func canonicalCantonese(_ input: String) -> String? { canonicalCantoneseInputs(input).first }
+    func canonicalCantoneseInputs(_ input: String) -> [String] {
+        guard let spec = specs.first(where: { $0.id == "cantonese_romanization" }) else { return [] }
         let selected = ReadingFormatPreferences.load(UserDefaults.standard.string(forKey: ReadingFormatPreferences.key) ?? "").selected(spec)
         lock.lock(); defer { lock.unlock() }
-        return context?.objectForKeyedSubscript("canonicalCantonese")?.call(withArguments: [input, Int(selected.first ?? "0") ?? 0])?.toString()
+        return Array(Set(selected.compactMap { option in
+            context?.objectForKeyedSubscript("canonicalCantonese")?.call(withArguments: [input, Int(option) ?? 0])?.toString()
+        })).sorted()
     }
 }
 
@@ -79,6 +82,7 @@ struct ReadingFormatSettingsView: View {
     var body: some View {
         List {
             Section(ui("聲調顯示")) {
+                HStack { SystemText(ui("聲調預覽：")); Spacer(); HStack(spacing: 0) { SystemText(ToneDisplay.previewCharacter); PronunciationView(raw: ToneDisplay.previewReading, table: ToneDisplay.previewTable, scrollable: false) } }
                 Picker(ui("聲調顯示"), selection: $toneStyle) {
                     ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
                 }.pickerStyle(.menu)
@@ -89,13 +93,21 @@ struct ReadingFormatSettingsView: View {
                 }.pickerStyle(.menu)
             }
             ForEach(ReadingFormatEngine.shared.specs) { spec in
-                if spec.multiple {
+                if spec.multiple && spec.id != "dgy_display" {
                     Button(ui(spec.title)) { selectedSpec = spec }
                         .accessibilityIdentifier("readingFormat-" + spec.id)
                 } else {
-                    Picker(ui(spec.title), selection: Binding(get: { settings.selected(spec).first ?? "0" }, set: { settings.values[spec.id] = [$0] })) {
-                        ForEach(spec.options) { Text(ui($0.title)).tag($0.id) }
-                    }.pickerStyle(.menu).accessibilityIdentifier("readingFormat-" + spec.id)
+                    Menu {
+                        ForEach(spec.options) { option in
+                            Button { toggle(option, in: spec) } label: {
+                                if settings.selected(spec).contains(option.id) { Label(ui(option.title), systemImage: "checkmark") }
+                                else { Text(ui(option.title)) }
+                            }.accessibilityIdentifier("readingFormat-" + spec.id + "-" + option.id)
+                        }
+                    } label: {
+                        HStack { Text(ui(spec.title)); Spacer(); Image(systemName: "chevron.up.chevron.down") }
+                    }.menuActionDismissBehavior(.disabled).accessibilityIdentifier("readingFormat-" + spec.id)
+
                 }
             }
         }.navigationTitle(ui("讀音格式")).navigationBarTitleDisplayMode(.inline)
@@ -112,4 +124,10 @@ struct ReadingFormatSettingsView: View {
             }
         }
     }
+    private func toggle(_ option: ReadingFormatSpec.Option, in spec: ReadingFormatSpec) {
+        var selected = Set(settings.selected(spec))
+        if !selected.insert(option.id).inserted { selected.remove(option.id) }
+        settings.values[spec.id] = spec.options.map(\.id).filter(selected.contains)
+    }
+
 }

@@ -5,6 +5,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
     struct Scheme: Codable, Equatable, Identifiable {
         var name: String
         var languages: Set<String>
+        var colorHex: String? = nil
         var id: String { name }
     }
     var schemes: [Scheme]
@@ -38,6 +39,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
     mutating func create(_ raw: String) -> Bool {
         let name = Self.normalize(raw)
         guard !name.isEmpty, !schemes.contains(where: { $0.name == name }) else { return false }
+        retainColors()
         schemes.append(Scheme(name: name, languages: [])); current = name; return true
     }
     mutating func rename(_ raw: String) -> Bool {
@@ -48,6 +50,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
     }
     mutating func delete() -> Bool {
         guard schemes.count > 1 else { return false }
+        retainColors()
         schemes.removeAll { $0.name == current }; current = schemes[0].name; validateScope(); return true
     }
     private mutating func validateScope() {
@@ -59,6 +62,21 @@ struct CustomLanguageSchemes: Codable, Equatable {
         else if scope != "ALL" { candidates = schemes.indices.filter { schemes[$0].name.hasPrefix(scope + "－") } }
         else { candidates = [] }
         guard let index = (candidates + Array(schemes.indices)).first(where: { schemes[$0].languages.contains(language) }) else { return "#808080" }
+        return color(at: index)
+    }
+    func color(at index: Int) -> String {
+        if let hex = schemes[index].colorHex.flatMap(Self.validColor) { return hex }
+        return Self.defaultColor(index)
+    }
+    static func validColor(_ raw: String) -> String? {
+        let value = raw.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+        let hex = value.hasPrefix("#") ? value : "#" + value
+        return hex.range(of: "^#[0-9A-F]{6}$", options: .regularExpression) == nil ? nil : hex
+    }
+    mutating func retainColors() {
+        for i in schemes.indices { schemes[i].colorHex = color(at: i) }
+    }
+    private static func defaultColor(_ index: Int) -> String {
         let vivid = ["#B71C1C", "#0D47A1", "#1B5E20", "#E65100", "#4A148C", "#006064", "#880E4F", "#3E2723"]
         if index < vivid.count { return vivid[index] }
         let i = index - vivid.count
@@ -96,7 +114,7 @@ struct CustomSchemeControls: View {
                 ForEach(state.custom.parents, id: \.self) { Text($0).tag($0) }
             }.pickerStyle(.menu).accessibilityIdentifier("customScopePicker")
             Button { state.custom.colorByScheme.toggle() } label: {
-                Label(ui("按方案配色"), systemImage: state.custom.colorByScheme ? "checkmark.square.fill" : "square")
+                HStack(spacing: 0) { Image(systemName: state.custom.colorByScheme ? "checkmark.square.fill" : "square"); Text(ui("按方案配色")) }
             }.buttonStyle(StaticCheckboxButtonStyle())
         }
         .alert(ui(renaming ? "改名" : "新建"), isPresented: $naming) {

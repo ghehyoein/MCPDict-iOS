@@ -241,9 +241,11 @@ actor DictionaryRepository {
         var sql = "SELECT rowid AS id, 字組, 語言, 讀音, 註釋 FROM langs WHERE langs MATCH ?"
         var bindings = [expression]
         if mode == .pronunciation {
-            let cantonese = ReadingFormatEngine.shared.canonicalCantonese(text) ?? text
-            sql = "SELECT rowid AS id, 字組, 語言, 讀音, 註釋 FROM langs WHERE (instr(讀音, ?) > 0 OR (語言 = ? AND instr(讀音, ?) > 0))"
-            bindings = [text, "香港", cantonese]
+            let cantonese = ReadingFormatEngine.shared.canonicalCantoneseInputs(text)
+            let alternatives = ([text] + cantonese).reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+            let matches = alternatives.map { _ in "instr(讀音, ?) > 0" }.joined(separator: " OR ")
+            sql = "SELECT rowid AS id, 字組, 語言, 讀音, 註釋 FROM langs WHERE (instr(讀音, ?) > 0 OR (語言 = ? AND (\(matches))))"
+            bindings = [text, "香港"] + alternatives
         }
         if languages?.isEmpty == true { return [] }
         if mode == .pronunciation, let candidates = languageCandidates(languages ?? (language.isEmpty ? [] : [language])) {

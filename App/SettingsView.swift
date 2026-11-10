@@ -4,9 +4,8 @@ struct SettingsView: View {
     @EnvironmentObject var model: AppModel
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
+    @AppStorage("glyphStandard") private var glyphStandard = ""
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
-    @AppStorage("toneStyle") private var toneStyle = "baSheng"
-    @AppStorage("pitchStyle") private var pitchStyle = "curve"
     @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
     @AppStorage(AppTypography.readingKey) private var readingSize = 16.0
     @State private var referenceSettings = false
@@ -29,20 +28,14 @@ struct SettingsView: View {
                         Text(verbatim: "日本語").tag("ja")
                         Text(verbatim: "English").tag("en")
                     }.pickerStyle(.menu).accessibilityIdentifier("interfaceLanguagePicker")
+                    Picker(ui("字形標準"), selection: $glyphStandard) {
+                        ForEach(GlyphStandard.allCases) { Text(ui($0.title)).tag($0.rawValue) }
+                    }.pickerStyle(.menu).accessibilityIdentifier("glyphStandardPicker")
                 }
                 Section(ui("字體大小")) {
                     sizeSlider("地圖語言點", $mapSize, range: 5...25, identifier: "mapSizeSlider", sample: 0)
                     sizeSlider("地圖搜索結果", $readingSize, range: 5...25, identifier: "mapReadingSlider", sample: 1)
                     sizeSlider("顯示介面", $fontSize, range: 14...26, identifier: "fontSizeSlider", sample: 2)
-                }
-                Section(ui("聲調顯示")) {
-                    HStack { SystemText(ui("聲調預覽：")); Spacer(); HStack(spacing: 0) { SystemText(ToneDisplay.previewCharacter); PronunciationView(raw: ToneDisplay.previewReading, table: ToneDisplay.previewTable, scrollable: false) } }
-                    Picker("", selection: $toneStyle) {
-                        ForEach(ToneDisplay.styles, id: \.0) { Text(ui($0.1)).tag($0.0) }
-                    }.pickerStyle(.inline).labelsHidden()
-                    Picker(ui("調值樣式"), selection: $pitchStyle) {
-                        Text(ui("曲線")).tag("curve"); Text(ui("數字")).tag("number"); Text(ui("隱藏")).tag("hidden")
-                    }.pickerStyle(.menu)
                 }
                 Section(ui("界面外觀")) {
                     option(ui("跟隨系統"), value: "system", selection: $appearance)

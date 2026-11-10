@@ -24,19 +24,16 @@ final class ToolsNavigationTests: XCTestCase {
         app.tabBars.buttons["工具"].tap()
         XCTAssertTrue(app.buttons["猜方言"].exists)
         XCTAssertTrue(app.buttons["猜字"].exists)
-        app.buttons["音典小工具"].tap()
+        app.buttons["字音比較"].tap()
         let web = app.webViews.firstMatch
         XCTAssertTrue(web.waitForExistence(timeout: 15))
-        XCTAssertTrue(web.buttons["字音比較"].waitForExistence(timeout: 15))
-        web.buttons["字音比較"].tap()
         let input = web.textFields.firstMatch
         XCTAssertTrue(input.waitForExistence(timeout: 10))
         input.tap(); input.typeText("中输")
-        web.buttons["字音比較"].tap()
         web.buttons["開始比較"].tap()
         XCTAssertTrue(web.staticTexts["各語言比較結果"].waitForExistence(timeout: 15))
         let shot = XCTAttachment(screenshot: app.screenshot())
-        shot.name = "0.10.1-built-in-tools"
+        shot.name = "0.10.2-built-in-tools"
         shot.lifetime = .keepAlways
         add(shot)
     }

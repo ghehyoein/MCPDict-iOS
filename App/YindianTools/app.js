@@ -145,6 +145,7 @@
 
   async function init() {
     bindUi();
+    switchTab(window.MCPDictTool === "compare" ? "compare" : "evolution");
 
     const [dialectResult, qysResult] = await Promise.allSettled([
       loadDialects(),

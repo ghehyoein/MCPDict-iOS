@@ -11,8 +11,12 @@ final class AdditionalToolsUITests: XCTestCase {
         let input = app.textViews["longTextInput"]
         XCTAssertTrue(input.waitForExistence(timeout: 5)); input.tap(); input.typeText("中\n中")
         app.buttons["longTextLanguage"].tap()
-        let language = app.buttons["示例語言點"].firstMatch
-        XCTAssertTrue(language.waitForExistence(timeout: 5)); language.tap()
+        for name in ["漢語", "官話", "北京"] {
+            let group = app.buttons["expand-" + name]
+            XCTAssertTrue(group.waitForExistence(timeout: 5)); group.tap()
+        }
+        app.buttons["check-示例語言點"].tap()
+        app.buttons["finishLanguages"].tap()
         app.buttons["annotateLongText"].tap()
         XCTAssertTrue(app.buttons["annotatedCharacter-0"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["annotatedCharacter-2"].exists)

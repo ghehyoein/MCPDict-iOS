@@ -13,6 +13,7 @@ struct SystemText: UIViewRepresentable {
     var boldPrefix: String? = nil
     var smallerPitch = false
     var onTap: (() -> Void)? = nil
+    @AppStorage("glyphStandard") private var glyphStandard = ""
     @Environment(\.font) private var font
     @Environment(\.dynamicTypeSize) private var dynamicType
     init(_ text: String, color: UIColor = .label, pointSize: CGFloat? = nil, weight: UIFont.Weight = .regular, serif: Bool = false, parts: [ToneDisplay.Part]? = nil, boldPrefix: String? = nil, smallerPitch: Bool = false, onTap: (() -> Void)? = nil) {
@@ -49,7 +50,7 @@ struct SystemText: UIViewRepresentable {
         }
         let size = pointSize ?? UIFont.preferredFont(forTextStyle: style, compatibleWith: UITraitCollection(preferredContentSizeCategory: category)).pointSize
         let base = UIFont.systemFont(ofSize: size, weight: weight)
-        return serif ? UIFont(descriptor: base.fontDescriptor.withDesign(.serif) ?? base.fontDescriptor, size: size) : base
+        return GlyphStandard.font(serif ? UIFont(descriptor: base.fontDescriptor.withDesign(.serif) ?? base.fontDescriptor, size: size) : base, standard: GlyphStandard(rawValue: glyphStandard) ?? .system)
     }
     func makeCoordinator() -> Coordinator { Coordinator(onTap) }
     func makeUIView(context: Context) -> UITextView {
@@ -75,6 +76,7 @@ struct SystemText: UIViewRepresentable {
         if let prefix = boldPrefix, text.hasPrefix(prefix) {
             value.addAttribute(.font, value: UIFont.systemFont(ofSize: resolvedFont.pointSize, weight: .bold), range: NSRange(location: 0, length: (prefix as NSString).length))
         }
+        GlyphStandard.apply(to: value, standard: GlyphStandard(rawValue: glyphStandard) ?? .system)
         if view.attributedText != value { view.attributedText = value }
         view.accessibilityLabel = text
     }

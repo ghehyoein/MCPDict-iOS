@@ -295,7 +295,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         if nameButton.currentTitle != point.name { nameButton.setTitle(point.name, for: .normal) }
         nameButton.accessibilityLabel = point.name
         nameButton.accessibilityIdentifier = "map-name-" + point.id
-        if nameButton.titleLabel?.font.pointSize != CGFloat(labelSize) { nameButton.titleLabel?.font = .systemFont(ofSize: labelSize) }
+        nameButton.titleLabel?.font = GlyphStandard.font(.systemFont(ofSize: labelSize))
         if previousColor != point.color {
         previousColor = point.color
         let colors = TableColors.hexes(point.color)
@@ -322,7 +322,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         let textChanged = previousReading != point.reading || previousParts != point.toneParts || previousFontSize != fontSize
         if textChanged {
         let text = NSMutableAttributedString(string: "")
-        let font = UIFont.systemFont(ofSize: fontSize)
+        let font = GlyphStandard.font(UIFont.systemFont(ofSize: fontSize))
         let parts = point.toneParts ?? [.init(id: 0, base: point.reading, pitch: "", tone: "", stacked: false)]
         for part in parts {
             text.append(NSAttributedString(string: part.base, attributes: [.font: font, .foregroundColor: UIColor.label]))
@@ -343,6 +343,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         paragraph.lineBreakMode = .byCharWrapping
         text.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: text.length))
         let contentChanged = previousReading != point.reading
+        GlyphStandard.apply(to: text)
         renderedReading = text
         if let readingView {
             let selection = readingView.selectedRange

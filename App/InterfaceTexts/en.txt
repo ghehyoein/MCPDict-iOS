@@ -1224,3 +1224,45 @@ Copy
 
 [公里]
 km
+
+[自選分區]
+Custom classifications
+
+[匯入自選分區]
+Import custom classifications
+
+[匯出自選分區]
+Export custom classifications
+
+[方案顏色]
+Scheme color
+
+[無效的自選分區檔案]
+Invalid custom classifications file
+
+[已合併匯入自選分區，原有內容及配色已保留。]
+Custom classifications imported and merged. Existing contents and colors have been preserved.
+
+[請輸入有效且不重複的名稱，或六位十六進制顏色碼。]
+Enter a valid unique name or a six-digit hexadecimal color code.
+
+[字形標準]
+Glyph standard
+
+[默認]
+Default
+
+[大陸]
+Mainland China
+
+[香港]
+Hong Kong
+
+[臺灣]
+Taiwan
+
+[日本]
+Japan
+
+[韓國]
+Korea

@@ -91,8 +91,11 @@ struct AddCustomLanguageButton: View {
     let name: String
     @ObservedObject var state: LanguageSelectionState
     var body: some View {
-        Button(ui(state.custom.members.contains(name) ? "將該語言移出自選語言" : "將該語言加入自選語言")) {
+        Button {
             if !state.custom.members.insert(name).inserted { state.custom.members.remove(name) }
+        } label: {
+            Text(ui(state.custom.members.contains(name) ? "將該語言移出自選語言" : "將該語言加入自選語言"))
+                .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
         }.foregroundStyle(AppAccent.color).accessibilityIdentifier("tableCustomLanguage")
     }
 }

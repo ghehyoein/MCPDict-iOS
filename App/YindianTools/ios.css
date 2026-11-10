@@ -1,0 +1,35 @@
+/* iOS grouped settings and system controls; calculation/data markup is unchanged. */
+:root {
+  color-scheme: light dark;
+  --bg: #f2f2f7; --surface: #fff; --surface-soft: #f2f2f7;
+  --text: #000; --muted: #6c6c70; --line: #c6c6c8;
+  --brand: #007aff; --brand-strong: #007aff; --brand-soft: #e5f0ff;
+  --shadow: none; --app-font-size: 17px;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #000; --surface: #1c1c1e; --surface-soft: #2c2c2e;
+    --text: #fff; --muted: #aeaeb2; --line: #38383a;
+    --brand: #0a84ff; --brand-strong: #0a84ff; --brand-soft: #132c49; }
+}
+html, body { background: var(--bg); color: var(--text); font-family: -apple-system, system-ui, sans-serif; font-size: var(--app-font-size); }
+.tabs { display: none !important; }
+.app-shell { width: 100%; max-width: none; margin: 0; padding: 16px; }
+.tool-panel { background: transparent; border: 0; padding: 0; box-shadow: none; }
+.controls-grid, .filter-box, .parser-options, .results-block, .compare-results-toolbar, .compact-summary {
+  background: var(--surface); border: 0; border-radius: 10px; padding: 14px; margin-bottom: 16px; box-shadow: none;
+}
+.controls-grid, .filter-grid { display: flex; flex-direction: column; gap: 12px; }
+.field, .field > span, .checkbox-field, .filter-box > summary { font-size: 1rem; color: var(--text); }
+input, select, button, summary { font-family: inherit; font-size: 1rem; }
+input:not([type=checkbox]), select { min-height: 44px; border-radius: 6px; border: 1px solid var(--line); color: var(--text); background: var(--surface); }
+select, input[type=checkbox] { accent-color: var(--brand); }
+select { color: var(--brand); }
+.primary-button, .secondary-button, .language-toggle, .inline-detail-button {
+  color: var(--brand); background: transparent; border: 0; border-radius: 6px; min-height: 44px; box-shadow: none; font-weight: 400;
+}
+.primary-button:hover, .secondary-button:hover { background: var(--brand-soft); }
+.language-menu, .multi-options, .dialog { background: var(--surface); color: var(--text); border-color: var(--line); border-radius: 10px; }
+.multi-select, .filter-count { color: var(--brand); background: var(--surface-soft); border-color: var(--line); }
+th, td, .compact-reading, .reading-chips, .all-chars { font-size: .9rem; }
+.results-block, .table-wrap { overflow-x: auto; }
+button:disabled { opacity: .4; }

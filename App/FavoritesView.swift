@@ -74,6 +74,7 @@ struct FavoritesView: View {
     var body: some View {
         NavigationStack {
             List {
+                Section { NavigationLink(ui("自選分區")) { CustomSchemeManager(state: model.languageSelection) } }
                 Section {
                     Button { showBooks = true } label: {
                         HStack {

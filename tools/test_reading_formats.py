@@ -11,6 +11,8 @@ const render=(s,k,o)=>c.readingFormat(s,k,[String(o)]).map(x=>x.text).join('');
 assert.equal(render('xing1','mandarin_display',0),'ɕiŋ1');
 assert.equal(render('xing1','mandarin_display',1),'xīng');
 assert.equal(render('xing1','mandarin_display',2),'ㄒㄧㄥ');
+assert.equal(c.readingFormat('xing1','mandarin_display',['0','1','2']).map(x=>x.text).join(''),'ɕiŋ1 / xīng / ㄒㄧㄥ');
+assert.equal(c.readingFormat('xing1','mandarin_display',[]).length,0);
 assert.equal(render('nhaats','vietnamese_tone_position',1),'nhất');
 assert.equal(render('hoaf','vietnamese_tone_position',1),'hòa');
 assert.equal(render('hoaf','vietnamese_tone_position',2),'hoà');

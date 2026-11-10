@@ -21,6 +21,8 @@ final class AppModel: ObservableObject {
     let repository: DictionaryRepository
     let tableStore: TableStore
     let languageSelection: LanguageSelectionState
+    let gameLanguageSelection: LanguageSelectionState
+    let longTextLanguageSelection: LanguageSelectionState
     @Published var activeTab = 0
     @Published var mapHandoff: MapHandoff?
     func openResultOnMap(_ character: String) {
@@ -102,6 +104,8 @@ final class AppModel: ObservableObject {
         }
         selectionCache = LanguageSelectionCache(defaults: defaults)
         languageSelection = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
+        gameLanguageSelection = LanguageSelectionState(namespace: "games", defaults: defaults)
+        longTextLanguageSelection = LanguageSelectionState(namespace: "longText", defaults: defaults)
         let repository = DictionaryRepository()
         self.repository = repository
         tableStore = TableStore(repository: repository)
@@ -117,8 +121,8 @@ final class AppModel: ObservableObject {
             installed = TableInstallation(catalogVersion: "ui-test", tables: fixture.tables, databaseFile: nil)
             languages = fixture.tables.map(\.name)
             if ProcessInfo.processInfo.arguments.contains("--reset-selection") {
-                for key in [CharacterSearchRange.preferenceKey, "resultArrangement", "favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, OnlineDictionaryPreferences.key, ReadingFormatPreferences.key, "longTextFormat", "longTextLanguage", "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
-                for namespace in ["dictionary", "map", "downloads"] {
+                for key in [CharacterSearchRange.preferenceKey, "resultArrangement", "favoriteAction", FavoritePreferences.defaultsKey, ReferencePreferences.key, OnlineDictionaryPreferences.key, ReadingFormatPreferences.key, "longTextFormat", "longTextLanguage", "gameLanguage", "glyphStandard", "notebookCategory", "notebookCategories", "colorScheme", AppTypography.interfaceKey, AppTypography.mapKey, AppTypography.readingKey] { UserDefaults.standard.removeObject(forKey: key) }
+                for namespace in ["dictionary", "map", "downloads", "games", "longText"] {
                     selectionCache.defaults.removeObject(forKey: "languageSelection." + namespace)
                     selectionCache.defaults.removeObject(forKey: "selectionMode." + namespace)
                     for mode in MapSearchKind.allCases {
@@ -130,7 +134,7 @@ final class AppModel: ObservableObject {
                     selectionCache.defaults.removeObject(forKey: "transitions." + namespace)
                 }
             }
-            if ProcessInfo.processInfo.arguments.contains("--reset-selection") { languageSelection.resetFixture() }
+            if ProcessInfo.processInfo.arguments.contains("--reset-selection") { languageSelection.resetFixture(); gameLanguageSelection.resetFixture(); longTextLanguageSelection.resetFixture() }
             try? await repository.open(UITestFixtures.database())
             restoreLanguageSelection()
             if ProcessInfo.processInfo.arguments.contains("--notebook-list-fixture") {
@@ -202,14 +206,14 @@ final class AppModel: ObservableObject {
     }
     func resetSettings() {
         let defaults = selectionCache.defaults
-        let keys = ["appearance", "uiLanguage", AppTypography.interfaceKey, AppTypography.mapKey,
+        let keys = ["appearance", "uiLanguage", "glyphStandard", "gameLanguage", AppTypography.interfaceKey, AppTypography.mapKey,
                     AppTypography.readingKey, "toneStyle", "pitchStyle", "colorScheme", "dictionaryPalette",
                     "mapPalette", "baseMapStyle", "resultArrangement", CharacterSearchRange.preferenceKey, "preferredMapApp", ReferencePreferences.key, OnlineDictionaryPreferences.key, ReadingFormatPreferences.key, "longTextFormat", "longTextLanguage"]
         let prefixes = ["languageSelection.", "selectionMode.", "grouping.", "roles.", "regionNode.", "island.", "history.", "islandMode.", "historyMode.", "transitions."]
         for key in defaults.dictionaryRepresentation().keys where keys.contains(key) || prefixes.contains(where: key.hasPrefix) {
             defaults.removeObject(forKey: key)
         }
-        languageSelection.resetDefaults()
+        languageSelection.resetDefaults(); gameLanguageSelection.resetDefaults(); longTextLanguageSelection.resetDefaults()
         selectedLanguages = nil; language = ""
         query = ""; mode = .character; generation += 1; searching = false
         results = []; resultCharacters = []; hasMore = false; lastSearch = nil; mapHandoff = nil
@@ -460,8 +464,9 @@ struct RootView: View {
     @EnvironmentObject var model: AppModel
     @AppStorage("appearance") private var appearance = "system"
     @AppStorage("uiLanguage") private var uiLanguage = "hant"
+    @AppStorage("glyphStandard") private var glyphStandard = ""
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
-    private var settingsIdentity: String { uiLanguage + String(model.settingsRevision) }
+    private var settingsIdentity: String { uiLanguage + glyphStandard + String(model.settingsRevision) }
     private var pageIdentity: String {
         if #available(iOS 26.0, *) { return settingsIdentity }
         return "page"

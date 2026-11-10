@@ -50,8 +50,6 @@ struct LongTextView: View {
     @FocusState private var inputFocused: Bool
     @State private var characters = [AnnotatedCharacter]()
     @State private var submittedTable: TablePackage?
-    @State private var languageSheet = false
-    @State private var languageFilter = ""
     @State private var selectedCharacter: Int?
     @State private var busy = false
     private var tables: [TablePackage] { model.installed?.tables ?? [] }
@@ -75,9 +73,9 @@ struct LongTextView: View {
                 HStack {
                     Text("\(input.count) / 400").foregroundStyle(.secondary)
                     Spacer()
-                    Button { inputFocused = false; languageSheet = true } label: { Label(language.isEmpty ? ui("選擇語言") : language, systemImage: "gearshape") }.accessibilityIdentifier("longTextLanguage")
                     Button(ui("查詢")) { Task { await annotate() } }.disabled(busy || input.isEmpty).accessibilityIdentifier("annotateLongText")
                 }
+                SingleLanguageSelectionPanel(tables: tables, language: $language, state: model.longTextLanguageSelection, entryID: "longTextLanguage") { inputFocused = false }
                 Picker(ui("長文注音格式"), selection: $format) {
                     ForEach(1...8, id: \.self) { Text(ui(LongTextAnnotation.formats[$0 - 1])).tag($0) }
                 }.pickerStyle(.menu)
@@ -104,17 +102,7 @@ struct LongTextView: View {
                 }
             }.padding()
         }.navigationTitle(ui("長文注音")).navigationBarTitleDisplayMode(.inline)
-        .sheet(isPresented: $languageSheet) {
-            NavigationStack {
-                List(tables.filter { languageFilter.isEmpty || $0.name.localizedCaseInsensitiveContains(languageFilter) }) { table in
-                    Button { language = table.name; characters = []; languageSheet = false } label: {
-                        HStack { LanguageBadge(name: table.name, table: table); Spacer(); if language == table.name { Image(systemName: "checkmark") } }
-                    }
-                }.searchable(text: $languageFilter, prompt: ui("搜尋語言或分區"))
-                    .navigationTitle(ui("選擇語言"))
-                    .toolbar { Button(ui("完成")) { languageSheet = false } }
-            }
-        }
+        .onChange(of: language) { _, _ in characters = [] }
         .sheet(isPresented: Binding(get: { selectedCharacter != nil }, set: { if !$0 { selectedCharacter = nil } })) {
             if let index = selectedCharacter, characters.indices.contains(index) {
                 NavigationStack {
@@ -130,7 +118,7 @@ struct LongTextView: View {
     }
     @MainActor private func annotate() async {
         inputFocused = false
-        guard let table = tables.first(where: { $0.name == language }) else { languageSheet = true; return }
+        guard let table = tables.first(where: { $0.name == language }) else { inputFocused = false; model.longTextLanguageSelection.expanded = true; return }
         busy = true; defer { busy = false }
         let text = input
         do {

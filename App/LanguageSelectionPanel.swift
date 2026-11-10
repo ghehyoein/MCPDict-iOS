@@ -19,6 +19,8 @@ struct LanguageSelectionPanel: View {
     var inspect: ((TablePackage) -> Void)? = nil
     var finished: () -> Void = {}
     var alwaysExpanded = false
+    var languageOnly = false
+    var singleSelection = false
     @AppStorage("colorScheme") private var palette = "atlas"
     @State private var restored = false
     @State private var paletteInfo = false
@@ -36,7 +38,7 @@ struct LanguageSelectionPanel: View {
             } else { SelectionMenuButton(count: names.count, entryID: entryID, expanded: $state.expanded) }
             if alwaysExpanded || state.expanded { controls }
         }
-        .onAppear { restoreInitial() }
+        .onAppear { if languageOnly { state.kind = .language }; restoreInitial() }
         .onChange(of: tables) { _, _ in restoreInitial(); syncCustom() }
         .onChange(of: state.custom) { _, _ in syncCustom() }
         .onChange(of: state.flags) { _, _ in syncCustom() }
@@ -46,7 +48,7 @@ struct LanguageSelectionPanel: View {
     }
     private var controls: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Picker(ui("檢索選項"), selection: Binding(get: { state.kind }, set: { mode in
+            if !languageOnly { Picker(ui("檢索選項"), selection: Binding(get: { state.kind }, set: { mode in
                 // Read the destination cache before changing shared controls. Child
                 // refreshes must not overwrite it with the previous mode's names.
                 let saved = cache.load(state.namespace + "." + mode.rawValue) ?? []
@@ -55,7 +57,7 @@ struct LanguageSelectionPanel: View {
                 cache.save(names, for: state.key)
             })) {
                 ForEach(MapSearchKind.allCases) { Text(ui($0.rawValue)).tag($0) }
-            }.pickerStyle(.segmented).labelsHidden()
+            }.pickerStyle(.segmented).labelsHidden() }
             HStack(spacing: 10) {
                 visibilityPicker("方言島", $state.flags.islandMode)
                 visibilityPicker("歷史音", $state.flags.historyMode)
@@ -69,19 +71,21 @@ struct LanguageSelectionPanel: View {
                 Button(ui("好"), role: .cancel) {}
             } message: { Text(ui("此開關切換語言點顯示顏色。「地」使用地圖集二分區配色，「音」使用音典分區配色")) }
             if state.kind == .custom { CustomSchemeControls(state: state) }
-            LanguageDropdown(tables: tables, names: chosen, state: state, inspect: inspect, palette: palette == "dictionary" ? .dictionary : .atlas, showsDone: !alwaysExpanded) {
+            LanguageDropdown(tables: tables, names: chosen, state: state, inspect: inspect, palette: palette == "dictionary" ? .dictionary : .atlas, showsDone: !alwaysExpanded, singleSelection: singleSelection) {
                 state.expanded = false; finished()
             }.id(state.key)
         }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
     }
     private func visibilityPicker(_ title: String, _ value: Binding<LanguageVisibility>) -> some View {
-        VStack(alignment: .leading, spacing: 0) {
-            SystemText(ui(title), color: AppAccent.uiColor)
+        Menu {
             Picker(ui(title), selection: value) {
                 ForEach(LanguageVisibility.allCases, id: \.self) { Text(ui($0.title)).tag($0) }
-            }.pickerStyle(.menu).labelsHidden().accessibilityIdentifier("visibility-" + title)
-        }
+            }
+        } label: {
+            HStack(spacing: 2) { Text(ui(title)); Image(systemName: "chevron.up.chevron.down").font(.caption) }
+        }.accessibilityIdentifier("visibility-" + title)
     }
+
     private var customNames: Set<String> {
         restoredNames(state.custom.selected)
     }
