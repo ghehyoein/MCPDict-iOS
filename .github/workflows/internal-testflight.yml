@@ -1,0 +1,137 @@
+name: Sync GitHub release to internal TestFlight
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ['Build iPhone IPA for local signing']
+    types: [completed]
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: mcpdict-internal-testflight
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.conclusion == 'success'))
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.check.outputs.tag }}
+      source_sha: ${{ steps.check.outputs.source_sha }}
+      digest: ${{ steps.check.outputs.digest }}
+      build: ${{ steps.check.outputs.build }}
+    steps:
+      - id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TRIGGER_SHA: ${{ github.event.workflow_run.head_sha }}
+          TRIGGER_RUN: ${{ github.event.workflow_run.run_number }}
+        run: |
+          set -euo pipefail
+          json=$(gh api "repos/$GITHUB_REPOSITORY/releases/latest")
+          tag=$(jq -er '.tag_name' <<< "$json")
+          [[ "$tag" =~ ^iphone-dev-([0-9]+)-([0-9a-f]+)$ ]]
+          run="${BASH_REMATCH[1]}"
+          source_sha=$(gh api "repos/$GITHUB_REPOSITORY/commits/$tag" --jq '.sha')
+            [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]]
+          if [[ -n "$TRIGGER_SHA" && ( "$TRIGGER_SHA" != "$source_sha" || "$TRIGGER_RUN" != "$run" ) ]]; then exit 0; fi
+          digest=$(jq -er '.assets[]|select(.name=="MCPDict-iPhone-unsigned.ipa")|.digest' <<< "$json")
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "source_sha=$source_sha" >> "$GITHUB_OUTPUT"
+          echo "digest=${digest#sha256:}" >> "$GITHUB_OUTPUT"
+          echo "build=$run" >> "$GITHUB_OUTPUT"
+  upload:
+    needs: release
+    if: needs.release.outputs.tag != ''
+    environment: testflight
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      TAG: ${{ needs.release.outputs.tag }}
+      SOURCE_SHA: ${{ needs.release.outputs.source_sha }}
+      DIGEST: ${{ needs.release.outputs.digest }}
+      RELEASE_BUILD: ${{ needs.release.outputs.build }}
+      TEAM: ${{ vars.APPLE_TEAM_ID }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+          persist-credentials: false
+      - name: Prepare the tagged source and original release data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$(git rev-parse HEAD)" == "$SOURCE_SHA" ]]
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p 'MCPDict-iPhone-unsigned.ipa' -D "$RUNNER_TEMP"
+          ipa="$RUNNER_TEMP/MCPDict-iPhone-unsigned.ipa"
+          echo "$DIGEST  $ipa" | shasum -a 256 -c -
+          unzip -q "$ipa" 'Payload/MCPDictIOS.app/BundledTables/*' 'Payload/MCPDictIOS.app/Info.plist' -d "$RUNNER_TEMP"
+          src="$RUNNER_TEMP/Payload/MCPDictIOS.app"
+          test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$src/Info.plist")" = io.github.ghehyoein.MCPDictIOS
+          test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$src/Info.plist")" = "$RELEASE_BUILD"
+          echo "VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$src/Info.plist")" >> "$GITHUB_ENV"
+          mkdir -p App/BundledTables
+          cp -R "$src/BundledTables/." App/BundledTables/
+          if [[ ! -f App/PrivacyInfo.xcprivacy ]]; then
+            gh api "repos/$GITHUB_REPOSITORY/contents/App/PrivacyInfo.xcprivacy?ref=3c1cdd75bf32d48759a0a8156d1addbc5904be28" -H 'Accept: application/vnd.github.raw+json' > App/PrivacyInfo.xcprivacy
+          fi
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          python3 tools/prepare_assets.py
+          xcodegen generate
+          /usr/libexec/PlistBuddy -c 'Delete :UISupportedInterfaceOrientations~ipad' Generated/Info.plist 2>/dev/null || true
+          /usr/libexec/PlistBuddy -c 'Add :UISupportedInterfaceOrientations~ipad array' Generated/Info.plist
+          for v in Portrait PortraitUpsideDown LandscapeLeft LandscapeRight; do /usr/libexec/PlistBuddy -c "Add :UISupportedInterfaceOrientations~ipad: string UIInterfaceOrientation$v" Generated/Info.plist; done
+      - name: Install distribution signing
+        env:
+          P12: ${{ secrets.SIGNING_P12_BASE64 }}
+          PASSWORD: ${{ secrets.SIGNING_P12_PASSWORD }}
+          PROFILE: ${{ secrets.APP_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          cd "$RUNNER_TEMP"
+          printf %s "$PROFILE" | base64 -D > app.mobileprovision
+          security cms -D -i app.mobileprovision > profile.plist
+          uuid=$(/usr/libexec/PlistBuddy -c 'Print UUID' profile.plist)
+          test "$(/usr/libexec/PlistBuddy -c 'Print Entitlements:application-identifier' profile.plist)" = "$TEAM.io.github.ghehyoein.MCPDictIOS"
+          dir="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          mkdir -p "$dir"
+          cp app.mobileprovision "$dir/$uuid.mobileprovision"
+          echo "PROFILE_UUID=$uuid" >> "$GITHUB_ENV"
+          pw=$(openssl rand -hex 32)
+          kc="$RUNNER_TEMP/distribution.keychain-db"
+          security create-keychain -p "$pw" "$kc"
+          security set-keychain-settings -lut 3600 "$kc"
+          security unlock-keychain -p "$pw" "$kc"
+          printf %s "$P12" | base64 -D > identity.p12
+          security import identity.p12 -k "$kc" -P "$PASSWORD" -T /usr/bin/codesign
+          rm identity.p12
+          security set-key-partition-list -S apple-tool:,apple: -k "$pw" "$kc" >/dev/null
+          security list-keychains -d user -s "$kc" "$HOME/Library/Keychains/login.keychain-db"
+      - name: Archive and upload for internal testing only
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          build="$RELEASE_BUILD.$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
+          archive="$RUNNER_TEMP/MCPDict.xcarchive"
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -configuration Release -destination 'generic/platform=iOS' -archivePath "$archive" DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Manual 'CODE_SIGN_IDENTITY=Apple Distribution' PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" CURRENT_PROJECT_VERSION="$build" archive
+          app="$archive/Products/Applications/MCPDictIOS.app"
+          test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app/Info.plist")" = "$VERSION"
+          test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$app/Info.plist")" = "$build"
+          codesign --verify --strict "$app"
+          cd "$RUNNER_TEMP"
+          umask 077
+          printf '%s\n' "$KEY" > AuthKey.p8
+          trap 'rm -f AuthKey.p8' EXIT
+          python3 - <<'PY'
+          import os,plistlib
+          with open('export.plist','wb') as f:
+              plistlib.dump(dict(method='app-store-connect',destination='upload',testFlightInternalTestingOnly=True,signingStyle='manual',teamID=os.environ['TEAM'],manageAppVersionAndBuildNumber=False,signingCertificate='Apple Distribution',provisioningProfiles={'io.github.ghehyoein.MCPDictIOS':os.environ['PROFILE_UUID']}),f)
+          PY
+          xcodebuild -exportArchive -archivePath "$archive" -exportPath exported -exportOptionsPlist export.plist -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER"
+          echo "Internal TestFlight: $TAG → $VERSION ($build), release SHA-256 $DIGEST" >> "$GITHUB_STEP_SUMMARY"
