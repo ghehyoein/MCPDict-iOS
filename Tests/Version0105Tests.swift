@@ -34,7 +34,7 @@ final class Version0105Tests: XCTestCase {
         XCTAssertFalse(palette.enabled); XCTAssertTrue(palette.colors.isEmpty)
     }
     func testPaletteDecodesPreviousSettingsWithoutChangingMembers() throws {
-        let data = Data(#"{"schemes":[{"name":"原方案","languages":["甲"],"colorHex":"#123456"}],"current":"原方案","scope":"","colorByScheme":false}"#.utf8)
+        let data = Data(##"{"schemes":[{"name":"原方案","languages":["甲"],"colorHex":"#123456"}],"current":"原方案","scope":"","colorByScheme":false}"##.utf8)
         let store = try JSONDecoder().decode(CustomLanguageSchemes.self, from: data)
         XCTAssertNil(store.paletteScheme)
         XCTAssertEqual(store.members, ["甲"])
