@@ -206,7 +206,7 @@ struct CustomSchemeEditor: View {
                         guard let i = index, let value = CustomLanguageSchemes.validColor(hex) else { invalid = true; return }
                         state.custom.schemes[i].colorHex = value; hex = value
                     }.fixedSize().buttonStyle(.borderless)
-                }.accessibilityIdentifier("customSchemeColorRow")
+                }
             }
             Section(ui("自選分區")) {
                 ForEach(children) { child in
