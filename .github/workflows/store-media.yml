@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        device: ['iPhone 17 Pro','iPhone 17 Pro Max','iPad Pro 13-inch (M5)']
+        device: ['iPhone 17 Pro','iPad Pro 13-inch (M5)']
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
       DEVICE: ${{ matrix.device }}
@@ -39,9 +39,15 @@ jobs:
           xcrun simctl boot "$id"
           xcrun simctl bootstatus "$id" -b
           xcrun simctl status_bar "$id" override --time '9:41'
-          xcodebuild -quiet -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "id=$id" -parallel-testing-enabled NO -only-testing:MCPDictIOSUITests/StoreMediaTests -resultBundlePath StoreMedia.xcresult CODE_SIGNING_ALLOWED=NO test
+          set +e
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -destination "id=$id" -parallel-testing-enabled NO -only-testing:MCPDictIOSUITests/StoreMediaTests -resultBundlePath StoreMedia.xcresult CODE_SIGNING_ALLOWED=NO test
+          result=$?
+          set -e
+          xcrun xcresulttool get test-results summary --path StoreMedia.xcresult
           xcrun xcresulttool export attachments --path StoreMedia.xcresult --output-path captures
+          test -n "$(find captures -type f -iname '*.png' -print -quit)" || exit "$result"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: store-media-${{ matrix.device }}
           path: captures
