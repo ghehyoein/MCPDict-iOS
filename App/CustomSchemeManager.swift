@@ -13,14 +13,16 @@ struct CustomSchemeArchive: Codable {
             throw DictionaryFailure(message: ui("無效的自選分區檔案"))
         }
         var result = source; result.retainColors()
+        var indices = Dictionary(uniqueKeysWithValues: result.schemes.enumerated().map { ($0.element.name, $0.offset) })
         for scheme in schemes {
             let name = CustomLanguageSchemes.normalize(scheme.name)
-            guard !name.isEmpty, let hex = scheme.colorHex.flatMap(CustomLanguageSchemes.validColor) else {
+            guard !name.isEmpty, !name.components(separatedBy: "－").contains(""), let hex = scheme.colorHex.flatMap(CustomLanguageSchemes.validColor) else {
                 throw DictionaryFailure(message: ui("無效的自選分區檔案"))
             }
-            if let index = result.schemes.firstIndex(where: { $0.name == name }) {
+            if let index = indices[name] {
                 result.schemes[index].languages.formUnion(scheme.languages)
             } else {
+                indices[name] = result.schemes.count
                 result.schemes.append(.init(name: name, languages: scheme.languages, colorHex: hex))
             }
         }
@@ -54,7 +56,7 @@ struct CustomSchemeManager: View {
     @State private var selection = Set<String>()
     private var exported: CustomLanguageSchemes {
         var value = state.custom; value.retainColors()
-        if selecting { value.schemes.removeAll { scheme in !selection.contains(where: { scheme.name == $0 || scheme.name.hasPrefix($0 + "－") }) } }
+        if selecting { value.schemes.removeAll { !CustomLanguageSchemes.belongs($0.name, to: selection) } }
         return value
     }
     var body: some View {

@@ -206,7 +206,7 @@ final class AppModel: ObservableObject {
             resultMode = request.1; resultQuery = request.0
             resultCharacters = request.1 == .note ? prepared.2 : variants
             hasMore = false
-        } catch { self.error = error.localizedDescription }
+        } catch { if token == generation { self.error = error.localizedDescription } }
     }
     func resetSettings() {
         let defaults = selectionCache.defaults

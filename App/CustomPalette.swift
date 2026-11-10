@@ -17,7 +17,8 @@ import Combine
         }
         observation = source.$custom.sink { [weak self] store in
             guard let self else { return }
-            self.choices = store.schemes.map(\.name) + store.parents.filter { parent in !store.schemes.contains { $0.name == parent } }
+            let names = store.schemes.map(\.name), existing = Set(names)
+            self.choices = names + store.parents.filter { !existing.contains($0) }
             self.selected = store.paletteScheme.flatMap { self.choices.contains($0) ? $0 : nil } ?? ""
             self.colors = store.paletteColors()
         }

@@ -1400,14 +1400,25 @@
     const dialects = (input.dialects || []).map(parseDialectRow);
     if (input.kind === 'compare') {
       const chars = input.chars, byDialect = new Map();
+      const singleChars = new Set(chars.filter(char => Array.from(char).length === 1));
+      const sequences = chars.filter(char => Array.from(char).length !== 1);
       for (const row of input.rows) {
-        const name = row['語言'];
-        if (!byDialect.has(name)) byDialect.set(name, []);
-        byDialect.get(name).push(row);
+        const name = row['語言'], text = String(row['字組'] || '');
+        if (!byDialect.has(name)) byDialect.set(name, new Map());
+        const index = byDialect.get(name);
+        const matched = new Set(Array.from(text).filter(char => singleChars.has(char)));
+        // Preserve substring semantics for variation-selector sequences.
+        for (const char of sequences) if (text.includes(char)) matched.add(char);
+        if (!matched.size) continue;
+        const values = extractReadings(row['讀音']);
+        for (const char of matched) {
+          if (!index.has(char)) index.set(char, new Set());
+          for (const value of values) index.get(char).add(value);
+        }
       }
       return dialects.map(dialect => {
-        const rows = byDialect.get(dialect.shortName) || [];
-        const readings = chars.map(char => [...new Set(rows.filter(r => String(r['字組'] || '').includes(char)).flatMap(r => extractReadings(r['讀音'])))].sort());
+        const index = byDialect.get(dialect.shortName);
+        const readings = chars.map(char => [...(index?.get(char) || [])].sort());
         const normalized = readings.map(values => values.map(raw => ({raw, parts: decomposeModern(raw, dialect, {glidesAsFinal: input.glides})})));
         return {name: dialect.shortName, status: classifyReadings(normalized, input.mode, dialect), readings,
           normalized: normalized.map(values => values.map(v => displayValueFromParts(v.parts, input.mode, dialect)))};

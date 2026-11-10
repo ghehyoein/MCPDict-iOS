@@ -17,10 +17,11 @@ enum LongTextAnnotation {
     static let formats = ["IPA", "IPA＋字", "IPA＋曲折線調值", "IPA＋曲折線調值＋字", "IPA＋調類", "IPA＋調類＋字", "IPA＋曲折線調值＋調類", "IPA＋曲折線調值＋調類＋字"]
     static func build(_ text: String, rows: [Reading], variants: (String) -> [String] = CharacterVariants.expand) -> [AnnotatedCharacter] {
         var byCharacter = [String: [AnnotatedCharacter.Choice]]()
+        var seen = Set<AnnotatedCharacter.Choice>()
         for row in rows {
             for character in CharacterResults.characters(row.characters) {
                 let choice = AnnotatedCharacter.Choice(character: character, pronunciation: row.pronunciation)
-                if !(byCharacter[character] ?? []).contains(choice) { byCharacter[character, default: []].append(choice) }
+                if seen.insert(choice).inserted { byCharacter[character, default: []].append(choice) }
             }
         }
         var cache = [String: [AnnotatedCharacter.Choice]]()
@@ -53,6 +54,7 @@ struct LongTextView: View {
     @State private var submittedTable: TablePackage?
     @State private var selectedCharacter: Int?
     @State private var busy = false
+    @State private var generation = 0
     private var tables: [TablePackage] { model.installed?.tables ?? [] }
     private var paragraphs: [[Int]] {
         var rows = [[Int]()] 
@@ -103,7 +105,7 @@ struct LongTextView: View {
                 }
             }.padding()
         }.navigationTitle(ui("長文注音")).navigationBarTitleDisplayMode(.inline)
-        .onChange(of: language) { _, _ in characters = [] }
+        .onChange(of: language) { _, _ in generation += 1; characters = []; selectedCharacter = nil }
         .sheet(isPresented: Binding(get: { selectedCharacter != nil }, set: { if !$0 { selectedCharacter = nil } })) {
             if let index = selectedCharacter, characters.indices.contains(index) {
                 NavigationStack {
@@ -118,14 +120,17 @@ struct LongTextView: View {
         }
     }
     @MainActor private func annotate() async {
+        guard !busy else { return }
         inputFocused = false
         guard let table = tables.first(where: { $0.name == language }) else { inputFocused = false; model.longTextLanguageSelection.expanded = true; return }
+        generation += 1
+        let token = generation
         busy = true; defer { busy = false }
         let text = input
         do {
             let rows = try await model.repository.searchAllCharacters(CharacterVariants.expand(text).joined(), language: language)
-            guard language == table.name else { return }
+            guard token == generation, language == table.name, !Task.isCancelled else { return }
             characters = LongTextAnnotation.build(text, rows: rows); submittedTable = table
-        } catch { model.error = error.localizedDescription }
+        } catch { if token == generation { model.error = error.localizedDescription } }
     }
 }

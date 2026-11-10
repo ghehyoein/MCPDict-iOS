@@ -72,8 +72,16 @@ struct CustomLanguageSchemes: Codable, Equatable {
         retainColors()
         schemes.removeAll { $0.name == current }; current = schemes[0].name; validateScope(); return true
     }
+    // Check path ancestors in a set, rather than scanning every selected root.
+    static func belongs(_ name: String, to roots: Set<String>) -> Bool {
+        if roots.contains(name) { return true }
+        for separator in name.indices where name[separator] == "－" {
+            if roots.contains(String(name[..<separator])) { return true }
+        }
+        return false
+    }
     func branchNames(_ roots: Set<String>) -> Set<String> {
-        Set(schemes.filter { scheme in roots.contains { scheme.name == $0 || scheme.name.hasPrefix($0 + "－") } }.map(\.name))
+        Set(schemes.lazy.filter { Self.belongs($0.name, to: roots) }.map(\.name))
     }
     @discardableResult mutating func removeBranches(_ roots: Set<String>) -> Bool {
         let removed = branchNames(roots)

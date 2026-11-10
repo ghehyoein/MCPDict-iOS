@@ -249,10 +249,13 @@ struct YindianToolsView: View {
         do {
             try await Task.sleep(for: .milliseconds(250))
             var found = [String](), defaults = Set<String>()
-            for char in CharacterResults.characters(query).filter({ $0.first.map(GuessLogic.isCharacter) ?? false }) {
-                let forms = CharacterVariants.expand(char)
-                let rows = try await model.repository.searchAllCharacters(forms.joined(), language: "")
-                let available = Set(rows.flatMap { CharacterResults.characters($0.characters) })
+            let inputs = CharacterResults.characters(query).filter { $0.first.map(GuessLogic.isCharacter) ?? false }
+            let expanded = inputs.map(CharacterVariants.expand)
+            var seenForms = Set<String>()
+            let formsToQuery = expanded.flatMap { $0 }.filter { seenForms.insert($0).inserted }
+            let rows = formsToQuery.isEmpty ? [] : try await model.repository.searchAllCharacters(formsToQuery.joined(), language: "")
+            let available = Set(rows.flatMap { CharacterResults.characters($0.characters) })
+            for (char, forms) in zip(inputs, expanded) {
                 let candidates = forms.filter(available.contains)
                 let values = candidates.isEmpty ? [char] : candidates
                 found.append(contentsOf: values); defaults.insert(values.first ?? char)
