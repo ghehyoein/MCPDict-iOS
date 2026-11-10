@@ -105,7 +105,7 @@ enum ToneAttributedText {
             let baseFont = part.italic ? UIFont(descriptor: font.fontDescriptor.withSymbolicTraits(.traitItalic) ?? font.fontDescriptor, size: font.pointSize) : font
             text.append(NSAttributedString(string: part.base, attributes: [.font: baseFont, .foregroundColor: color]))
             if part.stacked {
-                let tiny = UIFont.systemFont(ofSize: font.pointSize * 0.55)
+                let tiny = GlyphStandard.font(UIFont.systemFont(ofSize: font.pointSize * 0.55))
                 let attrs: [NSAttributedString.Key: Any] = [.font: tiny, .foregroundColor: color]
                 let width = max((part.pitch as NSString).size(withAttributes: attrs).width, (part.tone as NSString).size(withAttributes: attrs).width)
                 let attachment = NSTextAttachment()

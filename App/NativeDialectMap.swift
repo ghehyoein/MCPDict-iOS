@@ -327,7 +327,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         for part in parts {
             text.append(NSAttributedString(string: part.base, attributes: [.font: font, .foregroundColor: UIColor.label]))
             if part.stacked {
-                let tiny = UIFont.systemFont(ofSize: fontSize * 0.55)
+                let tiny = GlyphStandard.font(UIFont.systemFont(ofSize: fontSize * 0.55))
                 let attrs: [NSAttributedString.Key: Any] = [.font: tiny, .foregroundColor: UIColor.label]
                 let width = max((part.pitch as NSString).size(withAttributes: attrs).width, (part.tone as NSString).size(withAttributes: attrs).width) + 2
                 let attachment = NSTextAttachment()
