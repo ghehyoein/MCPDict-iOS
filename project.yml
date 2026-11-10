@@ -24,6 +24,11 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleLocalizations: [zh-Hant, zh-Hans, en, ja]
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
         LSApplicationQueriesSchemes: [maps, iosamap, baidumap, comgooglemaps]
     settings:
       base:
