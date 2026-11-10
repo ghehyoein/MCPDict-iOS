@@ -70,4 +70,37 @@ final class Version0105UITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "解析日誌")).firstMatch.waitForExistence(timeout: 5))
         capture(app, "0.10.5-comparison-language-details")
     }
+    @MainActor func testCustomPaletteDisablesBaseSwitchAndSharesAcrossPages() {
+        let app = launch()
+        app.tabBars.buttons["生字本"].tap(); app.buttons["自選分區"].tap()
+        app.buttons["schemeEditor-默認方案"].tap()
+        app.buttons["check-示例語言點"].tap()
+        app.tabBars.buttons["字典"].tap()
+        app.buttons["dictionaryLanguageSelection"].tap()
+        let toggle = app.switches["paletteSwitch"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5)); XCTAssertTrue(toggle.isEnabled)
+        app.buttons["customColorMenu"].tap(); app.buttons["默認方案"].tap()
+        XCTAssertFalse(toggle.isEnabled)
+        capture(app, "0.10.5-custom-palette-dictionary")
+        app.tabBars.buttons["地圖"].tap()
+        if !app.buttons["customColorMenu"].isHittable { app.buttons["mapLanguageSelection"].tap() }
+        XCTAssertTrue(app.buttons["customColorMenu"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.switches["paletteSwitch"].isEnabled)
+        app.buttons["customColorMenu"].tap(); app.buttons["關閉"].tap()
+        XCTAssertTrue(app.switches["paletteSwitch"].isEnabled)
+        app.tabBars.buttons["字典"].tap()
+        if !app.buttons["customColorMenu"].isHittable { app.buttons["dictionaryLanguageSelection"].tap() }
+        XCTAssertTrue(app.switches["paletteSwitch"].isEnabled)
+        capture(app, "0.10.5-custom-palette-off")
+        app.tabBars.buttons["設定"].tap()
+        app.buttons["interfaceLanguagePicker"].tap(); app.buttons["English"].tap()
+        app.tabBars.buttons.element(boundBy: 0).tap()
+        if !app.buttons["customColorMenu"].isHittable { app.buttons["dictionaryLanguageSelection"].tap() }
+        let menu = app.buttons["customColorMenu"]
+        XCTAssertTrue(menu.isHittable)
+        XCTAssertLessThan(menu.frame.maxX, app.frame.maxX)
+        menu.tap(); app.buttons["Default scheme"].tap()
+        XCTAssertFalse(app.switches["paletteSwitch"].isEnabled)
+        capture(app, "0.10.5-custom-palette-English")
+    }
 }

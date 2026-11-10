@@ -12,6 +12,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
     var current: String
     var scope = ""
     var colorByScheme = false
+    var paletteScheme: String? = nil
     init(legacy: Set<String> = []) {
         current = "默認方案"; schemes = [Scheme(name: current, languages: legacy)]
     }
@@ -60,6 +61,9 @@ struct CustomLanguageSchemes: Codable, Equatable {
         guard Set(renamed).count == renamed.count else { return false }
         for i in schemes.indices { schemes[i].name = renamed[i] }
         if scope == old || scope.hasPrefix(old + "－") { scope = name + String(scope.dropFirst(old.count)) }
+        if let paletteScheme, paletteScheme == old || paletteScheme.hasPrefix(old + "－") {
+            self.paletteScheme = name + String(paletteScheme.dropFirst(old.count))
+        }
         current = selected == old || selected.hasPrefix(old + "－") ? name + String(selected.dropFirst(old.count)) : selected
         validateScope(); return true
     }
@@ -102,6 +106,22 @@ struct CustomLanguageSchemes: Codable, Equatable {
     }
     private mutating func validateScope() {
         if !scope.isEmpty && scope != "ALL" && !parents.contains(scope) { scope = "" }
+        if let paletteScheme, branchNames([paletteScheme]).isEmpty { self.paletteScheme = nil }
+    }
+    func paletteColors() -> [String: String] {
+        guard let root = paletteScheme else { return [:] }
+        let indices = schemes.indices.filter { schemes[$0].name == root || schemes[$0].name.hasPrefix(root + "－") }
+            .sorted {
+                let a = schemes[$0].name.components(separatedBy: "－").count
+                let b = schemes[$1].name.components(separatedBy: "－").count
+                return a == b ? $0 < $1 : a > b
+            }
+        var colors = [String: String]()
+        for i in indices {
+            let hex = color(at: i)
+            for language in schemes[i].languages where colors[language] == nil { colors[language] = hex }
+        }
+        return colors
     }
     func color(for language: String) -> String {
         let candidates: [Int]

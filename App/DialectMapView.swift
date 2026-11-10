@@ -8,6 +8,7 @@ enum MapSearchKind: String, CaseIterable, Identifiable {
 struct DialectMapView: View {
     @AppStorage(CharacterSearchRange.preferenceKey) private var characterRange = ""
     @EnvironmentObject var model: AppModel
+    @EnvironmentObject private var customPalette: CustomPalette
     @AppStorage("colorScheme") private var colorScheme = "atlas"
     @AppStorage("toneStyle") private var toneStyle = "baSheng"
     @AppStorage("pitchStyle") private var pitchStyle = "curve"
@@ -48,7 +49,7 @@ struct DialectMapView: View {
         points = points.map { existing in
             guard let table = tableByName[existing.name],
                   var point = DialectPoint.make(table, grouping: colorGrouping, reading: existing.reading) else { return existing }
-            if selector.kind == .custom && selector.custom.colorByScheme { point.color = selector.custom.color(for: table.name) }
+            if let customColor = customPalette.colors[table.name] { point.color = customColor }
             point.copyText = existing.copyText; point.toneParts = existing.toneParts
             return point
         }
@@ -76,7 +77,7 @@ struct DialectMapView: View {
             var shown = Set<String>()
             let text = lines.map(\.fullText).filter { shown.insert($0).inserted }.joined(separator: separator)
             guard var point = DialectPoint.make(table, grouping: colorGrouping, reading: text) else { return nil }
-            if selector.kind == .custom && selector.custom.colorByScheme { point.color = selector.custom.color(for: table.name) }
+            if let customColor = customPalette.colors[table.name] { point.color = customColor }
             var raw = Set<String>()
             point.copyText = lines.map(\.pronunciation).filter { raw.insert($0).inserted }.joined(separator: " / ")
             if result?.mode == .character {
@@ -131,8 +132,7 @@ struct DialectMapView: View {
             if let previous = result { Task { await query(queryOverride: previous.query, modeOverride: previous.mode, replaceInFlight: true) } }
         }
         .onChange(of: colorScheme) { _, _ in recolorPoints() }
-        .onChange(of: selector.custom) { _, _ in recolorPoints() }
-        .onChange(of: selector.kind) { _, _ in recolorPoints() }
+        .onChange(of: customPalette.colors) { _, _ in recolorPoints() }
     }
     private var menu: some View {
         LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: namesBinding, state: selector, entryID: "mapLanguageSelection",

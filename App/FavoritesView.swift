@@ -34,6 +34,7 @@ struct NotebookGroup: Identifiable {
 
 struct FavoritesView: View {
     @EnvironmentObject var model: AppModel
+    @EnvironmentObject private var customPalette: CustomPalette
     @AppStorage("colorScheme") private var palette = "atlas"
     @AppStorage("notebookCategory") private var stored = ""
     @State private var selectedKey = ""
@@ -62,7 +63,7 @@ struct FavoritesView: View {
                             .buttonStyle(.bordered).tint(key == currentKey ? AppAccent.color : (category == .language ? .white : .gray))
                             .background {
                                 if category == .language && key != currentKey {
-                                    let colors = model.table(named: key).map { TableColors.hexes(TableColors.raw($0, palette == "dictionary" ? .dictionary : .atlas)) } ?? []
+                                    let colors = customPalette.colors[key].map { [$0] } ?? (model.table(named: key).map { TableColors.hexes(TableColors.raw($0, palette == "dictionary" ? .dictionary : .atlas)) } ?? [])
                                     TableColors.gradient(colors).clipShape(.buttonBorder)
                                 }
                             }

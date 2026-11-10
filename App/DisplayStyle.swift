@@ -47,7 +47,7 @@ enum TableColors {
 struct LanguageBadge: View {
     @AppStorage("glyphStandard") private var glyphStandard = ""
     @ScaledMetric(relativeTo: .subheadline) private var badgeSize = 15.0
-    @EnvironmentObject private var selector: LanguageSelectionState
+    @EnvironmentObject private var customPalette: CustomPalette
     @Environment(\.mapLabelSize) private var mapSize
     let name: String
     let table: TablePackage?
@@ -56,7 +56,7 @@ struct LanguageBadge: View {
     @AppStorage("colorScheme") private var colorScheme = "atlas"
     var body: some View {
         let scheme = grouping == .atlas || grouping == .dictionary ? grouping! : (colorScheme == "dictionary" ? .dictionary : .atlas)
-        let colors = selector.kind == .custom && selector.custom.colorByScheme ? [selector.custom.color(for: name)] : (table.map { TableColors.hexes(TableColors.raw($0, scheme)) } ?? [])
+        let colors = customPalette.colors[name].map { [$0] } ?? (table.map { TableColors.hexes(TableColors.raw($0, scheme)) } ?? [])
         Text(AttributedString(GlyphStandard.attributed(name, font: .systemFont(ofSize: mapSize ?? badgeSize), standard: GlyphStandard(rawValue: glyphStandard) ?? .system)))
             .foregroundStyle(.white)
             .padding(.horizontal, 6).padding(.vertical, 3)

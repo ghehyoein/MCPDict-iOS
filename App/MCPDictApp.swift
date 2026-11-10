@@ -21,6 +21,7 @@ final class AppModel: ObservableObject {
     let repository: DictionaryRepository
     let tableStore: TableStore
     let languageSelection: LanguageSelectionState
+    let customPalette: CustomPalette
     let customEditorSelection: LanguageSelectionState
     let gameLanguageSelection: LanguageSelectionState
     let longTextLanguageSelection: LanguageSelectionState
@@ -105,6 +106,7 @@ final class AppModel: ObservableObject {
         }
         selectionCache = LanguageSelectionCache(defaults: defaults)
         languageSelection = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
+        customPalette = CustomPalette(source: languageSelection)
         customEditorSelection = LanguageSelectionState(namespace: "customEditors", defaults: defaults)
         gameLanguageSelection = LanguageSelectionState(namespace: "games", defaults: defaults)
         longTextLanguageSelection = LanguageSelectionState(namespace: "longText", defaults: defaults)
@@ -216,6 +218,7 @@ final class AppModel: ObservableObject {
             defaults.removeObject(forKey: key)
         }
         languageSelection.resetDefaults(); customEditorSelection.resetDefaults(); gameLanguageSelection.resetDefaults(); longTextLanguageSelection.resetDefaults()
+        customPalette.select("")
         selectedLanguages = nil; language = ""
         query = ""; mode = .character; generation += 1; searching = false
         results = []; resultCharacters = []; hasMore = false; lastSearch = nil; mapHandoff = nil
@@ -487,6 +490,7 @@ struct RootView: View {
             ResettableTabContent(revision: pageIdentity) { SettingsView() }.tag(4).tabItem { Label(ui("設定"), systemImage: "gearshape") }
         }
         .environmentObject(model.languageSelection)
+        .environmentObject(model.customPalette)
         .sheet(item: $model.tableDetail) { TableInfoView(table: $0) }
         .id(rootIdentity)
         .environment(\.locale, Locale(identifier: uiLanguage == "hans" ? "zh-Hans" : uiLanguage == "ja" ? "ja" : uiLanguage == "en" ? "en" : "zh-Hant"))

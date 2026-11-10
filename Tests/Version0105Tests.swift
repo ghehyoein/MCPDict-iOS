@@ -2,6 +2,44 @@ import XCTest
 @testable import MCPDictIOS
 
 final class Version0105Tests: XCTestCase {
+    @MainActor func testCustomPaletteSubgroupsFallbackPersistenceRenameAndDelete() throws {
+        let suite = "Palette0105." + UUID().uuidString, defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        let source = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
+        XCTAssertTrue(source.custom.create("父")); source.custom.members = ["父直屬", "重疊"]
+        source.custom.schemes[1].colorHex = "#112233"
+        XCTAssertTrue(source.custom.create("父－子")); source.custom.members = ["子直屬", "重疊"]
+        source.custom.schemes[2].colorHex = "#445566"
+        XCTAssertTrue(source.custom.create("父－子－孫")); source.custom.members = ["重疊"]
+        source.custom.schemes[3].colorHex = "#778899"
+        let palette = CustomPalette(source: source)
+        palette.select("父")
+        XCTAssertTrue(palette.enabled)
+        XCTAssertEqual(source.custom.current, "父－子－孫")
+        XCTAssertEqual(palette.colors["父直屬"], "#112233")
+        XCTAssertEqual(palette.colors["子直屬"], "#445566")
+        XCTAssertEqual(palette.colors["重疊"], "#778899")
+        XCTAssertNil(palette.colors["不在方案中"])
+        let reloaded = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
+        XCTAssertEqual(reloaded.custom.paletteScheme, "父")
+        XCTAssertTrue(source.custom.rename("新父", scheme: "父"))
+        XCTAssertEqual(palette.selected, "新父")
+        XCTAssertEqual(palette.colors["重疊"], "#778899")
+        source.custom.schemes[3].colorHex = "#ABCDEF"
+        XCTAssertEqual(palette.colors["重疊"], "#ABCDEF")
+        palette.select("")
+        XCTAssertFalse(palette.enabled); XCTAssertTrue(palette.colors.isEmpty)
+        palette.select("新父")
+        XCTAssertTrue(source.custom.removeBranches(["新父"]))
+        XCTAssertFalse(palette.enabled); XCTAssertTrue(palette.colors.isEmpty)
+    }
+    func testPaletteDecodesPreviousSettingsWithoutChangingMembers() throws {
+        let data = Data(#"{"schemes":[{"name":"原方案","languages":["甲"],"colorHex":"#123456"}],"current":"原方案","scope":"","colorByScheme":false}"#.utf8)
+        let store = try JSONDecoder().decode(CustomLanguageSchemes.self, from: data)
+        XCTAssertNil(store.paletteScheme)
+        XCTAssertEqual(store.members, ["甲"])
+        XCTAssertEqual(store.color(at: 0), "#123456")
+    }
     func testDuplicateBranchCopiesNestedMembersColorsAndAvoidsDuplicateSelection() throws {
         var store = CustomLanguageSchemes(legacy: ["保留"])
         XCTAssertTrue(store.create("父")); store.members = ["甲"]

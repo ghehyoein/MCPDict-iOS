@@ -62,25 +62,28 @@ import SwiftUI
 }
 
 struct PaletteSwitch: View {
+    var isDisabled = false
     @AppStorage("colorScheme") private var palette = "atlas"
     private var enabled: Binding<Bool> { Binding(get: { palette == "dictionary" }, set: { palette = $0 ? "dictionary" : "atlas" }) }
     var body: some View {
-        NativePaletteSwitch(isOn: enabled)
+        NativePaletteSwitch(isOn: enabled, isDisabled: isDisabled)
             .fixedSize()
             .overlay {
                 GeometryReader { geometry in
                     HStack(spacing: 0) {
-                        Text("地").foregroundStyle(palette == "atlas" ? Color.blue : .white).frame(width: geometry.size.width / 2)
-                        Text("音").foregroundStyle(palette == "dictionary" ? Color.orange : .white).frame(width: geometry.size.width / 2)
+                        Text("地").foregroundStyle(palette == "atlas" ? (isDisabled ? Color.gray : .blue) : .white).frame(width: geometry.size.width / 2)
+                        Text("音").foregroundStyle(palette == "dictionary" ? (isDisabled ? Color.gray : .orange) : .white).frame(width: geometry.size.width / 2)
                     }.font(.system(size: 12, weight: .semibold)).frame(height: geometry.size.height)
                         .environment(\.layoutDirection, .leftToRight)
                 }.allowsHitTesting(false).accessibilityHidden(true)
             }
             .accessibilityLabel(ui("地圖集二／音典分區配色"))
+            .disabled(isDisabled)
     }
 }
 private struct NativePaletteSwitch: UIViewRepresentable {
     @Binding var isOn: Bool
+    var isDisabled: Bool
     func makeCoordinator() -> Coordinator { Coordinator(self) }
     func makeUIView(context: Context) -> UISwitch {
         let control = UISwitch()
@@ -92,6 +95,10 @@ private struct NativePaletteSwitch: UIViewRepresentable {
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UISwitch, context: Context) -> CGSize? { uiView.intrinsicContentSize }
     func updateUIView(_ control: UISwitch, context: Context) {
         context.coordinator.parent = self
+        control.isEnabled = !isDisabled
+        control.onTintColor = isDisabled ? .systemGray : .systemOrange
+        control.tintColor = isDisabled ? .systemGray : .systemBlue
+        control.backgroundColor = isDisabled ? .systemGray : .systemBlue
         control.setOn(isOn, animated: false)
         control.accessibilityIdentifier = "paletteSwitch"
         control.accessibilityLabel = ui("地圖集二／音典分區配色")
@@ -100,6 +107,6 @@ private struct NativePaletteSwitch: UIViewRepresentable {
     final class Coordinator: NSObject {
         var parent: NativePaletteSwitch
         init(_ parent: NativePaletteSwitch) { self.parent = parent }
-        @objc func changed(_ control: UISwitch) { parent.isOn = control.isOn }
+        @objc func changed(_ control: UISwitch) { if !parent.isDisabled { parent.isOn = control.isOn } }
     }
 }

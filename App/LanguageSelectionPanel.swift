@@ -64,7 +64,7 @@ struct LanguageSelectionPanel: View {
                 visibilityPicker("歷史音", $state.flags.historyMode)
                 if state.kind == .region && state.grouping == .dictionary { TransitionToggle(state: state) }
                 Spacer(minLength: 0)
-                PaletteSwitch()
+                PaletteControls()
                 Button { paletteInfo = true } label: { Image(systemName: "info.circle").foregroundStyle(.blue) }
                     .buttonStyle(.plain).accessibilityLabel(ui("顏色切換說明"))
             }
@@ -83,7 +83,10 @@ struct LanguageSelectionPanel: View {
                 ForEach(LanguageVisibility.allCases, id: \.self) { Text(ui($0.title)).tag($0) }
             }
         } label: {
-            HStack(spacing: 2) { Text(compactUI(title)); Image(systemName: "chevron.up.chevron.down").font(.caption) }
+            HStack(spacing: 2) {
+                Text(compactUI(title)).lineLimit(1).minimumScaleFactor(0.7)
+                Image(systemName: "chevron.up.chevron.down").font(.caption)
+            }
         }.accessibilityIdentifier("visibility-" + title)
     }
 

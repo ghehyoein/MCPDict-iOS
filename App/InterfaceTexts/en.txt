@@ -1287,3 +1287,6 @@ Export correspondence table
 
 [中古]
 Middle Chinese
+
+[自選色]
+Custom colors
