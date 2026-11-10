@@ -37,11 +37,16 @@ for required in ("catalog.json", "bundled.db", "references.db"):
 PY
 python3 tools/prepare_assets.py
 xcodegen generate
+signing=()
+if [[ -n "${STORE_PROFILE_UUID:-}" ]]; then
+  signing=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Apple Distribution" "PROVISIONING_PROFILE_SPECIFIER=$STORE_PROFILE_UUID")
+fi
 xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -configuration Release \
   -destination 'generic/platform=iOS' -archivePath "$ARCHIVE_PATH" \
-  DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" archive
+  DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" CURRENT_PROJECT_VERSION="$BUILD_NUMBER" "${signing[@]}" archive
 app="$ARCHIVE_PATH/Products/Applications/MCPDictIOS.app"
 test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app/Info.plist")" = 0.9.10
 test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$app/Info.plist")" = io.github.ghehyoein.MCPDictIOS
 plutil -lint "$app/PrivacyInfo.xcprivacy"
 codesign --verify --strict "$app"
+test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$app/Info.plist")" = "$BUILD_NUMBER"

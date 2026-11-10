@@ -1,0 +1,78 @@
+name: Upload 0.9.10 to App Store Connect
+on:
+  push:
+    branches: ['appstore-run/0.9.10']
+permissions:
+  contents: read
+jobs:
+  upload:
+    environment: appstore-0.9.10
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      DEVELOPMENT_TEAM: 3LD9K3R5DW
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Prepare build tools and verified stable data
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
+          gh release download iphone-dev-72-59019d9 --repo "$GITHUB_REPOSITORY" --pattern 'MCPDict-iPhone-unsigned.ipa' --dir "$RUNNER_TEMP"
+      - name: Install signing identity and profile in temporary runner
+        env:
+          P12: ${{ secrets.SIGNING_P12_BASE64 }}
+          PASSWORD: ${{ secrets.SIGNING_P12_PASSWORD }}
+          PROFILE: ${{ secrets.STORE_PROFILE_BASE64 }}
+        run: |
+          set -euo pipefail
+          umask 077
+          cd "$RUNNER_TEMP"
+          : "${P12:?Missing signing certificate}" "${PASSWORD:?Missing signing password}" "${PROFILE:?Missing profile}"
+          printf %s "$P12" | base64 -D > identity.p12
+          printf %s "$PROFILE" | base64 -D > profile.mobileprovision
+          security cms -D -i profile.mobileprovision > profile.plist
+          uuid=$(/usr/libexec/PlistBuddy -c 'Print UUID' profile.plist)
+          test "$(/usr/libexec/PlistBuddy -c 'Print Entitlements:application-identifier' profile.plist)" = "$DEVELOPMENT_TEAM.io.github.ghehyoein.MCPDictIOS"
+          folder="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          mkdir -p "$folder"
+          cp profile.mobileprovision "$folder/$uuid.mobileprovision"
+          echo "STORE_PROFILE_UUID=$uuid" >> "$GITHUB_ENV"
+          pw=$(openssl rand -hex 32)
+          kc="$RUNNER_TEMP/store.keychain-db"
+          security create-keychain -p "$pw" "$kc"
+          security set-keychain-settings -lut 7200 "$kc"
+          security unlock-keychain -p "$pw" "$kc"
+          security import identity.p12 -k "$kc" -P "$PASSWORD" -T /usr/bin/codesign
+          rm identity.p12
+          security set-key-partition-list -S apple-tool:,apple: -k "$pw" "$kc" >/dev/null
+          security list-keychains -d user -s "$kc" "$HOME/Library/Keychains/login.keychain-db"
+          security find-identity -v -p codesigning "$kc" | grep -F '3E43F529BFFACAEB2837B1D2C925374B16690085'
+      - name: Archive stable release
+        run: |
+          BUILD_NUMBER=$((72 + GITHUB_RUN_NUMBER)) STABLE_IPA="$RUNNER_TEMP/MCPDict-iPhone-unsigned.ipa" ARCHIVE_PATH="$RUNNER_TEMP/App.xcarchive" bash tools/archive_appstore.sh
+      - name: Upload archive to App Store Connect
+        env:
+          KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ISSUER: ${{ secrets.ASC_ISSUER_ID }}
+          KEY: ${{ secrets.ASC_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          umask 077
+          cd "$RUNNER_TEMP"
+          : "${KEY_ID:?Missing Apple Key ID}" "${ISSUER:?Missing Apple Issuer ID}" "${KEY:?Missing Apple API key}"
+          printf '%s\n' "$KEY" > AuthKey.p8
+          trap 'rm -f AuthKey.p8' EXIT
+          python3 - <<'PY'
+          import os, plistlib
+          with open('export.plist','wb') as f:
+              plistlib.dump(dict(method='app-store-connect', destination='upload',
+                  signingStyle='manual', teamID=os.environ['DEVELOPMENT_TEAM'],
+                  manageAppVersionAndBuildNumber=False, signingCertificate='Apple Distribution',
+                  provisioningProfiles={'io.github.ghehyoein.MCPDictIOS': os.environ['STORE_PROFILE_UUID']}), f)
+          PY
+          xcodebuild -exportArchive -archivePath App.xcarchive -exportPath exported -exportOptionsPlist export.plist -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER"
