@@ -584,10 +584,10 @@ Arrangement
 List
 
 [呈橫向表格排列]
-Horizontal table (language rows)
+Horizontal table
 
 [呈縱向表格排列]
-Vertical table (character rows)
+Vertical table
 
 [猜方言]
 Guess the dialect
@@ -704,7 +704,7 @@ Missing data
 Download the Guangyun table first
 
 [缺少猜字資料]
-Guess-character data is unavailable
+Guess-the-character data is unavailable
 
 [古今演化]
 Historical sound changes
@@ -761,7 +761,7 @@ Middle Chinese filters
 Reset filters
 
 [起首介音歸入韻母]
-Include initial glides in the final
+Include initial medials in the final
 
 [統計]
 Statistics
@@ -1070,7 +1070,7 @@ Baxter's transcription
 Romatzyh
 
 [有女羅馬字]
-Younu romanization
+有女(Younu) romanization
 
 [髙本漢擬音]
 Karlgren's reconstruction
@@ -1148,7 +1148,7 @@ unt (phonemic)
 unt
 
 [普通話]
-Standard Mandarin
+Putonghua
 
 [音標]
 IPA
@@ -1160,13 +1160,13 @@ Hanyu Pinyin
 Bopomofo
 
 [香港粵語拼音（用於輸入和顯示）]
-Hong Kong Cantonese notation (input and display)
+Hong Kong Cantonese romanization (for input and display)
 
 [香港語言學學會式（粵拼）]
 Linguistic Society of Hong Kong (Jyutping)
 
 [教院式]
-Cantonese Pinyin
+ILE Cantonese Romanization
 
 [耶魯式]
 Yale romanization
