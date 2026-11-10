@@ -26,6 +26,8 @@ targets:
     info:
       path: Generated/Info.plist
       properties:
+        # Reassess if adding a non-system encryption implementation.
+        ITSAppUsesNonExemptEncryption: false
         LSApplicationQueriesSchemes: [maps, iosamap, baidumap, comgooglemaps]
     settings:
       base:
