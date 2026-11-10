@@ -60,7 +60,9 @@ final class MapTests: XCTestCase {
             label.configure(point, fontSize: store.double(forKey: AppTypography.readingKey), labelSize: store.double(forKey: AppTypography.mapKey)) {}
             let text = try XCTUnwrap(label.readingText.attributedText)
             let font = try XCTUnwrap(text.attribute(.font, at: 0, effectiveRange: nil) as? UIFont)
-            XCTAssertEqual(label.nameButton.titleLabel?.font.pointSize, CGFloat(map))
+            let title = try XCTUnwrap(label.nameButton.attributedTitle(for: .normal))
+            let nameFont = try XCTUnwrap(title.attribute(.font, at: 0, effectiveRange: nil) as? UIFont)
+            XCTAssertEqual(nameFont.pointSize, CGFloat(map))
             XCTAssertEqual(font.pointSize, CGFloat(reading))
         }
         store.set(14, forKey: AppTypography.interfaceKey)
