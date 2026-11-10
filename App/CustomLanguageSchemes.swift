@@ -36,6 +36,12 @@ struct CustomLanguageSchemes: Codable, Equatable {
             schemes.filter { scope == "ALL" || $0.name == scope || $0.name.hasPrefix(scope + "－") }
         return included.reduce(into: Set<String>()) { $0.formUnion($1.languages) }
     }
+    mutating func selectCurrent(_ names: Set<String>) {
+        let branch = schemes.indices.filter { schemes[$0].name == current || schemes[$0].name.hasPrefix(current + "－") }
+        for i in branch { schemes[i].languages.formIntersection(names) }
+        let assigned = branch.reduce(into: Set<String>()) { $0.formUnion(schemes[$1].languages) }
+        if let root = schemes.firstIndex(where: { $0.name == current }) { schemes[root].languages.formUnion(names.subtracting(assigned)) }
+    }
     mutating func create(_ raw: String) -> Bool {
         let name = Self.normalize(raw)
         guard !name.isEmpty, !name.components(separatedBy: "－").contains(""), !schemes.contains(where: { $0.name == name }) else { return false }

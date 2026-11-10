@@ -27,8 +27,8 @@ struct LanguageSelectionPanel: View {
     @State private var paletteInfo = false
     private let cache = LanguageSelectionCache()
     private var chosen: Binding<Set<String>> {
-        Binding(get: { state.kind == .custom ? state.custom.members : names }, set: {
-            if state.kind == .custom { state.custom.members = $0; syncCustom() }
+        Binding(get: { state.kind == .custom ? state.custom.selected : names }, set: {
+            if state.kind == .custom { state.custom.selectCurrent($0); syncCustom() }
             else { names = $0; cache.save($0, for: state.key) }
         })
     }

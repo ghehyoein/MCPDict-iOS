@@ -159,7 +159,14 @@ struct CustomSchemeEditor: View {
     @State private var childName = ""
     @State private var invalid = false
     private var children: [CustomLanguageSchemes.Scheme] {
-        state.custom.schemes.filter { $0.name.hasPrefix(identity + "－") && !$0.name.dropFirst(identity.count + 1).contains("－") }
+        var seen = Set<String>()
+        return state.custom.schemes.compactMap { scheme in
+            guard scheme.name.hasPrefix(identity + "－"),
+                  let part = scheme.name.dropFirst(identity.count + 1).split(separator: "－").first else { return nil }
+            let path = identity + "－" + String(part)
+            guard seen.insert(path).inserted else { return nil }
+            return state.custom.schemes.first { $0.name == path } ?? .init(name: path, languages: [], colorHex: scheme.colorHex)
+        }
     }
     private var index: Int? { state.custom.schemes.firstIndex { $0.name == (identity.isEmpty ? originalName : identity) } }
     private var color: Binding<Color> {
@@ -203,6 +210,7 @@ struct CustomSchemeEditor: View {
                         CustomSchemeEditor(state: state, originalName: child.name)
                     }
                 }.onMove { source, destination in
+                    for child in children where !state.custom.schemes.contains(where: { $0.name == child.name }) { state.custom.schemes.append(child) }
                     state.custom.retainColors()
                     var ordered = children
                     ordered.move(fromOffsets: source, toOffset: destination)
@@ -220,7 +228,17 @@ struct CustomSchemeEditor: View {
             }
         }.environment(\.editMode, .constant(.active))
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
-            .onAppear { if identity.isEmpty { identity = originalName; name = originalName; hex = index.map { state.custom.color(at: $0) } ?? "#808080" } }
+            .onAppear {
+                if identity.isEmpty {
+                    identity = originalName; name = originalName
+                    if index == nil {
+                        let current = state.custom.current
+                        _ = state.custom.create(originalName)
+                        state.custom.current = current
+                    }
+                    hex = index.map { state.custom.color(at: $0) } ?? "#808080"
+                }
+            }
             .alert(ui("新建子分區"), isPresented: $addingChild) {
                 TextField(ui("方案"), text: $childName)
                 Button(ui("取消"), role: .cancel) {}

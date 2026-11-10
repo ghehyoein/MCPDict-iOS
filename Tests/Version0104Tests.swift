@@ -30,6 +30,17 @@ final class Version0104Tests: XCTestCase {
         XCTAssertFalse(source.rename("丙"))
         XCTAssertEqual(source, collision)
     }
+    func testParentSelectionPreservesChildAssignmentsAndOtherSchemes() {
+        var value = CustomLanguageSchemes(legacy: ["不變"])
+        XCTAssertTrue(value.create("父")); value.members = ["甲"]
+        XCTAssertTrue(value.create("父－子")); value.members = ["乙", "丙"]
+        value.current = "父"
+        value.selectCurrent(["乙", "丁"])
+        XCTAssertEqual(value.members, ["丁"])
+        XCTAssertEqual(value.schemes.first { $0.name == "父－子" }?.languages, ["乙"])
+        XCTAssertEqual(value.schemes.first?.languages, ["不變"])
+        XCTAssertEqual(value.selected, ["乙", "丁"])
+    }
     @MainActor func testEditorControlsAreIsolatedAndPersistIndependently() throws {
         let suite = "Version0104." + UUID().uuidString
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))
