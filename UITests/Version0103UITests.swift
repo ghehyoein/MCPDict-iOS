@@ -17,15 +17,23 @@ final class Version0103UITests: XCTestCase {
         app.buttons["完成"].tap()
         app.tabBars.buttons["工具"].tap(); app.buttons["猜方言"].tap()
         XCTAssertTrue(app.buttons["gameSettings"].exists)
-        XCTAssertFalse(app.buttons["出題模式"].exists)
+        XCTAssertFalse(app.staticTexts["出題模式"].exists)
         app.buttons["gameSettings"].tap()
-        XCTAssertTrue(app.buttons["出題模式"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["出題模式"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
+        app.buttons["出題"].tap()
+        let instruction = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "根據指定漢字")).firstMatch
+        XCTAssertTrue(instruction.waitForExistence(timeout: 5))
         app.buttons["gameLanguageSelection"].tap()
         XCTAssertFalse(app.buttons["clearLanguages"].exists); XCTAssertFalse(app.buttons["finishLanguages"].exists)
         XCTAssertFalse(app.buttons["submitGuessLanguage"].isEnabled)
         app.buttons["check-示例語言點"].tap()
         XCTAssertTrue(app.buttons["submitGuessLanguage"].isEnabled)
+        let won = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "答對了！恭喜！")).firstMatch
+        XCTAssertFalse(won.exists)
+        app.buttons["submitGuessLanguage"].tap()
+        app.buttons["gameLanguageSelection"].tap()
+        XCTAssertTrue(won.waitForExistence(timeout: 5))
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "0.10.3-guess-submit"; shot.lifetime = .keepAlways; add(shot)
     }
 }
