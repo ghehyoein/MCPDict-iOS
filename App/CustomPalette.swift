@@ -41,10 +41,11 @@ struct PaletteControls: View {
                 }
             } label: {
                 HStack(spacing: 2) {
-                    Text(compactUI("自選色")).lineLimit(1).minimumScaleFactor(0.7)
+                    Text(compactUI("自選色")).lineLimit(1).fixedSize()
                     Image(systemName: "chevron.up.chevron.down").font(.caption)
                 }
-            }.accessibilityIdentifier("customColorMenu")
+            }.fixedSize(horizontal: true, vertical: false).layoutPriority(1)
+                .accessibilityIdentifier("customColorMenu")
                 .accessibilityValue(palette.enabled ? palette.selected : ui("關閉"))
             PaletteSwitch(isDisabled: palette.enabled)
         }

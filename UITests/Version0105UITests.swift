@@ -79,6 +79,7 @@ final class Version0105UITests: XCTestCase {
         app.buttons["dictionaryLanguageSelection"].tap()
         let toggle = app.switches["paletteSwitch"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 5)); XCTAssertTrue(toggle.isEnabled)
+        XCTAssertGreaterThan(app.buttons["customColorMenu"].frame.width, 55)
         app.buttons["customColorMenu"].tap(); app.buttons["默認方案"].tap()
         XCTAssertFalse(toggle.isEnabled)
         capture(app, "0.10.5-custom-palette-dictionary")
@@ -98,6 +99,7 @@ final class Version0105UITests: XCTestCase {
         if !app.buttons["customColorMenu"].isHittable { app.buttons["dictionaryLanguageSelection"].tap() }
         let menu = app.buttons["customColorMenu"]
         XCTAssertTrue(menu.isHittable)
+        XCTAssertGreaterThan(menu.frame.width, 60)
         XCTAssertLessThan(menu.frame.maxX, app.frame.maxX)
         menu.tap(); app.buttons["Default scheme"].tap()
         XCTAssertFalse(app.switches["paletteSwitch"].isEnabled)
