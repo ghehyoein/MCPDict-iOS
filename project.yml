@@ -23,6 +23,7 @@ targets:
     info:
       path: Generated/Info.plist
       properties:
+        CFBundleLocalizations: [zh-Hant, zh-Hans, en, ja]
         LSApplicationQueriesSchemes: [maps, iosamap, baidumap, comgooglemaps]
     settings:
       base:
