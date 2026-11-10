@@ -43,6 +43,7 @@ enum LongTextAnnotation {
 
 struct LongTextView: View {
     @EnvironmentObject private var model: AppModel
+    @ScaledMetric private var glyphSize = 17.0
     @AppStorage(ReadingFormatPreferences.key) private var readingFormats = ""
     @AppStorage("longTextLanguage") private var language = ""
     @AppStorage("longTextFormat") private var format = 8
@@ -89,12 +90,12 @@ struct LongTextView: View {
                                 if let choice = item.choice {
                                     Button { selectedCharacter = index } label: {
                                         VStack(spacing: 3) {
-                                            Text(LongTextAnnotation.reading(choice, table: submittedTable, format: format)).foregroundStyle(.primary)
-                                            if format.isMultiple(of: 2) { Text(choice.character).foregroundStyle(.primary) }
+                                            Text(AttributedString(GlyphStandard.attributed(LongTextAnnotation.reading(choice, table: submittedTable, format: format), font: .systemFont(ofSize: glyphSize)))).foregroundStyle(.primary)
+                                            if format.isMultiple(of: 2) { Text(AttributedString(GlyphStandard.attributed(choice.character, font: .systemFont(ofSize: glyphSize)))).foregroundStyle(.primary) }
                                             Circle().fill(item.choices.count > 1 ? Color.blue : .clear).frame(width: 4, height: 4)
                                         }.padding(.horizontal, 2)
                                     }.buttonStyle(.plain).accessibilityIdentifier("annotatedCharacter-\(index)")
-                                } else { Text(item.original).foregroundStyle(.secondary) }
+                                } else { Text(AttributedString(GlyphStandard.attributed(item.original, font: .systemFont(ofSize: glyphSize)))).foregroundStyle(.secondary) }
                             }
                             if row.isEmpty { Text(" ") }
                         }
@@ -108,7 +109,7 @@ struct LongTextView: View {
                 NavigationStack {
                     List(Array(characters[index].choices.enumerated()), id: \.offset) { offset, choice in
                         Button { characters[index].selected = offset; selectedCharacter = nil } label: {
-                            HStack { Text(choice.character); PronunciationView(raw: choice.pronunciation, table: submittedTable); Spacer(); if offset == characters[index].selected { Image(systemName: "checkmark") } }
+                            HStack { Text(AttributedString(GlyphStandard.attributed(choice.character, font: .systemFont(ofSize: glyphSize)))); PronunciationView(raw: choice.pronunciation, table: submittedTable); Spacer(); if offset == characters[index].selected { Image(systemName: "checkmark") } }
                         }
                     }.navigationTitle(characters[index].original)
                         .toolbar { Button(ui("完成")) { selectedCharacter = nil } }

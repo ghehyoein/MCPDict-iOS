@@ -44,6 +44,11 @@ enum GlyphStandard: String, CaseIterable, Identifiable {
         let traits = base.fontDescriptor.symbolicTraits.intersection([.traitBold, .traitItalic])
         return UIFont(descriptor: chosen.fontDescriptor.withSymbolicTraits(traits) ?? chosen.fontDescriptor, size: base.pointSize)
     }
+    static func attributed(_ string: String, font: UIFont, standard: Self = .current) -> NSMutableAttributedString {
+        let value = NSMutableAttributedString(string: string, attributes: [.font: font])
+        apply(to: value, standard: standard)
+        return value
+    }
     static func apply(to text: NSMutableAttributedString, standard: Self = .current) {
         text.addAttribute(NSAttributedString.Key(kCTLanguageAttributeName as String), value: standard.language,
                           range: NSRange(location: 0, length: text.length))

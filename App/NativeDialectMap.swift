@@ -254,6 +254,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private var previousParts: [ToneDisplay.Part]?
     private var previousFontSize: Double?
     private var cachedReadingRect = CGRect.zero
+    private var glyphLabelKey = ""
     private var previousColor: String?
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
@@ -295,7 +296,13 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         if nameButton.currentTitle != point.name { nameButton.setTitle(point.name, for: .normal) }
         nameButton.accessibilityLabel = point.name
         nameButton.accessibilityIdentifier = "map-name-" + point.id
-        nameButton.titleLabel?.font = GlyphStandard.font(.systemFont(ofSize: labelSize))
+        let labelKey = point.name + "|" + String(labelSize) + "|" + GlyphStandard.current.rawValue
+        if glyphLabelKey != labelKey {
+            glyphLabelKey = labelKey
+            let title = GlyphStandard.attributed(point.name, font: .systemFont(ofSize: labelSize))
+            title.addAttribute(.foregroundColor, value: UIColor.white, range: NSRange(location: 0, length: title.length))
+            nameButton.setAttributedTitle(title, for: .normal)
+        }
         if previousColor != point.color {
         previousColor = point.color
         let colors = TableColors.hexes(point.color)
