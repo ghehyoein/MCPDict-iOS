@@ -56,11 +56,11 @@ struct CustomSchemeManager: View {
                     CustomSchemeEditor(state: state, originalName: scheme.name)
                 } label: {
                     HStack {
-                        Circle().fill(TableColors.color(state.custom.color(at: state.custom.schemes.firstIndex(where: { $0.name == scheme.name })!))).frame(width: 16, height: 16)
+                        Circle().fill(TableColors.color(state.custom.schemes.firstIndex(where: { $0.name == scheme.name }).map { state.custom.color(at: $0) } ?? "#808080")).frame(width: 16, height: 16)
                         Text(scheme.name == "默認方案" ? ui("默認方案") : scheme.name)
                         Spacer(); Text("\(scheme.languages.count)").foregroundStyle(.secondary)
                     }
-                }
+                }.accessibilityIdentifier("schemeEditor-" + scheme.name)
             }.onMove { from, to in
                 state.custom.retainColors(); state.custom.schemes.move(fromOffsets: from, toOffset: to)
             }.onDelete { offsets in

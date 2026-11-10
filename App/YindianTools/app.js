@@ -370,6 +370,7 @@
   }
 
   async function runEvolution() {
+    document.activeElement?.blur();
     const dialectName = $('evolutionDialect').value;
     if (!dialectName) return showInlineStatus('evolutionProgress', '請先選擇一種語言。', true);
 
@@ -1107,6 +1108,7 @@
   }
 
   async function runComparison() {
+    document.activeElement?.blur();
     if (!state.dialects.length) {
       return showInlineStatus('compareProgress', '語言列表尚未載入完成。', true);
     }

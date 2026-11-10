@@ -20,7 +20,7 @@ final class Version0102UITests: XCTestCase {
         app.coordinate(withNormalizedOffset: CGVector(dx: 0.03, dy: 0.12)).tap()
         app.tabBars.buttons["生字本"].tap()
         app.buttons["自選分區"].tap()
-        app.buttons["默認方案"].tap()
+        app.buttons["schemeEditor-默認方案"].tap()
         let hex = app.textFields["customSchemeHex"]
         XCTAssertTrue(hex.waitForExistence(timeout: 5))
         hex.tap()

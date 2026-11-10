@@ -1,5 +1,6 @@
 import XCTest
 import UIKit
+import CoreText
 @testable import MCPDictIOS
 
 final class Version0102Tests: XCTestCase {
@@ -50,4 +51,21 @@ final class Version0102Tests: XCTestCase {
             XCTAssertEqual(GlyphStandard.font(.systemFont(ofSize: 17), standard: standard).pointSize, 17)
         }
     }
+    func testGlyphStandardActuallyChangesRegionalFontRuns() throws {
+        func signature(_ standard: GlyphStandard) throws -> String {
+            let value = NSMutableAttributedString(string: "骨", attributes: [.font: GlyphStandard.font(.systemFont(ofSize: 20), standard: standard)])
+            GlyphStandard.apply(to: value, standard: standard)
+            let line = CTLineCreateWithAttributedString(value)
+            let runs = CTLineGetGlyphRuns(line) as! [CTRun]
+            let run = try XCTUnwrap(runs.first)
+            let attributes = CTRunGetAttributes(run) as NSDictionary
+            let font = try XCTUnwrap(attributes[kCTFontAttributeName]) as! CTFont
+            var glyph = CGGlyph()
+            CTRunGetGlyphs(run, CFRange(location: 0, length: 1), &glyph)
+            return (CTFontCopyPostScriptName(font) as String) + ":" + String(glyph)
+        }
+        XCTAssertNotEqual(try signature(.mainland), try signature(.japan))
+        XCTAssertNotEqual(try signature(.mainland), try signature(.taiwan))
+    }
+
 }
