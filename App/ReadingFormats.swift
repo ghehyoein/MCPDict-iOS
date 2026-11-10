@@ -94,7 +94,7 @@ struct ReadingFormatSettingsView: View {
             }
             ForEach(ReadingFormatEngine.shared.specs) { spec in
                 if spec.multiple && spec.id != "dgy_display" {
-                    Button(ui(spec.title)) { selectedSpec = spec }
+                    Button { selectedSpec = spec } label: { Text(ui(spec.title)).foregroundStyle(Color.primary) }
                         .accessibilityIdentifier("readingFormat-" + spec.id)
                 } else {
                     Menu {
@@ -105,7 +105,7 @@ struct ReadingFormatSettingsView: View {
                             }.accessibilityIdentifier("readingFormat-" + spec.id + "-" + option.id)
                         }
                     } label: {
-                        HStack { Text(ui(spec.title)).foregroundStyle(.primary); Spacer(); Text(spec.options.filter { settings.selected(spec).contains($0.id) }.map { ui($0.title) }.joined(separator: "、")).lineLimit(1); Image(systemName: "chevron.up.chevron.down") }
+                        HStack { Text(ui(spec.title)).foregroundStyle(Color.primary).fixedSize(horizontal: false, vertical: true); Spacer(minLength: 12); Text(spec.options.filter { settings.selected(spec).contains($0.id) }.map { ui($0.title) }.joined(separator: "、")).multilineTextAlignment(.trailing).fixedSize(horizontal: false, vertical: true); Image(systemName: "chevron.up.chevron.down") }
                     }.menuActionDismissBehavior(.disabled).accessibilityIdentifier("readingFormat-" + spec.id)
 
                 }

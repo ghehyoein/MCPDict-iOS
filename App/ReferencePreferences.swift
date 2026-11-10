@@ -39,7 +39,7 @@ struct ReferenceSettingsView: View {
         nonmutating set { raw = newValue.encoded }
     }
     var body: some View {
-        NavigationStack {
+        Group {
             List {
                 Section(ui("漢字資料")) {
                     ForEach(settings.fieldOrder, id: \.self) { field in
@@ -66,7 +66,6 @@ struct ReferenceSettingsView: View {
             .dynamicTypeSize(AppTypography.size(fontSize))
             .environment(\.editMode, .constant(.active))
             .navigationTitle(ui("字頭資料顯示")).navigationBarTitleDisplayMode(.inline)
-            .toolbar { Button(ui("完成")) { dismiss() } }
         }
     }
 }

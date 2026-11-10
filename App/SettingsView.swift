@@ -8,7 +8,6 @@ struct SettingsView: View {
     @AppStorage(AppTypography.interfaceKey) private var fontSize = 17.0
     @AppStorage(AppTypography.mapKey) private var mapSize = 16.0
     @AppStorage(AppTypography.readingKey) private var readingSize = 16.0
-    @State private var referenceSettings = false
     @State private var confirmReset = false
     var body: some View {
         NavigationStack {
@@ -17,7 +16,7 @@ struct SettingsView: View {
                     NavigationLink { DataView() } label: { Text(ui("字表下載")) }
                 }
                 Section {
-                    Button(ui("字頭資料顯示")) { referenceSettings = true }.foregroundStyle(AppAccent.color)
+                    NavigationLink { ReferenceSettingsView() } label: { Text(ui("字頭資料顯示")).foregroundStyle(.primary) }
                     NavigationLink(ui("讀音格式")) { ReadingFormatSettingsView() }
                 } header: { Text(ui("字頭資料顯示") + " / " + ui("讀音格式")).foregroundStyle(.primary) }
                 FavoriteSettingsSection()
@@ -50,7 +49,7 @@ struct SettingsView: View {
                         .foregroundStyle(.red).accessibilityIdentifier("resetSettings")
                 }
             }.navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
-        }.sheet(isPresented: $referenceSettings) { ReferenceSettingsView().dynamicTypeSize(AppTypography.size(fontSize)) }
+        }
         .alert(ui("是否還原默認設定？"), isPresented: $confirmReset) {
             Button(ui("取消"), role: .cancel) {}
             Button(ui("還原"), role: .destructive) { model.resetSettings() }

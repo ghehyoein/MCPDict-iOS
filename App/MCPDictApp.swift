@@ -21,6 +21,7 @@ final class AppModel: ObservableObject {
     let repository: DictionaryRepository
     let tableStore: TableStore
     let languageSelection: LanguageSelectionState
+    let customEditorSelection: LanguageSelectionState
     let gameLanguageSelection: LanguageSelectionState
     let longTextLanguageSelection: LanguageSelectionState
     @Published var activeTab = 0
@@ -104,6 +105,7 @@ final class AppModel: ObservableObject {
         }
         selectionCache = LanguageSelectionCache(defaults: defaults)
         languageSelection = LanguageSelectionState(namespace: "dictionary", defaults: defaults)
+        customEditorSelection = LanguageSelectionState(namespace: "customEditors", defaults: defaults)
         gameLanguageSelection = LanguageSelectionState(namespace: "games", defaults: defaults)
         longTextLanguageSelection = LanguageSelectionState(namespace: "longText", defaults: defaults)
         let repository = DictionaryRepository()
@@ -134,7 +136,7 @@ final class AppModel: ObservableObject {
                     selectionCache.defaults.removeObject(forKey: "transitions." + namespace)
                 }
             }
-            if ProcessInfo.processInfo.arguments.contains("--reset-selection") { languageSelection.resetFixture(); gameLanguageSelection.resetFixture(); longTextLanguageSelection.resetFixture() }
+            if ProcessInfo.processInfo.arguments.contains("--reset-selection") { languageSelection.resetFixture(); customEditorSelection.resetFixture(); gameLanguageSelection.resetFixture(); longTextLanguageSelection.resetFixture() }
             try? await repository.open(UITestFixtures.database())
             restoreLanguageSelection()
             if ProcessInfo.processInfo.arguments.contains("--notebook-list-fixture") {
@@ -213,7 +215,7 @@ final class AppModel: ObservableObject {
         for key in defaults.dictionaryRepresentation().keys where keys.contains(key) || prefixes.contains(where: key.hasPrefix) {
             defaults.removeObject(forKey: key)
         }
-        languageSelection.resetDefaults(); gameLanguageSelection.resetDefaults(); longTextLanguageSelection.resetDefaults()
+        languageSelection.resetDefaults(); customEditorSelection.resetDefaults(); gameLanguageSelection.resetDefaults(); longTextLanguageSelection.resetDefaults()
         selectedLanguages = nil; language = ""
         query = ""; mode = .character; generation += 1; searching = false
         results = []; resultCharacters = []; hasMore = false; lastSearch = nil; mapHandoff = nil
@@ -530,7 +532,7 @@ struct SearchView: View {
             List {
                 Section {
                     Picker(ui("查詢方式"), selection: $model.mode) {
-                        ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
+                        ForEach(SearchMode.allCases) { Text(compactUI($0.rawValue)).tag($0) }
                     }.pickerStyle(.segmented)
                     HStack {
                         TextField(ui("漢字、U+4E2D 或原始讀音"), text: $model.query)
@@ -565,7 +567,7 @@ struct SearchView: View {
                         ForEach(ResultArrangementSettings.choices, id: \.0) { value, title in Text(ui(title)).tag(value) }
                     }
                 } label: {
-                    HStack(spacing: 2) { Text(ui("排列")); Image(systemName: "chevron.up.chevron.down").font(.caption) }
+                    HStack(spacing: 2) { Text(" " + ui("排列")); Image(systemName: "chevron.up.chevron.down").font(.caption) }
                 }.foregroundStyle(AppAccent.color).accessibilityIdentifier("resultArrangementMenu")
             } }
             .sheet(item: $reference) { CharacterReferenceDetail(page: $0) }

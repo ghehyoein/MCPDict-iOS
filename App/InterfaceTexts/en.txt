@@ -569,7 +569,7 @@ Table quality
 Table quality details
 
 [解析日誌]
-Parsing log
+Analysis log
 
 [下載字表後統計]
 Calculated once the table is downloaded
@@ -1275,3 +1275,6 @@ No map coordinates are available for the current results.
 
 [請先選擇一種語言。]
 Select a language first.
+
+[新建子分區]
+New subgroup

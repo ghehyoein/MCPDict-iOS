@@ -105,7 +105,7 @@ struct DialectMapView: View {
     private var observedContent: some View {
         VStack(spacing: 8) {
             Picker(ui("查詢方式"), selection: $mode) {
-                ForEach(SearchMode.allCases) { Text(ui($0.rawValue)).tag($0) }
+                ForEach(SearchMode.allCases) { Text(compactUI($0.rawValue)).tag($0) }
             }.pickerStyle(.segmented).padding(.horizontal)
             searchBar
             SelectionMenuButton(count: names.count, entryID: menuOpen ? "" : "mapLanguageSelection", expanded: $selector.expanded)

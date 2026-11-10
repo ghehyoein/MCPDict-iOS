@@ -25,9 +25,6 @@ struct TableInfoView: View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 5) {
-                    AddCustomLanguageButton(name: current.name, state: model.languageSelection)
-                        .padding(16).background(Color(uiColor: .systemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
-                        .padding(.bottom, 12)
                     SystemText(current.fullName).font(.title2).padding(.bottom, 12)
                     ForEach(first, id: \.self) { field($0) }
                     ForEach(second, id: \.self) { field($0) }

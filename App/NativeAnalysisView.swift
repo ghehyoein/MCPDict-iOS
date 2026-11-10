@@ -18,6 +18,9 @@ struct YindianToolsView: View {
     @State private var evolution = [EvolutionGroup]()
     @State private var comparison = [ComparisonGroup]()
     @State private var search = ""
+    @State private var activeFilter: String?
+    @State private var draftFilter = Set<String>()
+    @State private var resultStatuses: Set<String> = ["same", "partial", "different", "missing"]
     @State private var showMissing = false
     @State private var busy = false
     @State private var error: String?
@@ -29,7 +32,7 @@ struct YindianToolsView: View {
     private let filterKeys = [("voicing","清濁"),("division","等"),("openness","開合"),("she","攝"),("tone","聲調"),("initial","聲母"),("rime","韻母")]
     private var tables: [TablePackage] { model.installed?.tables ?? [] }
     private var shownComparisons: [ComparisonGroup] {
-        comparison.filter { search.isEmpty || InterfaceLanguage.matches(($0.name + (model.table(named: $0.name)?.fullName ?? "") + (model.table(named: $0.name)?.metadata?["地點"] ?? "")), search) }
+        comparison.filter { resultStatuses.contains($0.status) && (search.isEmpty || InterfaceLanguage.matches(($0.name + (model.table(named: $0.name)?.fullName ?? "") + (model.table(named: $0.name)?.metadata?["地點"] ?? "")), search)) }
     }
     var body: some View {
         List {
@@ -83,35 +86,50 @@ struct YindianToolsView: View {
                         .navigationBarTitleDisplayMode(.inline).toolbar { Button(ui("完成")) { detail = nil } }
                 }
             }
+            .sheet(isPresented: Binding(get: { activeFilter != nil }, set: { if !$0 { activeFilter = nil } })) {
+                if let key = activeFilter {
+                    NavigationStack {
+                        List {
+                            Button(ui("全部")) { draftFilter = [] }
+                            ForEach(filterOptions.keys.filter { $0.hasPrefix("group:" + key + ":") }.sorted(), id: \.self) { group in
+                                let members = Set(filterOptions[group] ?? [])
+                                Button {
+                                    if draftFilter.isSuperset(of: members) { draftFilter.subtract(members) }
+                                    else { draftFilter.formUnion(members) }
+                                } label: {
+                                    Label(contentUI(String(group.split(separator: ":").last ?? "")), systemImage: draftFilter.isSuperset(of: members) ? "checkmark.square.fill" : "square")
+                                }
+                            }
+                            ForEach(filterOptions[key] ?? [], id: \.self) { value in
+                                Button { if !draftFilter.insert(value).inserted { draftFilter.remove(value) } } label: {
+                                    Label(contentUI(value), systemImage: draftFilter.contains(value) ? "checkmark.square.fill" : "square")
+                                }.accessibilityIdentifier("filterValue-" + value)
+                            }
+                        }.navigationTitle(ui(filterKeys.first { $0.0 == key }?.1 ?? "中古條件篩選"))
+                            .toolbar {
+                                ToolbarItem(placement: .cancellationAction) { Button(ui("取消")) { activeFilter = nil } }
+                                ToolbarItem(placement: .confirmationAction) { Button(ui("完成")) { filters[key] = draftFilter; activeFilter = nil } }
+                            }
+                    }
+                }
+            }
             .sheet(item: $map) { ToolsComparisonMap(points: $0.points) }
     }
     private var evolutionFilters: some View {
         Section(ui("中古條件篩選")) {
-            ForEach(filterKeys, id: \.0) { key, title in
-                Menu {
-                    Button(ui("全部")) { filters[key] = [] }
-                    ForEach(filterOptions.keys.filter { $0.hasPrefix("group:" + key + ":") }.sorted(), id: \.self) { group in
-                        let members = Set(filterOptions[group] ?? [])
-                        if !members.isEmpty {
-                            Button {
-                                var values = filters[key] ?? []
-                                if values.isSuperset(of: members) { values.subtract(members) } else { values.formUnion(members) }
-                                filters[key] = values
-                            } label: {
-                                let title = String(group.split(separator: ":").last ?? "")
-                                Label(contentUI(title), systemImage: (filters[key] ?? []).isSuperset(of: members) ? "checkmark.square.fill" : "square")
-                            }
+            WrappingInformationLayout(spacing: 12) {
+                ForEach(filterKeys, id: \.0) { key, title in
+                    Button {
+                        draftFilter = filters[key] ?? []
+                        activeFilter = key
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(ui(title)).foregroundStyle(Color.primary)
+                            Text((filters[key] ?? []).isEmpty ? ui("全部") : (filters[key] ?? []).sorted().map(contentUI).joined(separator: "、"))
+                            Image(systemName: "chevron.up.chevron.down").font(.caption)
                         }
-                    }
-                    ForEach(filterOptions[key] ?? [], id: \.self) { value in
-                        Button { var set = filters[key] ?? []; if !set.insert(value).inserted { set.remove(value) }; filters[key] = set } label: {
-                            if filters[key]?.contains(value) == true { Label(contentUI(value), systemImage: "checkmark") }
-                            else { Text(contentUI(value)) }
-                        }
-                    }
-                } label: {
-                    HStack { Text(ui(title)).foregroundStyle(.primary); Spacer(); Text((filters[key] ?? []).isEmpty ? ui("全部") : (filters[key] ?? []).sorted().map(contentUI).joined(separator: "、")); Image(systemName: "chevron.up.chevron.down") }
-                }.menuActionDismissBehavior(.disabled)
+                    }.buttonStyle(.borderless).accessibilityIdentifier("evolutionFilter-" + key)
+                }
             }
             Button(ui("恢復全部")) { filters = [:] }
         }
@@ -139,7 +157,16 @@ struct YindianToolsView: View {
             Section(ui("比較統計")) {
                 ForEach(["same","partial","different","missing"], id: \.self) { status in
                     if let sample = comparison.first(where: { $0.status == status }) {
-                        LabeledContent(ui(sample.title), value: String(comparison.filter { $0.status == status }.count))
+                        Button {
+                            if !resultStatuses.insert(status).inserted { resultStatuses.remove(status) }
+                        } label: {
+                            HStack {
+                                Image(systemName: resultStatuses.contains(status) ? "checkmark.square.fill" : "square")
+                                Text(ui(sample.title)).foregroundStyle(Color.primary)
+                                Spacer()
+                                Text(String(comparison.filter { $0.status == status }.count))
+                            }
+                        }.buttonStyle(.borderless).accessibilityIdentifier("comparisonStatus-" + status)
                     }
                 }
                 Toggle(ui("顯示缺資料點"), isOn: $showMissing)
@@ -149,7 +176,9 @@ struct YindianToolsView: View {
                 TextField(ui("方言名稱 / 地區"), text: $search).textFieldStyle(.roundedBorder)
                 ForEach(shownComparisons) { row in
                     VStack(alignment: .leading, spacing: 6) {
-                        HStack { LanguageBadge(name: row.name, table: model.table(named: row.name)); Spacer(); Text(ui(row.title)).foregroundStyle(TableColors.color(row.color)) }
+                        HStack { Button { model.tableDetail = model.table(named: row.name) } label: {
+                            LanguageBadge(name: row.name, table: model.table(named: row.name))
+                        }.buttonStyle(.borderless).accessibilityIdentifier("comparisonLanguage-" + row.name); Spacer(); Text(ui(row.title)).foregroundStyle(TableColors.color(row.color)) }
                         ForEach(Array(resultChars.enumerated()), id: \.offset) { index, char in
                             SystemText(line(row, index: index, char: char))
                         }

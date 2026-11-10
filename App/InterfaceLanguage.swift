@@ -31,3 +31,8 @@ func contentUI(_ text: String) -> String {
     let language = UserDefaults.standard.string(forKey: "uiLanguage") ?? "hant"
     return InterfaceLanguage.text(text, script: language == "hans" ? "hans" : "hant")
 }
+
+func compactUI(_ text: String) -> String {
+    if UserDefaults.standard.string(forKey: "uiLanguage") == "en", text == "發音" { return "Pron." }
+    return ui(text)
+}

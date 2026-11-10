@@ -44,6 +44,7 @@ struct CustomSchemeDocument: FileDocument {
 struct CustomSchemeManager: View {
     @EnvironmentObject private var model: AppModel
     @ObservedObject var state: LanguageSelectionState
+    @State private var renaming: String?
     @State private var naming = false
     @State private var name = ""
     @State private var importing = false
@@ -53,7 +54,7 @@ struct CustomSchemeManager: View {
     @State private var selection = Set<String>()
     private var exported: CustomLanguageSchemes {
         var value = state.custom; value.retainColors()
-        if selecting { value.schemes.removeAll { !selection.contains($0.name) } }
+        if selecting { value.schemes.removeAll { scheme in !selection.contains(where: { scheme.name == $0 || scheme.name.hasPrefix($0 + "－") }) } }
         return value
     }
     var body: some View {
@@ -75,16 +76,19 @@ struct CustomSchemeManager: View {
                     }
                 }.accessibilityIdentifier("schemeEditor-" + scheme.name)
                     if selecting {
-                        Button { move(scheme.name, by: -1) } label: { Image(systemName: "arrow.up") }.disabled(state.custom.schemes.first?.name == scheme.name).buttonStyle(.borderless)
-                        Button { move(scheme.name, by: 1) } label: { Image(systemName: "arrow.down") }.disabled(state.custom.schemes.last?.name == scheme.name).buttonStyle(.borderless)
+                        Button(ui("改名")) { renaming = scheme.name; name = scheme.name; naming = true }.buttonStyle(.borderless)
                     }
                 }
-            }.onDelete { offsets in remove(Set(offsets.map { state.custom.schemes[$0].name })) }
+            }.onMove { source, destination in
+                state.custom.retainColors()
+                state.custom.schemes.move(fromOffsets: source, toOffset: destination)
+            }
 
-        }.navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
+        }.environment(\.editMode, .constant(selecting ? .active : .inactive))
+            .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
-                    Button(ui("新建")) { name = ""; naming = true }
+                    Button(ui("新建")) { renaming = nil; name = ""; naming = true }
                     Menu {
                         Button(ui("匯出自選分區")) { exporting = true }.disabled(selecting && selection.isEmpty)
                         Button(ui("匯入自選分區")) { importing = true }
@@ -104,10 +108,18 @@ struct CustomSchemeManager: View {
                         .padding(.horizontal).padding(.bottom, 6)
                 }
             }
-            .alert(ui("新建"), isPresented: $naming) {
+            .alert(ui(renaming == nil ? "新建" : "改名"), isPresented: $naming) {
                 TextField(ui("方案名稱（空格可分級，如：江淮 洪巢）"), text: $name)
                 Button(ui("取消"), role: .cancel) {}
-                Button(ui("保存")) { if !state.custom.create(name) { message = ui("方案名稱不能為空或重複") } }
+                Button(ui("保存")) {
+                    if let old = renaming {
+                        let current = state.custom.current
+                        state.custom.current = old
+                        if !state.custom.rename(name) { message = ui("方案名稱不能為空或重複") }
+                        if current != old { state.custom.current = state.custom.schemes.contains(where: { $0.name == current }) ? current : state.custom.current }
+                        selection = []
+                    } else if !state.custom.create(name) { message = ui("方案名稱不能為空或重複") }
+                }
             }
             .fileExporter(isPresented: $exporting, document: CustomSchemeDocument(exported), contentType: .plainText, defaultFilename: "MCPDict-custom-languages") { result in
                 if case .failure(let error) = result { model.error = error.localizedDescription }
@@ -125,16 +137,13 @@ struct CustomSchemeManager: View {
                 Button(ui("好")) { message = nil }
             } message: { Text(message ?? "") }
     }
-    private func move(_ name: String, by step: Int) {
-        guard let i = state.custom.schemes.firstIndex(where: { $0.name == name }), state.custom.schemes.indices.contains(i + step) else { return }
-        state.custom.retainColors(); state.custom.schemes.swapAt(i, i + step)
-    }
     private func remove(_ names: Set<String>) {
-        guard names.count < state.custom.schemes.count else { return }
+        let removed = Set(state.custom.schemes.filter { scheme in names.contains { scheme.name == $0 || scheme.name.hasPrefix($0 + "－") } }.map(\.name))
+        guard removed.count < state.custom.schemes.count else { return }
         let current = state.custom.current
-        for name in names { state.custom.current = name; _ = state.custom.delete() }
+        for name in removed { state.custom.current = name; _ = state.custom.delete() }
         if state.custom.schemes.contains(where: { $0.name == current }) { state.custom.current = current }
-        selection.subtract(names)
+        selection.subtract(removed)
     }
 
 }
@@ -146,8 +155,12 @@ struct CustomSchemeEditor: View {
     @State private var identity = ""
     @State private var name = ""
     @State private var hex = ""
-    @State private var filter = ""
+    @State private var addingChild = false
+    @State private var childName = ""
     @State private var invalid = false
+    private var children: [CustomLanguageSchemes.Scheme] {
+        state.custom.schemes.filter { $0.name.hasPrefix(identity + "－") && !$0.name.dropFirst(identity.count + 1).contains("－") }
+    }
     private var index: Int? { state.custom.schemes.firstIndex { $0.name == (identity.isEmpty ? originalName : identity) } }
     private var color: Binding<Color> {
         Binding(get: { index.map { TableColors.color(state.custom.color(at: $0)) } ?? .blue }, set: { value in
@@ -184,23 +197,40 @@ struct CustomSchemeEditor: View {
                     }
                 }
             }
-            Section(ui("語言")) {
-                TextField(ui("搜尋語言或分區"), text: $filter)
-                if let i = index {
-                    ForEach(model.availableTables.filter { filter.isEmpty || InterfaceLanguage.matches($0.fullName + $0.name, filter) }) { table in
-                        Button {
-                            if !state.custom.schemes[i].languages.insert(table.name).inserted { state.custom.schemes[i].languages.remove(table.name) }
-                        } label: {
-                            HStack {
-                                Image(systemName: state.custom.schemes[i].languages.contains(table.name) ? "checkmark.square.fill" : "square")
-                                LanguageBadge(name: table.name, table: table); Spacer()
-                            }
-                        }.buttonStyle(.borderless)
+            Section(ui("自選分區")) {
+                ForEach(children) { child in
+                    NavigationLink(child.name.components(separatedBy: "－").last ?? child.name) {
+                        CustomSchemeEditor(state: state, originalName: child.name)
                     }
+                }.onMove { source, destination in
+                    state.custom.retainColors()
+                    var ordered = children
+                    ordered.move(fromOffsets: source, toOffset: destination)
+                    let slots = state.custom.schemes.indices.filter { index in children.contains { $0.name == state.custom.schemes[index].name } }
+                    for (slot, child) in zip(slots, ordered) { state.custom.schemes[slot] = child }
+                }
+                Button(ui("新建子分區")) { childName = ""; addingChild = true }.accessibilityIdentifier("newCustomSubgroup")
+            }
+            Section(ui("語言")) {
+                LanguageDropdown(tables: model.availableTables, names: Binding(get: {
+                    index.map { state.custom.schemes[$0].languages } ?? []
+                }, set: { value in
+                    if let i = index { state.custom.schemes[i].languages = value }
+                }), state: model.customEditorSelection, inspect: { model.tableDetail = $0 }, showsDone: false, preservesHiddenSelection: true) {}
+            }
+        }.environment(\.editMode, .constant(.active))
+            .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
+            .onAppear { if identity.isEmpty { identity = originalName; name = originalName; hex = index.map { state.custom.color(at: $0) } ?? "#808080" } }
+            .alert(ui("新建子分區"), isPresented: $addingChild) {
+                TextField(ui("方案"), text: $childName)
+                Button(ui("取消"), role: .cancel) {}
+                Button(ui("保存")) {
+                    let child = CustomLanguageSchemes.normalize(childName)
+                    let current = state.custom.current
+                    if child.isEmpty || !state.custom.create(identity + "－" + child) { invalid = true }
+                    state.custom.current = current
                 }
             }
-        }.navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
-            .onAppear { if identity.isEmpty { identity = originalName; name = originalName; hex = index.map { state.custom.color(at: $0) } ?? "#808080" } }
             .alert(ui("請輸入有效且不重複的名稱，或六位十六進制顏色碼。"), isPresented: $invalid) { Button(ui("好"), role: .cancel) {} }
     }
 }

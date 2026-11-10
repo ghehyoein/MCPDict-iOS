@@ -30,10 +30,22 @@ struct FavoriteSettingsSection: View {
     @AppStorage("favoriteAction") private var action = "ask"
     var body: some View {
         Section(ui("收藏")) {
-            Picker(ui("點擊收藏星號"), selection: $action) {
-                Text(ui("詢問加入哪些生字本")).tag("ask")
-                Text(ui("直接加入預設生字本")).tag("direct")
-            }.pickerStyle(.menu)
+            HStack(alignment: .center, spacing: 12) {
+                Text(ui("點擊收藏星號")).fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 0)
+                Menu {
+                    Picker(ui("點擊收藏星號"), selection: $action) {
+                        Text(ui("詢問加入哪些生字本")).tag("ask")
+                        Text(ui("直接加入預設生字本")).tag("direct")
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Text(ui(action == "ask" ? "詢問加入哪些生字本" : "直接加入預設生字本"))
+                            .multilineTextAlignment(.trailing).fixedSize(horizontal: false, vertical: true)
+                        Image(systemName: "chevron.up.chevron.down").font(.caption)
+                    }.frame(maxWidth: .infinity, alignment: .trailing)
+                }.accessibilityIdentifier("favoriteActionMenu")
+            }
             if action == "direct" {
                 NavigationLink(ui("設定預設生字本")) { DefaultFavoriteBooksView() }
             }

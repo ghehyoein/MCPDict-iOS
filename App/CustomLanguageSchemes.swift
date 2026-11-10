@@ -32,21 +32,28 @@ struct CustomLanguageSchemes: Codable, Equatable {
         set { if let i = schemes.firstIndex(where: { $0.name == current }) { schemes[i].languages = newValue } }
     }
     var selected: Set<String> {
-        let included = scope.isEmpty ? schemes.filter { $0.name == current } :
+        let included = scope.isEmpty ? schemes.filter { $0.name == current || $0.name.hasPrefix(current + "－") } :
             schemes.filter { scope == "ALL" || $0.name == scope || $0.name.hasPrefix(scope + "－") }
         return included.reduce(into: Set<String>()) { $0.formUnion($1.languages) }
     }
     mutating func create(_ raw: String) -> Bool {
         let name = Self.normalize(raw)
-        guard !name.isEmpty, !schemes.contains(where: { $0.name == name }) else { return false }
+        guard !name.isEmpty, !name.components(separatedBy: "－").contains(""), !schemes.contains(where: { $0.name == name }) else { return false }
         retainColors()
         schemes.append(Scheme(name: name, languages: [])); current = name; return true
     }
     mutating func rename(_ raw: String) -> Bool {
         let name = Self.normalize(raw)
-        guard !name.isEmpty, let i = schemes.firstIndex(where: { $0.name == current }),
-              !schemes.contains(where: { $0.name == name && $0.name != current }) else { return false }
-        schemes[i].name = name; current = name; validateScope(); return true
+        let old = current
+        guard !name.isEmpty, !name.components(separatedBy: "－").contains(""), schemes.contains(where: { $0.name == old }),
+              name == old || !name.hasPrefix(old + "－") else { return false }
+        let renamed = schemes.map { scheme -> String in
+            scheme.name == old ? name : scheme.name.hasPrefix(old + "－") ? name + String(scheme.name.dropFirst(old.count)) : scheme.name
+        }
+        guard Set(renamed).count == renamed.count else { return false }
+        for i in schemes.indices { schemes[i].name = renamed[i] }
+        if scope == old || scope.hasPrefix(old + "－") { scope = name + String(scope.dropFirst(old.count)) }
+        current = name; validateScope(); return true
     }
     mutating func delete() -> Bool {
         guard schemes.count > 1 else { return false }
@@ -91,41 +98,10 @@ struct CustomLanguageSchemes: Codable, Equatable {
 
 struct CustomSchemeControls: View {
     @ObservedObject var state: LanguageSelectionState
-    @State private var naming = false
-    @State private var renaming = false
-    @State private var deleting = false
-    @State private var name = ""
-    @State private var invalid = false
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Picker(ui("方案"), selection: $state.custom.current) {
-                ForEach(state.custom.schemes) { Text($0.name == "默認方案" ? ui("默認方案") : $0.name).tag($0.name) }
-            }.pickerStyle(.menu).accessibilityIdentifier("customSchemePicker")
-            HStack {
-                Button(ui("新建")) { renaming = false; name = ""; naming = true }.accessibilityIdentifier("newCustomScheme")
-                Spacer()
-                Button(ui("改名")) { renaming = true; name = state.custom.current; naming = true }
-                Spacer()
-                Button(ui("刪除"), role: .destructive) { deleting = true }.disabled(state.custom.schemes.count == 1)
-            }.buttonStyle(.borderless)
-            Picker(ui("自選範圍"), selection: $state.custom.scope) {
-                Text(ui("全部方案")).tag("ALL")
-                Text(ui("當前方案")).tag("")
-                ForEach(state.custom.parents, id: \.self) { Text($0).tag($0) }
-            }.pickerStyle(.menu).accessibilityIdentifier("customScopePicker")
-            Button { state.custom.colorByScheme.toggle() } label: {
-                HStack(spacing: 0) { Image(systemName: state.custom.colorByScheme ? "checkmark.square.fill" : "square"); Text(ui("按方案配色")) }
-            }.buttonStyle(StaticCheckboxButtonStyle())
-        }
-        .alert(ui(renaming ? "改名" : "新建"), isPresented: $naming) {
-            TextField(ui("方案名稱（空格可分級，如：江淮 洪巢）"), text: $name)
-            Button(ui("取消"), role: .cancel) {}
-            Button(ui("保存")) { invalid = !(renaming ? state.custom.rename(name) : state.custom.create(name)) }
-        } message: { Text(ui("方案名稱（空格可分級，如：江淮 洪巢）")) }
-        .alert(ui("方案名稱不能為空或重複"), isPresented: $invalid) { Button(ui("好"), role: .cancel) {} }
-        .alert(ui("刪除方案"), isPresented: $deleting) {
-            Button(ui("取消"), role: .cancel) {}
-            Button(ui("刪除"), role: .destructive) { _ = state.custom.delete() }
-        } message: { Text(state.custom.current) }
+        Picker(ui("方案"), selection: $state.custom.current) {
+            ForEach(state.custom.schemes) { Text($0.name == "默認方案" ? ui("默認方案") : $0.name).tag($0.name) }
+        }.pickerStyle(.menu).accessibilityIdentifier("customSchemePicker")
+            .onAppear { state.custom.scope = "" }
     }
 }

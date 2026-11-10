@@ -88,6 +88,7 @@ struct LanguageDropdown: View {
     var palette: TableGrouping = .atlas
     var showsDone = true
     var singleSelection = false
+    var preservesHiddenSelection = false
     var submitted: (() -> Void)? = nil
     let done: () -> Void
     @State private var eligible = [TablePackage]()
@@ -112,7 +113,7 @@ struct LanguageDropdown: View {
             })
         }
         index = state.indexCache.index(tables: eligible, grouping: state.grouping, roles: state.roles, paths: additionalPaths)
-        if prune && state.kind != .custom { names = names.intersection(Set(eligible.map(\.name))) }
+        if prune && !preservesHiddenSelection && state.kind != .custom { names = names.intersection(Set(eligible.map(\.name))) }
         if updateRegion, state.scope == .terminalGroups, let region = state.region {
             if let ids = index.nodes["g:" + region]?.ids { names = Set(eligible.filter { ids.contains($0.id) }.map(\.name)) }
         }
@@ -125,7 +126,10 @@ struct LanguageDropdown: View {
     }
     private var selection: Binding<Set<String>> {
         Binding(get: { Set(tables.filter { names.contains($0.name) }.map(\.id)) },
-                set: { ids in names = Set(tables.filter { ids.contains($0.id) }.map(\.name)) })
+                set: { ids in
+                    let unavailable = preservesHiddenSelection ? names.subtracting(tables.map(\.name)) : []
+                    names = Set(tables.filter { ids.contains($0.id) }.map(\.name)).union(unavailable)
+                })
     }
     var body: some View {
         VStack(alignment: .leading) {
@@ -133,7 +137,7 @@ struct LanguageDropdown: View {
                 TextField(ui("搜尋語言或分區"), text: $state.filter).textFieldStyle(.roundedBorder)
                 if let submitted { Button(ui("提交"), action: submitted).disabled(names.isEmpty).accessibilityIdentifier("submitGuessLanguage") }
             }
-            if state.kind != .administrative {
+            if state.kind != .administrative && state.kind != .custom {
                 if state.kind == .region {
                     Picker(ui("分區方式"), selection: $state.grouping) {
                         ForEach([TableGrouping.atlas, .dictionary]) { Text(ui($0.rawValue)).tag($0) }
@@ -173,10 +177,10 @@ struct LanguageDropdown: View {
             }.frame(height: 200).accessibilityIdentifier("languageTreeScroll")
             if submitted == nil { HStack {
                 if state.scope != .terminalGroups && !singleSelection {
-                    Button(ui("全選")) { if state.kind == .custom { names.formUnion(eligible.map(\.name)) } else { names = Set(eligible.map(\.name)) } }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
+                    Button(ui("全選")) { if state.kind == .custom || preservesHiddenSelection { names.formUnion(eligible.map(\.name)) } else { names = Set(eligible.map(\.name)) } }.accessibilityIdentifier("selectAllLanguages").frame(minWidth: 60, minHeight: 44)
                 }
                 Spacer(minLength: 32)
-                Button(ui("清空")) { if state.kind == .custom { names.subtract(eligible.map(\.name)) } else { names = [] }; state.region = nil }.accessibilityIdentifier("clearLanguages").frame(minWidth: 60, minHeight: 44)
+                Button(ui("清空")) { if state.kind == .custom || preservesHiddenSelection { names.subtract(eligible.map(\.name)) } else { names = [] }; state.region = nil }.accessibilityIdentifier("clearLanguages").frame(minWidth: 60, minHeight: 44)
                 if showsDone {
                     Spacer(minLength: 32)
                     Button(ui("完成"), action: done).accessibilityIdentifier("finishLanguages")

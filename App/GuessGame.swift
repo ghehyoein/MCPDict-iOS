@@ -130,7 +130,9 @@ struct GuessGameView: View {
                     .onChange(of: input) { _, _ in if kind == .character { checkCharacter() } }
                     Button(ui("提交")) { inputFocused = false; if kind == .character { checkCharacter() } else { Task { await readingHint() } } }
                         .buttonStyle(.borderless)
-                }
+                }.listRowSeparator(.visible, edges: .bottom)
+                    .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+                    .alignmentGuide(.listRowSeparatorTrailing) { $0.width }
                 if kind == .character {
                     Picker(ui("字形提示"), selection: $hint) {
                         Text(ui("選擇提示")).tag("")
