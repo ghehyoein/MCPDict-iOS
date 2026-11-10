@@ -17,17 +17,22 @@ enum GlyphStandard: String, CaseIterable, Identifiable {
     // Android's default_locale is ko-Kore-KR; this does not change interface translations.
     var language: String { self == .system ? "ko-Kore-KR" : rawValue }
     static var current: Self { Self(rawValue: UserDefaults.standard.string(forKey: "glyphStandard") ?? "") ?? .system }
+    private static let fontCache = NSCache<NSString, UIFont>()
     static func font(_ base: UIFont, standard: Self = .current) -> UIFont {
+        let key = "\(base.fontName)|\(base.pointSize)|\(base.fontDescriptor.symbolicTraits.rawValue)|\(standard.language)" as NSString
+        if let cached = fontCache.object(forKey: key) { return cached }
         let fallback = CTFontCreateForStringWithLanguage(base as CTFont, "骨" as CFString,
             CFRange(location: 0, length: 1), standard.language as CFString)
         let descriptor = base.fontDescriptor.addingAttributes([
             .cascadeList: [UIFontDescriptor(name: CTFontCopyPostScriptName(fallback) as String, size: base.pointSize)],
-            UIFontDescriptor.AttributeName(kCTFontLanguagesAttribute as String): [standard.language]
+            UIFontDescriptor.AttributeName(rawValue: kCTFontLanguagesAttribute as String): [standard.language]
         ])
-        return UIFont(descriptor: descriptor, size: base.pointSize)
+        let font = UIFont(descriptor: descriptor, size: base.pointSize)
+        fontCache.setObject(font, forKey: key)
+        return font
     }
     static func apply(to text: NSMutableAttributedString, standard: Self = .current) {
-        text.addAttribute(NSAttributedString.Key(kCTLanguageAttribute as String), value: standard.language,
+        text.addAttribute(NSAttributedString.Key(kCTLanguageAttributeName as String), value: standard.language,
                           range: NSRange(location: 0, length: text.length))
     }
 }

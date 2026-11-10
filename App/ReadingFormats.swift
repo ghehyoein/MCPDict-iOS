@@ -105,7 +105,7 @@ struct ReadingFormatSettingsView: View {
                             }.accessibilityIdentifier("readingFormat-" + spec.id + "-" + option.id)
                         }
                     } label: {
-                        HStack { Text(ui(spec.title)); Spacer(); Image(systemName: "chevron.up.chevron.down") }
+                        HStack { Text(ui(spec.title)); Spacer(); Text(spec.options.filter { settings.selected(spec).contains($0.id) }.map { ui($0.title) }.joined(separator: "、")).lineLimit(1); Image(systemName: "chevron.up.chevron.down") }
                     }.menuActionDismissBehavior(.disabled).accessibilityIdentifier("readingFormat-" + spec.id)
 
                 }

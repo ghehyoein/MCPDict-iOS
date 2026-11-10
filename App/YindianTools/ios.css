@@ -33,3 +33,22 @@ select { color: var(--brand); }
 th, td, .compact-reading, .reading-chips, .all-chars { font-size: .9rem; }
 .results-block, .table-wrap { overflow-x: auto; }
 button:disabled { opacity: .4; }
+/* Override Android embedded-page specificity as well as its light-only fields. */
+body.embedded { background: var(--bg); }
+body.embedded .app-shell { width: 100%; max-width: none; margin: 0; padding: 16px; }
+body.embedded .tool-panel { padding: 0; background: transparent; }
+body.embedded .controls-grid { align-items: stretch; }
+body.embedded .field > span { font-weight: 400; color: var(--text); }
+body.embedded .field:has(select) { flex-direction: row; align-items: center; justify-content: space-between; }
+body.embedded .field select { width: auto; max-width: 65%; color: var(--brand); background: var(--surface); border: 0; }
+body.embedded .field input, body.embedded .search-field input,
+body.embedded .compact-select-field select { color: var(--text); background: var(--surface); border-color: var(--line); }
+body.embedded .char-choice-box, body.embedded .multi-options,
+body.embedded .position-chips, body.embedded .reading-chips,
+body.embedded .all-chars, body.embedded .chars-dialog { color: var(--text); background: var(--surface); border-color: var(--line); }
+body.embedded .char-choice-title, body.embedded .compact-summary, body.embedded .compact-select-field,
+body.embedded .results-block h3, body.embedded .results-block th { color: var(--text); }
+body.embedded .results-block th { background: var(--surface-soft); }
+body.embedded .controls-grid > button { align-self: flex-start; padding-left: 0; }
+body.embedded .legend-row, body.embedded .hint, body.embedded .reading-split,
+body.embedded .search-field > span { color: var(--muted); }
