@@ -24,13 +24,14 @@ enum BuiltinAnalysisTool: String {
 }
 struct ToolsComparisonMap: View {
     let points: [DialectPoint]
+    var title = "字音比較"
     @Environment(\.dismiss) private var dismiss
     @State private var selected: DialectPoint?
     @AppStorage("baseMapStyle") private var style = "standard"
     var body: some View {
         NavigationStack {
             NativeDialectMap(points: points, fit: 1, mapStyle: style) { id in selected = points.first { $0.id == id } }
-                .navigationTitle(ui("字音比較"))
+                .navigationTitle(ui(title))
                 .toolbar { Button(ui("完成")) { dismiss() } }
                 .sheet(item: $selected) { point in
                     NavigationStack { ScrollView { SystemText(point.copyText ?? "").padding() }.navigationTitle(point.name) }

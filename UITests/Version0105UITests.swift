@@ -28,8 +28,8 @@ final class Version0105UITests: XCTestCase {
             app.buttons["newCustomSubgroup"].tap(); app.alerts.textFields.firstMatch.typeText(title); app.alerts.buttons["保存"].tap()
         }
         app.buttons["editChildSchemes"].tap()
-        app.buttons["selectChildScheme-默認方案－甲"].tap()
-        app.buttons["selectChildScheme-默認方案－乙"].tap()
+        app.buttons["childScheme-默認方案－甲"].tap()
+        app.buttons["childScheme-默認方案－乙"].tap()
         app.buttons["複製"].tap()
         XCTAssertTrue(app.buttons["childScheme-默認方案－甲（副本）"].waitForExistence(timeout: 5))
         app.buttons["刪除"].tap()

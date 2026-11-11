@@ -15,6 +15,7 @@ struct YindianToolsView: View {
     @State private var input = ""
     @State private var choices = [String]()
     @State private var selected = Set<String>()
+    @State private var editingComparisonColor: String?
     @State private var resultChars = [String]()
     @State private var units = [ComparisonUnit]()
     @AppStorage(ComparisonPalette.key) private var comparisonColors = ""
@@ -140,6 +141,7 @@ struct YindianToolsView: View {
                     }
                 }
             }
+            .navigationDestination(item: $editingComparisonColor) { ComparisonColorEditor(status: $0, storage: $comparisonColors) }
             .sheet(item: $map) { ToolsComparisonMap(points: $0.points) }
             .fileExporter(isPresented: $exporting, document: EvolutionExportDocument(text: evolutionCSV), contentType: .commaSeparatedText, defaultFilename: "MCPDict-correspondences") { result in
                 if case .failure(let failure) = result { error = failure.localizedDescription }
@@ -191,9 +193,10 @@ struct YindianToolsView: View {
                     names: $comparisonLanguages, state: comparisonSelector, entryID: "comparisonLanguageSelection",
                     inspect: { model.tableDetail = $0 }, languageOnly: true)
             }
-            Section(ui("比較統計")) {
+            Section {
                 ForEach(["same","partial","different","missing"], id: \.self) { status in
                     if let sample = comparison.first(where: { $0.status == status }) {
+                        HStack {
                         Button {
                             if !resultStatuses.insert(status).inserted { resultStatuses.remove(status) }
                         } label: {
@@ -204,11 +207,19 @@ struct YindianToolsView: View {
                                 Text(String(comparison.filter { comparisonLanguages.contains($0.name) && $0.status == status }.count))
                             }
                         }.buttonStyle(.borderless).accessibilityIdentifier("comparisonStatus-" + status)
-                        ComparisonColorEditor(status: status, storage: $comparisonColors)
+                        Button { editingComparisonColor = status } label: {
+                            Image(systemName: "paintpalette.fill").foregroundStyle(TableColors.color(ComparisonPalette(comparisonColors).color(status)))
+                        }.buttonStyle(.borderless).fixedSize().accessibilityLabel(ui("方案顏色")).accessibilityIdentifier("editComparisonColor-" + status)
+                        }
                     }
                 }
                 Toggle(ui("顯示缺資料點"), isOn: $showMissing)
-                Button(ui("查看地圖")) { openMap() }.accessibilityIdentifier("nativeComparisonMap")
+            } header: {
+                HStack {
+                    Text(ui("比較統計")); Spacer()
+                    Button { openMap() } label: { Image(systemName: "map") }
+                        .accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("nativeComparisonMap")
+                }
             }
             Section(ui("各語言比較結果")) {
                 TextField(ui("方言名稱 / 地區"), text: $search).textFieldStyle(.roundedBorder)

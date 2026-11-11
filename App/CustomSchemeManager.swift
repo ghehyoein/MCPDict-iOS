@@ -52,6 +52,7 @@ struct CustomSchemeManager: View {
     @State private var importing = false
     @State private var exporting = false
     @State private var message: String?
+    @State private var map: ToolMapResult?
     @State private var selecting = false
     @State private var selection = Set<String>()
     private var exported: CustomLanguageSchemes {
@@ -68,15 +69,23 @@ struct CustomSchemeManager: View {
                             Image(systemName: selection.contains(scheme.name) ? "checkmark.square.fill" : "square").padding(8)
                         }.buttonStyle(.borderless).accessibilityIdentifier("selectScheme-" + scheme.name)
                     }
-                NavigationLink {
-                    CustomSchemeEditor(state: state, originalName: scheme.name)
-                } label: {
-                    HStack {
+                if selecting {
+                    Button { if !selection.insert(scheme.name).inserted { selection.remove(scheme.name) } } label: {
+                        HStack {
                         Circle().fill(TableColors.color(state.custom.schemes.firstIndex(where: { $0.name == scheme.name }).map { state.custom.color(at: $0) } ?? "#808080")).frame(width: 16, height: 16)
-                        Text(scheme.name == "默認方案" ? ui("默認方案") : scheme.name)
+                        Text(scheme.name == "默認方案" ? ui("默認方案") : scheme.name).foregroundStyle(Color.primary)
                         Spacer(); Text("\(scheme.languages.count)").foregroundStyle(.secondary)
-                    }
-                }.accessibilityIdentifier("schemeEditor-" + scheme.name)
+                    }.contentShape(Rectangle())
+                    }.buttonStyle(.borderless).accessibilityIdentifier("selectSchemeRow-" + scheme.name)
+                } else {
+                    NavigationLink { CustomSchemeEditor(state: state, originalName: scheme.name) } label: {
+                        HStack {
+                        Circle().fill(TableColors.color(state.custom.schemes.firstIndex(where: { $0.name == scheme.name }).map { state.custom.color(at: $0) } ?? "#808080")).frame(width: 16, height: 16)
+                        Text(scheme.name == "默認方案" ? ui("默認方案") : scheme.name).foregroundStyle(Color.primary)
+                        Spacer(); Text("\(scheme.languages.count)").foregroundStyle(.secondary)
+                    }.contentShape(Rectangle())
+                    }.accessibilityIdentifier("schemeEditor-" + scheme.name)
+                }
                     if selecting {
                         Button(ui("改名")) { renaming = scheme.name; name = scheme.name; naming = true }.buttonStyle(.borderless)
                     }
@@ -98,6 +107,8 @@ struct CustomSchemeManager: View {
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button { showMap(selecting ? selection : Set(state.custom.schemes.map(\.name))) } label: { Image(systemName: "map") }
+                        .accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("customSchemesMap")
                     Button(ui("新建")) { renaming = nil; name = ""; naming = true }
                     Menu {
                         Button(ui("匯出自選分區")) { exporting = true }.disabled(selecting && selection.isEmpty)
@@ -106,6 +117,7 @@ struct CustomSchemeManager: View {
                     Button(ui(selecting ? "完成" : "編輯")) { selecting.toggle(); selection = [] }
                 }
             }
+            .sheet(item: $map) { ToolsComparisonMap(points: $0.points, title: "自選分區") }
             .safeAreaInset(edge: .bottom) {
                 if selecting {
                     HStack {
@@ -145,6 +157,11 @@ struct CustomSchemeManager: View {
                 Button(ui("好")) { message = nil }
             } message: { Text(message ?? "") }
     }
+    private func showMap(_ roots: Set<String>) {
+        let points = CollectionMap.schemes(state.custom, roots: roots, tables: model.availableTables)
+        if points.isEmpty { model.error = ui("當前結果沒有可用的地圖座標。") }
+        else { map = ToolMapResult(points: points) }
+    }
     private func remove(_ names: Set<String>) {
         let removed = state.custom.branchNames(names)
         if state.custom.removeBranches(names) { selection.subtract(removed) }
@@ -163,6 +180,7 @@ struct CustomSchemeEditor: View {
     @State private var addingChild = false
     @State private var childName = ""
     @State private var invalid = false
+    @State private var map: ToolMapResult?
     @State private var selecting = false
     @State private var selection = Set<String>()
     private var children: [CustomLanguageSchemes.Scheme] {
@@ -177,12 +195,10 @@ struct CustomSchemeEditor: View {
     }
     private var index: Int? { state.custom.schemes.firstIndex { $0.name == (identity.isEmpty ? originalName : identity) } }
     private var color: Binding<Color> {
-        Binding(get: { index.map { TableColors.color(state.custom.color(at: $0)) } ?? .blue }, set: { value in
-            guard let i = index else { return }
+        Binding(get: { TableColors.color(CustomLanguageSchemes.validColor(hex) ?? index.map { state.custom.color(at: $0) } ?? "#808080") }, set: { value in
             var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
             guard UIColor(value).getRed(&r, green: &g, blue: &b, alpha: &a) else { return }
             hex = String(format: "#%02X%02X%02X", Int((r * 255).rounded()), Int((g * 255).rounded()), Int((b * 255).rounded()))
-            state.custom.schemes[i].colorHex = hex
         })
     }
     var body: some View {
@@ -219,12 +235,12 @@ struct CustomSchemeEditor: View {
                             Image(systemName: selection.contains(child.name) ? "checkmark.square.fill" : "square").padding(8)
                         }.buttonStyle(.borderless).accessibilityIdentifier("selectChildScheme-" + child.name)
                     }
-                    Button { openedChild = child.name } label: {
+                    Button { if selecting { if !selection.insert(child.name).inserted { selection.remove(child.name) } } else { openedChild = child.name } } label: {
                         HStack {
                             Text(child.name.components(separatedBy: "－").last ?? child.name).foregroundStyle(Color.primary)
                             Spacer()
                             Image(systemName: "chevron.right").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
-                        }
+                        }.contentShape(Rectangle())
                     }.buttonStyle(.borderless).accessibilityIdentifier("childScheme-" + child.name)
                     }
                     .contextMenu { Button(ui("複製")) { state.custom.duplicateBranches([child.name], suffix: ui("副本")) } }
@@ -252,11 +268,14 @@ struct CustomSchemeEditor: View {
         }.environment(\.editMode, .constant(selecting ? .active : .inactive))
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button { showMap(selecting ? selection : [identity]) } label: { Image(systemName: "map") }
+                        .accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("customSchemeMap")
                     Button(ui(selecting ? "完成" : "編輯")) { selecting.toggle(); selection = [] }
                         .accessibilityIdentifier("editChildSchemes")
                 }
             }
+            .sheet(item: $map) { ToolsComparisonMap(points: $0.points, title: "自選分區") }
             .safeAreaInset(edge: .bottom) {
                 if selecting {
                     HStack {
@@ -293,6 +312,11 @@ struct CustomSchemeEditor: View {
                 }
             }
             .alert(ui("請輸入有效且不重複的名稱，或六位十六進制顏色碼。"), isPresented: $invalid) { Button(ui("好"), role: .cancel) {} }
+    }
+    private func showMap(_ roots: Set<String>) {
+        let points = CollectionMap.schemes(state.custom, roots: roots, tables: model.availableTables)
+        if points.isEmpty { model.error = ui("當前結果沒有可用的地圖座標。") }
+        else { map = ToolMapResult(points: points) }
     }
     private func removeChildren(_ names: Set<String>) {
         if state.custom.removeBranches(names) { selection.subtract(names) }

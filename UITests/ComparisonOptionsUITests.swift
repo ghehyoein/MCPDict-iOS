@@ -16,6 +16,10 @@ final class ComparisonOptionsUITests: XCTestCase {
         XCTAssertTrue(app.buttons["removeComparisonUnit-中＋输"].waitForExistence(timeout: 5))
         traditional.tap()
         app.buttons["runNativeAnalysis"].tap()
+        let palette = app.buttons["editComparisonColor-partial"]
+        XCTAssertTrue(palette.waitForExistence(timeout: 15))
+        for _ in 0..<4 where !palette.isHittable { app.swipeUp() }
+        palette.tap()
         let hex = app.textFields["comparisonColorHex-partial"]
         XCTAssertTrue(hex.waitForExistence(timeout: 15))
         for _ in 0..<4 where !hex.isHittable { app.swipeUp() }
@@ -23,8 +27,17 @@ final class ComparisonOptionsUITests: XCTestCase {
         let value = hex.value as? String ?? ""
         hex.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: value.count) + "#123ABC")
         app.buttons["saveComparisonColor-partial"].tap()
+        XCTAssertTrue(palette.waitForExistence(timeout: 5))
+        palette.tap()
+        XCTAssertTrue(hex.waitForExistence(timeout: 5))
+        XCTAssertEqual(hex.value as? String, "#123ABC")
+        // Leaving an unsaved draft must preserve the saved value.
+        hex.tap(); hex.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 7) + "#AABBCC")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        palette.tap()
         XCTAssertEqual(hex.value as? String, "#123ABC")
         let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "comparison-unit-color"; shot.lifetime = .keepAlways; add(shot)
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         let map = app.buttons["nativeComparisonMap"]
         for _ in 0..<3 where !map.isHittable { app.swipeUp() }
         map.tap()

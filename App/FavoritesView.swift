@@ -41,6 +41,7 @@ struct FavoritesView: View {
     @State private var selection = Set<UUID>()
     @State private var selecting = false
     @State private var showBooks = false
+    @State private var map: ToolMapResult?
     @State private var exporting = false
     @State private var importing = false
     @State private var transferMessage: String?
@@ -112,6 +113,14 @@ struct FavoritesView: View {
                                     }), axis: .vertical)
                                 }
                             }
+                            .overlay {
+                                if selecting {
+                                    Button { if !selection.insert(saved.id).inserted { selection.remove(saved.id) } } label: {
+                                        Color.clear.contentShape(Rectangle())
+                                    }.buttonStyle(.plain).accessibilityLabel(ui("選擇") + saved.reading.characters)
+                                        .accessibilityIdentifier("selectNotebookRow-" + saved.reading.characters)
+                                }
+                            }
                         }.onDelete { indices in remove(Set(indices.map { group.entries[$0].id })) }
                     } header: { if !group.title.isEmpty { Text(verbatim: group.title).textCase(nil) } }
                 }
@@ -154,9 +163,15 @@ struct FavoritesView: View {
             }
             .onChange(of: stored) { _, _ in selectedKey = ""; selection = [] }
             .onChange(of: selectedKey) { _, _ in selection.formIntersection(Set(shown.map(\.id))) }
+            .sheet(item: $map) { ToolsComparisonMap(points: $0.points, title: "生字本") }
             .sheet(isPresented: $showBooks) { BookPicker() }
              .onChange(of: model.notebook.selected) { _, _ in selection = [] }
              .navigationTitle(ui("生字本")).toolbar {
+                Button {
+                    let points = CollectionMap.readings(shown, tables: model.availableTables, grouping: palette == "dictionary" ? .dictionary : .atlas, colors: customPalette.colors)
+                    if points.isEmpty { model.error = ui("當前結果沒有可用的地圖座標。") }
+                    else { map = ToolMapResult(points: points) }
+                } label: { Image(systemName: "map") }.accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("notebookMap")
                 Menu {
                     Button(ui("匯出所選生字本")) { exporting = true }.disabled(model.notebook.selected.isEmpty)
                     Button(ui("匯入生字本")) { importing = true }
