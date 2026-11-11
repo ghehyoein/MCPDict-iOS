@@ -511,7 +511,7 @@ struct ReadingView: View {
             Button { model.tableDetail = model.table(named: reading.language) } label: { LanguageBadge(name: reading.language, table: model.table(named: reading.language)) }.buttonStyle(.plain)
             PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).foregroundStyle(.primary)
             SystemText(reading.characters).font(.title3)
-            if !reading.note.isEmpty { SystemText(reading.note).font(.subheadline) }
+            if !reading.displayNote.isEmpty { SystemText(reading.displayNote).font(.subheadline) }
         }.padding(.vertical, 6)
     }
 }
@@ -543,7 +543,8 @@ struct SearchView: View {
                         TextField(ui("漢字、U+4E2D 或原始讀音"), text: $model.query)
                             .textInputAutocapitalization(.never).autocorrectionDisabled()
                             .focused($searchFocused).onSubmit { submitQuery() }
-                        Button(ui("查詢")) { submitQuery() }.disabled(model.searching)
+                        ReadingMarkerHelpButton()
+                        Button(ui("查詢")) { submitQuery() }.disabled(model.searching).buttonStyle(.borderless)
                     }
                     LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { model.selectedLanguageNames }, set: { model.selectLanguages($0) }), state: selector, entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } })
                 }

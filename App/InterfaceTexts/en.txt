@@ -1308,3 +1308,18 @@ Compare up to 10 units at a time.
 
 [請輸入六位十六進制顏色碼。]
 Enter a six-digit hexadecimal color code.
+
+[白讀]
+Colloquial reading
+
+[文讀]
+Literary reading
+
+[待考]
+Uncertain
+
+[俗字]
+Nonstandard character
+
+[-為白讀標記，=為文讀標記，?為待考標記，*為俗字標記]
+- marks a colloquial reading, = a literary reading, ? an uncertain reading, and * a nonstandard character.

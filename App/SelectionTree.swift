@@ -231,7 +231,7 @@ struct HomophoneResultsView: View {
                     ForEach(rows) { row in
                         HStack(alignment: .top) {
                             FavoriteButton(reading: row)
-                            SystemText(row.characters + (row.note.isEmpty ? "" : "  " + row.note), boldPrefix: row.characters)
+                            SystemText(row.characters + (row.displayNote.isEmpty ? "" : "  " + row.displayNote), boldPrefix: row.characters)
                         }
                     }
                 }

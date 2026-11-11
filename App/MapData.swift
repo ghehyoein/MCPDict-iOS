@@ -43,7 +43,8 @@ struct MapSearchResult {
         let text: String
         let pronunciation: String
         let note: String
-        var fullText: String { note.isEmpty ? text : text + "  " + note }
+        var displayNote: String { ReadingMarkers.note(note, pronunciation: pronunciation) }
+        var fullText: String { displayNote.isEmpty ? text : text + "  " + displayNote }
     }
     let mode: SearchMode
     let query: String

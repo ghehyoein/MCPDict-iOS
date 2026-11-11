@@ -87,7 +87,7 @@ struct DialectMapView: View {
                 for line in lines {
                     if !parts.isEmpty { parts.append(.init(id: parts.count, base: "\n", pitch: "", tone: "", stacked: false)) }
                     parts += ToneDisplay.parts(line.pronunciation, table: table, style: toneStyle, pitchStyle: pitchStyle)
-                    parts.append(.init(id: parts.count, base: "  " + line.note, pitch: "", tone: "", stacked: false))
+                    parts.append(.init(id: parts.count, base: "  " + line.displayNote, pitch: "", tone: "", stacked: false))
                 }
                 point.toneParts = parts
             }
@@ -151,8 +151,9 @@ struct DialectMapView: View {
     private var searchBar: some View {
                 HStack {
                     TextField(ui(mode == .character ? "請輸入漢字" : mode == .pronunciation ? "請輸入讀音" : "請輸入註釋"), text: $character).textFieldStyle(.roundedBorder).focused($inputFocused).onSubmit { Task { await query() } }
-                    Button(ui("查字")) { Task { await query() } }.disabled(querying)
-                    Button(ui("清除")) { character = ""; resetResults() }
+                    ReadingMarkerHelpButton()
+                    Button(ui("查字")) { Task { await query() } }.disabled(querying).buttonStyle(.borderless)
+                    Button(ui("清除")) { character = ""; resetResults() }.foregroundStyle(.red).buttonStyle(.borderless)
                 }.padding(.horizontal)
     }
     @ViewBuilder private var variantBar: some View {

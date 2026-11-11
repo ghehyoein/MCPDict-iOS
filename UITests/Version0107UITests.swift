@@ -1,6 +1,20 @@
 import XCTest
 
 final class Version0107UITests: XCTestCase {
+    @MainActor func testReadingMarkerHelpInDictionaryAndMap() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]
+        app.launch()
+        XCTAssertTrue(app.buttons["readingMarkerHelp"].waitForExistence(timeout: 15))
+        app.buttons["readingMarkerHelp"].tap()
+        XCTAssertTrue(app.alerts.staticTexts["-為白讀標記，=為文讀標記，?為待考標記，*為俗字標記"].waitForExistence(timeout: 5))
+        app.alerts.buttons["好"].tap()
+        app.tabBars.buttons["地圖"].tap()
+        app.buttons["readingMarkerHelp"].tap()
+        XCTAssertTrue(app.alerts.staticTexts["-為白讀標記，=為文讀標記，?為待考標記，*為俗字標記"].waitForExistence(timeout: 5))
+        app.alerts.buttons["好"].tap()
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "0.10.7-map-search-controls"; shot.lifetime = .keepAlways; add(shot)
+    }
     @MainActor func testNotebookWholeRowAndMap() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection", "--notebook-list-fixture"]

@@ -28,7 +28,7 @@ enum CollectionMap {
                 let pronunciation = ToneDisplay.text(r.pronunciation, table: table,
                     style: UserDefaults.standard.string(forKey: "toneStyle") ?? "baSheng",
                     pitch: UserDefaults.standard.string(forKey: "pitchStyle") ?? "curve")
-                return r.characters + " " + pronunciation + (r.note.isEmpty ? "" : " " + r.note)
+                return r.characters + " " + pronunciation + (r.displayNote.isEmpty ? "" : " " + r.displayNote)
             }.joined(separator: "\n")
             guard var point = DialectPoint.make(table, grouping: grouping, reading: lines) else { return nil }
             if let color = colors[table.name] { point.color = color }

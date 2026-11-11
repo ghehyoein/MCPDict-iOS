@@ -59,7 +59,7 @@ struct DictionaryResultTable: View {
                                 if readings.isEmpty { Text("—").foregroundStyle(.secondary) }
                                 ForEach(readings) { reading in
                                     HStack(alignment: .top) { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: language)) }
-                                    if !reading.note.isEmpty { SystemText(reading.note, color: .secondaryLabel) }
+                                    if !reading.displayNote.isEmpty { SystemText(reading.displayNote, color: .secondaryLabel) }
                                 }
                             }.frame(width: 180, alignment: .leading).padding(8)
                         }
