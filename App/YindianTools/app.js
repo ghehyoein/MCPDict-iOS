@@ -1399,7 +1399,8 @@
   globalThis.nativeAnalysis = (input) => {
     const dialects = (input.dialects || []).map(parseDialectRow);
     if (input.kind === 'compare') {
-      const chars = input.chars, byDialect = new Map();
+      const units = input.units || input.chars.map(char => [char]);
+      const chars = [...new Set(units.flat())], byDialect = new Map();
       const singleChars = new Set(chars.filter(char => Array.from(char).length === 1));
       const sequences = chars.filter(char => Array.from(char).length !== 1);
       for (const row of input.rows) {
@@ -1418,7 +1419,7 @@
       }
       return dialects.map(dialect => {
         const index = byDialect.get(dialect.shortName);
-        const readings = chars.map(char => [...(index?.get(char) || [])].sort());
+        const readings = units.map(unit => [...new Set(unit.flatMap(char => [...(index?.get(char) || [])]))].sort());
         const normalized = readings.map(values => values.map(raw => ({raw, parts: decomposeModern(raw, dialect, {glidesAsFinal: input.glides})})));
         return {name: dialect.shortName, status: classifyReadings(normalized, input.mode, dialect), readings,
           normalized: normalized.map(values => values.map(v => displayValueFromParts(v.parts, input.mode, dialect)))};

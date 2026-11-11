@@ -1293,3 +1293,18 @@ Custom colors
 
 [自選子分區]
 Custom subgroups
+
+[加入比較單元]
+Add comparison unit
+
+[未加入單元的勾選字會各自比較。]
+Selected characters not added to a unit are compared individually.
+
+[請至少選擇兩個比較單元。]
+Select at least two comparison units.
+
+[一次最多比較 10 個單元。]
+Compare up to 10 units at a time.
+
+[請輸入六位十六進制顏色碼。]
+Enter a six-digit hexadecimal color code.

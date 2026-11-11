@@ -16,6 +16,8 @@ struct YindianToolsView: View {
     @State private var choices = [String]()
     @State private var selected = Set<String>()
     @State private var resultChars = [String]()
+    @State private var units = [ComparisonUnit]()
+    @AppStorage(ComparisonPalette.key) private var comparisonColors = ""
     @State private var filters = [String: Set<String>]()
     @State private var filterOptions = [String: [String]]()
     @State private var guangyun = [[String: String]]()
@@ -59,8 +61,25 @@ struct YindianToolsView: View {
                                 ForEach(choices, id: \.self) { char in
                                     Button { if !selected.insert(char).inserted { selected.remove(char) } } label: {
                                         Label(char, systemImage: selected.contains(char) ? "checkmark.square.fill" : "square")
-                                    }.buttonStyle(.borderless)
+                                    }.buttonStyle(.borderless).accessibilityIdentifier("comparisonChar-" + char)
                                 }
+                            }
+                        }
+                    }
+                    Button(ui("加入比較單元")) {
+                        let unit = ComparisonUnit(choices.filter(selected.contains))
+                        guard !unit.characters.isEmpty else { return }
+                        units.append(unit); selected = []
+                    }.disabled(selected.isEmpty || units.count >= 10).accessibilityIdentifier("addComparisonUnit")
+                    if !units.isEmpty {
+                        Text(ui("未加入單元的勾選字會各自比較。"))
+                            .font(.caption).foregroundStyle(.secondary)
+                        ForEach(units) { unit in
+                            HStack {
+                                Text(unit.title).foregroundStyle(Color.primary)
+                                Spacer()
+                                Button(ui("刪除"), role: .destructive) { units.removeAll { $0.id == unit.id } }
+                                    .buttonStyle(.borderless).accessibilityIdentifier("removeComparisonUnit-" + unit.title)
                             }
                         }
                     }
@@ -185,6 +204,7 @@ struct YindianToolsView: View {
                                 Text(String(comparison.filter { comparisonLanguages.contains($0.name) && $0.status == status }.count))
                             }
                         }.buttonStyle(.borderless).accessibilityIdentifier("comparisonStatus-" + status)
+                        ComparisonColorEditor(status: status, storage: $comparisonColors)
                     }
                 }
                 Toggle(ui("顯示缺資料點"), isOn: $showMissing)
@@ -196,7 +216,7 @@ struct YindianToolsView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         HStack { Button { model.tableDetail = model.table(named: row.name) } label: {
                             LanguageBadge(name: row.name, table: model.table(named: row.name))
-                        }.buttonStyle(.borderless).accessibilityIdentifier("comparisonLanguage-" + row.name); Spacer(); Text(ui(row.title)).foregroundStyle(TableColors.color(row.color)) }
+                        }.buttonStyle(.borderless).accessibilityIdentifier("comparisonLanguage-" + row.name); Spacer(); Text(ui(row.title)).foregroundStyle(TableColors.color(ComparisonPalette(comparisonColors).color(row.status))) }
                         ForEach(Array(resultChars.enumerated()), id: \.offset) { index, char in
                             SystemText(line(row, index: index, char: char))
                         }
@@ -213,7 +233,7 @@ struct YindianToolsView: View {
         let points = shownComparisons.filter { showMissing || $0.status != "missing" }.compactMap { row -> DialectPoint? in
             guard let table = model.table(named: row.name), let location = table.location, location.valid else { return nil }
             let text = ui(row.title) + "\n" + resultChars.enumerated().map { line(row, index: $0.offset, char: $0.element) }.joined(separator: "\n")
-            return DialectPoint(id: row.name, name: table.fullName, longitude: location.longitude, latitude: location.latitude, color: row.color, reading: "", copyText: text)
+            return DialectPoint(id: row.name, name: table.fullName, longitude: location.longitude, latitude: location.latitude, color: ComparisonPalette(comparisonColors).color(row.status), reading: "", copyText: text)
         }
         if points.isEmpty { error = ui("當前結果沒有可用的地圖座標。") } else { map = ToolMapResult(points: points) }
     }
@@ -279,14 +299,16 @@ struct YindianToolsView: View {
                     mode: ui(modes.first { $0.0 == mode }?.1 ?? mode))
                 if evolution.isEmpty { error = ui("沒有符合當前中古篩選條件的對應關係。") }
             } else {
-                let chars = choices.filter(selected.contains)
-                guard chars.count >= 2 else { throw DictionaryFailure(message: ui("請至少勾選兩個漢字。")) }
-                guard chars.count <= 10 else { throw DictionaryFailure(message: ui("一次最多比較 10 個漢字。")) }
+                let groups = ComparisonUnit.effective(units, choices: choices, selected: selected)
+                guard groups.count >= 2 else { throw DictionaryFailure(message: ui("請至少選擇兩個比較單元。")) }
+                guard groups.count <= 10 else { throw DictionaryFailure(message: ui("一次最多比較 10 個單元。")) }
+                var seen = Set<String>()
+                let chars = groups.flatMap { $0 }.filter { seen.insert($0).inserted }
                 let rows = try await model.repository.searchAllCharacters(chars.joined(), language: "")
-                let input: [String: Any] = ["kind":"compare","chars":chars,"mode":mode,"glides":glides,"dialects":tables.map(dialect),"rows":rows.map { ["字組":$0.characters,"語言":$0.language,"讀音":display($0)] }]
+                let input: [String: Any] = ["kind":"compare","chars":chars,"units":groups,"mode":mode,"glides":glides,"dialects":tables.map(dialect),"rows":rows.map { ["字組":$0.characters,"語言":$0.language,"讀音":display($0)] }]
                 let data = try await NativeAnalysisEngine.run(JSONSerialization.data(withJSONObject: input))
                 let firstResult = comparison.isEmpty
-                comparison = try JSONDecoder().decode([ComparisonGroup].self, from: data); resultChars = chars
+                comparison = try JSONDecoder().decode([ComparisonGroup].self, from: data); resultChars = groups.map { $0.joined(separator: "＋") }
                 if firstResult { comparisonLanguages = Set(comparison.map(\.name)) }
                 else { comparisonLanguages.formIntersection(comparison.map(\.name)) }
             }
