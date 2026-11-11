@@ -11,7 +11,7 @@ final class Version0107UITests: XCTestCase {
         let row = app.buttons["selectNotebookRow-好"].firstMatch
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         row.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.4)).tap()
-        XCTAssertTrue(app.staticTexts["已選 1"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textViews["已選 1"].waitForExistence(timeout: 5))
         app.buttons["notebookMap"].tap()
         XCTAssertTrue(app.maps.firstMatch.waitForExistence(timeout: 10))
     }
