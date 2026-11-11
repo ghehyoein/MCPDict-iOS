@@ -86,6 +86,7 @@ struct CustomSchemeManager: View {
                 }
                 .swipeActions(edge: .trailing) {
                     Button(ui("刪除"), role: .destructive) { remove([scheme.name]) }
+                        .tint(.red)
                         .disabled(state.custom.branchNames([scheme.name]).count == state.custom.schemes.count)
                 }
             }.onMove { source, destination in
@@ -210,7 +211,7 @@ struct CustomSchemeEditor: View {
                     }.fixedSize().buttonStyle(.borderless)
                 }
             }
-            Section(ui("自選分區")) {
+            Section(ui("自選子分區")) {
                 ForEach(children) { child in
                     HStack {
                     if selecting {
@@ -229,6 +230,7 @@ struct CustomSchemeEditor: View {
                     .contextMenu { Button(ui("複製")) { state.custom.duplicateBranches([child.name], suffix: ui("副本")) } }
                     .swipeActions(edge: .trailing) {
                         Button(ui("刪除"), role: .destructive) { removeChildren([child.name]) }
+                            .tint(.red)
                     }
                 }.onMove { source, destination in
                     for child in children where !state.custom.schemes.contains(where: { $0.name == child.name }) { state.custom.schemes.append(child) }
