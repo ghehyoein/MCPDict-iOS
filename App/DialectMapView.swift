@@ -118,6 +118,10 @@ struct DialectMapView: View {
                 if menuOpen { Color.clear.contentShape(Rectangle()).onTapGesture { menuOpen = false } }
             }
         }
+        .queryHistoryOverlay("map", presented: Binding(get: { inputFocused }, set: { inputFocused = $0 })) { entry in
+            character = entry.query; mode = SearchMode(rawValue: entry.mode) ?? .character
+            Task { await query() }
+        }
         .onAppear { rebuildMapTables(); receiveHandoff() }
         .onChange(of: menuOpen) { _, open in if open { inputFocused = false } }
         .onChange(of: model.mapHandoff?.id) { _, _ in receiveHandoff() }
@@ -155,13 +159,7 @@ struct DialectMapView: View {
                     ReadingMarkerHelpButton()
                     Button(ui("查字")) { Task { await query() } }.disabled(querying).buttonStyle(.borderless)
                     Button(ui("清除")) { character = ""; resetResults() }.foregroundStyle(.red).buttonStyle(.borderless)
-                }.padding(.horizontal)
-                if inputFocused {
-                    QueryHistoryDropdown(namespace: "map") { entry in
-                        character = entry.query; mode = SearchMode(rawValue: entry.mode) ?? .character
-                        Task { await query() }
-                    }.padding(.horizontal)
-                }
+                }.queryHistoryAnchor("map").padding(.horizontal)
         }
     }
     @ViewBuilder private var variantBar: some View {

@@ -564,12 +564,7 @@ struct SearchView: View {
                             .focused($searchFocused).onSubmit { submitQuery() }
                         ReadingMarkerHelpButton()
                         Button(ui("查詢")) { submitQuery() }.disabled(model.searching).buttonStyle(.borderless)
-                    }
-                    if searchFocused {
-                        QueryHistoryDropdown(namespace: "dictionary") { entry in
-                            model.query = entry.query; model.mode = SearchMode(rawValue: entry.mode) ?? .character; submitQuery()
-                        }
-                    }
+                    }.queryHistoryAnchor("dictionary")
                     LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { model.selectedLanguageNames }, set: { model.selectLanguages($0) }), state: selector, entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } })
                 }
                 if model.searching { ProgressView(ui("查詢中…")) }
@@ -583,6 +578,9 @@ struct SearchView: View {
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
             }
             .listStyle(.plain)
+            .queryHistoryOverlay("dictionary", presented: Binding(get: { searchFocused }, set: { searchFocused = $0 })) { entry in
+                model.query = entry.query; model.mode = SearchMode(rawValue: entry.mode) ?? .character; submitQuery()
+            }
             .toolbarBackground(resultHeaderPinned ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
             .toolbarBackground(resultHeaderPinned ? .visible : .automatic, for: .navigationBar)
             .toolbarColorScheme(resultHeaderPinned ? .dark : nil, for: .navigationBar)

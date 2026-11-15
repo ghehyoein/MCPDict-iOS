@@ -9,15 +9,47 @@ final class Version0107UITests: XCTestCase {
         XCTAssertTrue(input.waitForExistence(timeout: 15))
         input.tap(); input.typeText("中")
         app.buttons["查詢"].tap()
+        let selector = app.buttons["dictionaryLanguageSelection"]
+        let originalGap = selector.frame.minY - input.frame.maxY
         input.tap()
         let history = app.buttons["history-dictionary-中"]
         XCTAssertTrue(history.waitForExistence(timeout: 5))
+        XCTAssertEqual(selector.frame.minY - input.frame.maxY, originalGap, accuracy: 2)
+        XCTAssertTrue(history.isHittable)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "dictionary-floating-history"; shot.lifetime = .keepAlways; add(shot)
         history.tap()
         XCTAssertEqual(input.value as? String, "中")
         input.tap(); app.buttons["刪除"].tap()
         XCTAssertTrue(app.alerts["是否確定刪除所有歷史記錄"].waitForExistence(timeout: 5))
         app.alerts.buttons["刪除"].tap()
         XCTAssertFalse(history.exists)
+    }
+    @MainActor func testMapHistoryFloatsAndDismissesWithoutMovingSelector() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]; app.launch()
+        XCTAssertTrue(app.tabBars.buttons["地圖"].waitForExistence(timeout: 15))
+        app.tabBars.buttons["地圖"].tap()
+        let input = app.textFields["請輸入漢字"]
+        XCTAssertTrue(input.waitForExistence(timeout: 10))
+        input.tap(); input.typeText("好"); app.buttons["查字"].tap()
+        let selector = app.buttons["mapLanguageSelection"]
+        let gap = selector.frame.minY - input.frame.maxY
+        input.tap()
+        let history = app.buttons["history-map-好"]
+        XCTAssertTrue(history.waitForExistence(timeout: 5))
+        XCTAssertEqual(selector.frame.minY - input.frame.maxY, gap, accuracy: 2)
+        XCTAssertFalse(app.buttons["history-dictionary-中"].exists)
+        let shot = XCTAttachment(screenshot: app.screenshot()); shot.name = "map-floating-history"; shot.lifetime = .keepAlways; add(shot)
+        // A tap above the dropdown dismisses it without operating the control underneath.
+        app.segmentedControls.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+        XCTAssertTrue(history.waitForNonExistence(timeout: 5))
+        input.tap(); XCTAssertTrue(history.waitForExistence(timeout: 5)); history.tap()
+        XCTAssertEqual(input.value as? String, "好")
+        XCTAssertTrue(history.waitForNonExistence(timeout: 5))
+        input.tap(); XCTAssertTrue(history.waitForExistence(timeout: 5))
+        let cell = app.cells.containing(.button, identifier: "history-map-好").firstMatch
+        cell.swipeLeft(); cell.buttons["刪除"].tap()
+        XCTAssertTrue(history.waitForNonExistence(timeout: 5))
     }
     @MainActor func testReadingMarkerHelpInDictionaryAndMap() {
         let app = XCUIApplication()
