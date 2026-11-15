@@ -109,4 +109,36 @@ final class DownloadCheckpointTests: XCTestCase {
         let restored = try await store.restore()
         XCTAssertEqual(restored?.databaseFile, previous.databaseFile)
     }
+
+    func testCancelInterruptsLargeSQLUpdateAndKeepsCommittedTables() async throws {
+        let root = try directory(), sources = try directory()
+        let (old, oldFile) = try package("甲", id: 1, text: String(repeating: "中\told1\t保留\n", count: 250_000), root: sources)
+        let previous = try initial(old, shard: oldFile, root: root)
+        let (done, doneFile) = try package("乙", id: 2, text: "中\tdone1\t\n", root: sources)
+        let (update, updateFile) = try package("甲", id: 1, text: "中\tnew1\t\n", root: sources)
+        let enteringSQL = expectation(description: "large update started")
+        let task = Task.detached {
+            let checkpoint = try TableDownloadCheckpoint(root: root, previous: previous, version: "new")
+            defer { checkpoint.close() }
+            try checkpoint.merge(done, from: doneFile)
+            enteringSQL.fulfill()
+            try checkpoint.merge(update, from: updateFile)
+        }
+        await fulfillment(of: [enteringSQL], timeout: 15)
+        // Cancel from another task while SQLite is deleting/reindexing 250k rows.
+        try await Task.sleep(nanoseconds: 50_000_000)
+        let cancelledAt = Date()
+        task.cancel()
+        do { try await task.value; XCTFail("Large SQL update must be interrupted") }
+        catch is CancellationError { }
+        let responseSeconds = Date().timeIntervalSince(cancelledAt)
+        XCTAssertLessThan(responseSeconds, 15)
+        let store = TableStore(repository: DictionaryRepository(), root: root, bundledRoot: nil)
+        let restored = try await store.restore()
+        XCTAssertEqual(restored?.tables.count, 2)
+        XCTAssertEqual(restored?.tables.first { $0.id == old.id }?.sha256, old.sha256)
+        let db = try SQLiteConnection(url: root.appendingPathComponent(try XCTUnwrap(restored?.databaseFile)))
+        XCTAssertEqual(try db.rows("SELECT count(*) AS n FROM langs WHERE 語言='甲'").first?["n"], "250000")
+        print("DOWNLOAD_CANCEL_RESPONSE seconds=\(responseSeconds)")
+    }
 }
