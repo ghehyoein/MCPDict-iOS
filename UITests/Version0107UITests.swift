@@ -1,6 +1,24 @@
 import XCTest
 
 final class Version0107UITests: XCTestCase {
+    @MainActor func testQueryHistorySelectionAndClear() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-fixture", "--reset-selection"]
+        app.launch()
+        let input = app.textFields["漢字、U+4E2D 或原始讀音"]
+        XCTAssertTrue(input.waitForExistence(timeout: 15))
+        input.tap(); input.typeText("中")
+        app.buttons["查詢"].tap()
+        input.tap()
+        let history = app.buttons["history-dictionary-中"]
+        XCTAssertTrue(history.waitForExistence(timeout: 5))
+        history.tap()
+        XCTAssertEqual(input.value as? String, "中")
+        input.tap(); app.buttons["刪除"].tap()
+        XCTAssertTrue(app.alerts["是否確定刪除所有歷史記錄"].waitForExistence(timeout: 5))
+        app.alerts.buttons["刪除"].tap()
+        XCTAssertFalse(history.exists)
+    }
     @MainActor func testReadingMarkerHelpInDictionaryAndMap() {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-fixture", "--reset-selection"]

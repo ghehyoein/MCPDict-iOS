@@ -6,7 +6,7 @@ struct PronunciationFlow: Layout {
     }
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         let (_, points) = arrange(width: bounds.width, subviews: subviews)
-        for (view, point) in zip(subviews, points) { view.place(at: CGPoint(x: bounds.minX + point.x, y: bounds.minY + point.y), proposal: .unspecified) }
+        for (view, point) in zip(subviews, points) { view.place(at: CGPoint(x: bounds.minX + point.x, y: bounds.minY + point.y), proposal: ProposedViewSize(width: min(bounds.width, view.sizeThatFits(.unspecified).width), height: view.sizeThatFits(.unspecified).height)) }
     }
     private func arrange(width: CGFloat, subviews: Subviews) -> (CGSize, [CGPoint]) {
         var x: CGFloat = 0, y: CGFloat = 0, height: CGFloat = 0, maximum: CGFloat = 0
@@ -17,6 +17,6 @@ struct PronunciationFlow: Layout {
             points.append(CGPoint(x: x, y: y)); x += size.width + 8
             maximum = max(maximum, x - 8); height = max(height, size.height)
         }
-        return (CGSize(width: maximum, height: y + height), points)
+        return (CGSize(width: min(width, maximum), height: y + height), points)
     }
 }

@@ -31,6 +31,8 @@ enum GlyphStandard: String, CaseIterable, Identifiable {
         return font
     }
     private static func regionalFont(_ base: UIFont, standard: Self) -> UIFont {
+        let key = "regional|\(base.fontName)|\(base.pointSize)|\(base.fontDescriptor.symbolicTraits.rawValue)|\(standard.language)" as NSString
+        if let cached = fontCache.object(forKey: key) { return cached }
         let serif = base.fontName.contains("NewYork") || base.fontName.contains("Times") || base.fontName.contains("Songti") || base.fontName.contains("Mincho")
         let names: [String]
         switch standard {
@@ -42,7 +44,9 @@ enum GlyphStandard: String, CaseIterable, Identifiable {
         }
         let chosen = names.compactMap { UIFont(name: $0, size: base.pointSize) }.first ?? base
         let traits = base.fontDescriptor.symbolicTraits.intersection([.traitBold, .traitItalic])
-        return UIFont(descriptor: chosen.fontDescriptor.withSymbolicTraits(traits) ?? chosen.fontDescriptor, size: base.pointSize)
+        let result = UIFont(descriptor: chosen.fontDescriptor.withSymbolicTraits(traits) ?? chosen.fontDescriptor, size: base.pointSize)
+        fontCache.setObject(result, forKey: key)
+        return result
     }
     static func attributed(_ string: String, font: UIFont, standard: Self = .current) -> NSMutableAttributedString {
         let value = NSMutableAttributedString(string: string, attributes: [.font: font])

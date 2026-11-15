@@ -44,6 +44,19 @@ final class BundledTablesTests: XCTestCase {
         XCTAssertEqual(restored.installation.tables.count, 1)
         XCTAssertEqual(try Data(contentsOf: bundle.appendingPathComponent("bundled.db")), original)
     }
+    func testReducedBundlePreservesPreviouslyDownloadedTable() async throws {
+        let (root, bundle, catalog) = try fixture()
+        let repo = DictionaryRepository()
+        let store = TableStore(repository: repo, root: root, bundledRoot: bundle)
+        try await store.installBundledTablesIfNeeded()
+        try Data("[]".utf8).write(to: bundle.appendingPathComponent("installed-ids.json"))
+        let reopened = TableStore(repository: repo, root: root, bundledRoot: bundle)
+        try await reopened.installBundledTablesIfNeeded()
+        let installation = try await reopened.restore()
+        XCTAssertEqual(installation?.tables.map(\.id), catalog.tables.map(\.id))
+        let readings = try await repo.search("中", mode: .character, language: "甲")
+        XCTAssertEqual(readings.map(\.pronunciation), ["a1"])
+    }
     func testManualUpdateSurvivesRelaunchAndUpgrade() async throws {
         let (root, bundle, catalog) = try fixture()
         let repo = DictionaryRepository()

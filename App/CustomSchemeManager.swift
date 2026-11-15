@@ -268,7 +268,15 @@ struct CustomSchemeEditor: View {
                 LanguageDropdown(tables: model.availableTables, names: Binding(get: {
                     index.map { state.custom.schemes[$0].languages } ?? []
                 }, set: { value in
-                    if let i = index { state.custom.schemes[i].languages = value }
+                    if let i = index {
+                        var removed = state.custom.schemes[i]
+                        removed.languages.subtract(value)
+                        if !removed.languages.isEmpty {
+                            do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: [removed])) }
+                            catch { model.error = error.localizedDescription; return }
+                        }
+                        state.custom.schemes[i].languages = value
+                    }
                 }), state: model.customEditorSelection, inspect: { model.tableDetail = $0 }, showsDone: false, preservesHiddenSelection: true) {}
             }
         }.environment(\.editMode, .constant(selecting ? .active : .inactive))

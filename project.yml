@@ -28,7 +28,7 @@ targets:
       properties:
         # Reassess if adding a non-system encryption implementation.
         ITSAppUsesNonExemptEncryption: false
-        UIAppFonts: [charis.ttf, tone.ttf, plangothicp1.otf, plangothicp2.otf]
+        UIAppFonts: [charis.ttf, plangothicp1.otf, plangothicp2.otf]
         LSApplicationQueriesSchemes: [maps, iosamap, baidumap, comgooglemaps]
     settings:
       base:

@@ -10,8 +10,9 @@ struct DeletedCollection: Codable, Identifiable {
 final class RecentDeletions: ObservableObject {
     static let shared = RecentDeletions()
     @Published private(set) var items: [DeletedCollection] = []
-    private let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("recent-deletions.json")
-    init() {
+    private let url: URL
+    init(url: URL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("recent-deletions.json")) {
+        self.url = url
         if let data = try? Data(contentsOf: url) { items = (try? JSONDecoder().decode([DeletedCollection].self, from: data)) ?? [] }
         try? prune()
     }

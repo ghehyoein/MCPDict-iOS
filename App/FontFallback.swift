@@ -20,7 +20,7 @@ enum FontFallback {
             let length = scalar.utf16.count, range = NSRange(location: offset, length: length)
             let base = text.attribute(.font, at: offset, effectiveRange: nil) as? UIFont ?? .systemFont(ofSize: 17)
             let c = scalar.value
-            if (0x2E5...0x2E9).contains(c), let tone = UIFont(name: "Voces-Regular", size: base.pointSize) {
+            if (0x2E5...0x2E9).contains(c), let tone = UIFont(name: "Charis-Regular", size: base.pointSize) {
                 text.addAttribute(.font, value: tone, range: range)
             } else if !supports(base, text: String(scalar)) {
                 for name in ["Charis-Regular", "PlangothicP1", "PlangothicP2"] {

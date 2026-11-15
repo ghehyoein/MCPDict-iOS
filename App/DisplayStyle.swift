@@ -169,7 +169,12 @@ struct PronunciationView: View {
             if scrollable {
                 PronunciationFlow {
                     ForEach(Array(raw.components(separatedBy: "\t").enumerated()), id: \.offset) { _, reading in
-                        PronunciationView(raw: reading, table: table, pointSize: pointSize, scrollable: false)
+                        ViewThatFits(in: .horizontal) {
+                            PronunciationView(raw: reading, table: table, pointSize: pointSize, scrollable: false)
+                            ScrollView(.horizontal, showsIndicators: false) {
+                                PronunciationView(raw: reading, table: table, pointSize: pointSize, scrollable: false)
+                            }.fixedSize(horizontal: false, vertical: true)
+                        }
                     }
                 }
             } else { content }
