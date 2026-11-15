@@ -42,19 +42,33 @@ struct DictionaryResultTable: View {
     @State private var inspected: String?
     var body: some View {
         let index = ResultTableIndex(model.results)
-        let characters = index.characters.filter { !excluded.contains($0) }
-        let rows = languagesAsRows ? index.languages : characters
-        let columns = languagesAsRows ? characters : index.languages
+        VStack(alignment: .leading) {
+            characterSelection(index.characters)
+            grid(index)
+        }.onChange(of: index.characters) { _, _ in excluded = [] }
+            .sheet(item: $inspected) { char in
+                NavigationStack {
+                    List { AnalysisCharacterRow(character: char) }
+                        .toolbar { Button(ui("完成")) { inspected = nil } }
+                }
+            }
+    }
+    private func characterSelection(_ characters: [String]) -> some View {
         ScrollView(.horizontal) {
             HStack {
-                ForEach(index.characters, id: \.self) { character in
+                ForEach(characters, id: \.self) { character in
                     Button { if !excluded.insert(character).inserted { excluded.remove(character) } } label: {
                         Label(character, systemImage: excluded.contains(character) ? "square" : "checkmark.square.fill")
                     }.buttonStyle(.borderless)
                 }
             }
         }
-        ScrollView([.horizontal, .vertical]) {
+    }
+    private func grid(_ index: ResultTableIndex) -> some View {
+        let characters = index.characters.filter { !excluded.contains($0) }
+        let rows = languagesAsRows ? index.languages : characters
+        let columns = languagesAsRows ? characters : index.languages
+        return ScrollView([.horizontal, .vertical]) {
             LazyVStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top, spacing: 0) {
                     Text("").frame(width: 150)
@@ -64,26 +78,26 @@ struct DictionaryResultTable: View {
                     HStack(alignment: .top, spacing: 0) {
                         header(row, language: languagesAsRows).frame(width: 134).padding(8)
                         ForEach(columns, id: \.self) { column in
-                            let language = languagesAsRows ? row : column
-                            let character = languagesAsRows ? column : row
-                            VStack(alignment: .leading, spacing: 6) {
-                                let readings = index.cells[language]?[character] ?? []
-                                if readings.isEmpty { Text("—").foregroundStyle(.secondary) }
-                                ForEach(readings) { reading in
-                                    HStack(alignment: .top) { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: language), wrapReadings: true) }
-                                    if !reading.displayNote.isEmpty { SystemText(reading.displayNote, color: .secondaryLabel) }
-                                }
-                            }.frame(width: 180, alignment: .leading).padding(8)
+                            cell(index, language: languagesAsRows ? row : column, character: languagesAsRows ? column : row)
                         }
                     }
                     Divider()
                 }
             }
         }.frame(height: max(240, viewportHeight * 0.65)).accessibilityIdentifier("dictionary-result-table")
-            .onChange(of: index.characters) { _, _ in excluded = [] }
-            .sheet(item: $inspected) { char in
-                NavigationStack { List { AnalysisCharacterRow(character: char) }.toolbar { Button(ui("完成")) { inspected = nil } } }
+    }
+    private func cell(_ index: ResultTableIndex, language: String, character: String) -> some View {
+        let readings = index.cells[language]?[character] ?? []
+        return VStack(alignment: .leading, spacing: 6) {
+            if readings.isEmpty { Text("—").foregroundStyle(.secondary) }
+            ForEach(readings) { reading in
+                HStack(alignment: .top) {
+                    FavoriteButton(reading: reading)
+                    PronunciationView(raw: reading.pronunciation, table: model.table(named: language), wrapReadings: true)
+                }
+                if !reading.displayNote.isEmpty { SystemText(reading.displayNote, color: .secondaryLabel) }
             }
+        }.frame(width: 180, alignment: .leading).padding(8)
     }
     @ViewBuilder private func header(_ value: String, language: Bool) -> some View {
         if language {
