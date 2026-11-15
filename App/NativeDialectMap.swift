@@ -194,6 +194,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private var readingPreview: MapReadingPreview?
     private var renderedReading = NSAttributedString(string: "")
     private var readingFrame = CGRect.zero
+    private var lastReadingInteraction: CFTimeInterval = 0
     private var readingNeedsScroll = false
     private func ensureReadingPreview() {
         guard readingPreview == nil else { return }
@@ -245,7 +246,9 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         return nil
     }
     func releaseInactiveTextView() {
-        guard let text = readingView, !text.isFirstResponder, text.selectedRange.length == 0, text.contentOffset == .zero else { return }
+        guard let text = readingView, !text.isFirstResponder, text.selectedRange.length == 0, text.contentOffset == .zero,
+              CACurrentMediaTime() - lastReadingInteraction > 2,
+              !(text.gestureRecognizers ?? []).contains(where: { $0.state == .began || $0.state == .changed }) else { return }
         text.removeFromSuperview(); readingView = nil; readingPreview?.isHidden = false
         if let readingPreview { accessibilityElements = [readingPreview, nameButton] }
         (superviewOfMap() as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
@@ -292,6 +295,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         // Reject off-label touches in O(1), without walking TextKit descendants.
         guard bounds.contains(point) || selecting else { return nil }
         if !readingFrame.isEmpty, readingFrame.contains(point) || selecting {
+            lastReadingInteraction = CACurrentMediaTime()
             let text = readingText
             if let hit = text.hitTest(convert(point, to: text), with: event) { return hit }
         }

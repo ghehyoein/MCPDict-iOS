@@ -162,8 +162,14 @@ actor TableStore {
     // The active combined database owns these readings after the index commits.
     // Per-table imports are staging files, not a second permanent installation.
     private func removeCommittedShards(_ state: TableInstallation) {
-        guard state.databaseFile != nil else { return }
-        for table in state.tables { try? FileManager.default.removeItem(at: root.appendingPathComponent(table.localName)) }
+        guard let file = state.databaseFile else { return }
+        let shards = state.tables.map { root.appendingPathComponent($0.localName) }.filter { FileManager.default.fileExists(atPath: $0.path) }
+        guard !shards.isEmpty else { return }
+        // A damaged legacy primary database must not cause its staging copies to
+        // be discarded. This one-time check runs only while duplicates exist.
+        do { try SQLiteConnection(url: root.appendingPathComponent(file)).validate(requireSample: false) }
+        catch { return }
+        for shard in shards { try? FileManager.default.removeItem(at: shard) }
     }
     func catalog() async throws -> TableCatalog {
         try await refreshCatalog().catalog
