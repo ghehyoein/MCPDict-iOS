@@ -42,7 +42,25 @@ struct NativeDialectMap: UIViewRepresentable {
         var centerChanged: (TableLocation) -> Void = { _ in }
         var choose: (String) -> Void
         init(choose: @escaping (String) -> Void) { self.choose = choose }
+        // Keep a generous border for labels whose anchor is outside the screen.
+        // MapKit's spatial index restores only nearby drawing buffers while panning.
+        private func drawingRect(_ map: MKMapView) -> MKMapRect {
+            let rect = map.visibleMapRect
+            return rect.insetBy(dx: -rect.width * 300 / max(1, map.bounds.width),
+                                dy: -rect.height * 300 / max(1, map.bounds.height))
+        }
+        func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+            for annotation in mapView.annotations(in: drawingRect(mapView)) {
+                guard let point = annotation.base as? PointAnnotation else { continue }
+                (mapView.view(for: point) as? LabelAnnotationView)?.setDrawingActive(true)
+            }
+        }
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
+            let nearby = drawingRect(mapView)
+            for annotation in mapView.annotations {
+                guard let point = annotation as? PointAnnotation else { continue }
+                (mapView.view(for: point) as? LabelAnnotationView)?.setDrawingActive(nearby.contains(MKMapPoint(point.coordinate)))
+            }
             (mapView as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
             for annotation in mapView.annotations(in: mapView.visibleMapRect) {
                 guard let point = annotation.base as? PointAnnotation,
@@ -114,6 +132,7 @@ struct NativeDialectMap: UIViewRepresentable {
             view.centerOffset = .zero
             view.canShowCallout = false
             view.configure(point.point, fontSize: readingSize, labelSize: fontSize) { [weak self] in self?.choose(point.point.id) }
+            view.setDrawingActive(drawingRect(mapView).contains(MKMapPoint(point.coordinate)))
             return view
         }
 
@@ -232,6 +251,7 @@ private final class MapLabelElement: UIAccessibilityElement {
 final class LabelAnnotationView: MKAnnotationView {
     private let nameCanvas = MapLabelCanvas(centered: true, radius: 5, inset: 0)
     private var readingCanvas: MapLabelCanvas?
+    private var drawingActive = true
     private var button: UIButton?
     private var nameText = NSAttributedString(string: "")
     private var nameFrame = CGRect.zero
@@ -319,9 +339,22 @@ final class LabelAnnotationView: MKAnnotationView {
         addSubview(nameCanvas)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    func setDrawingActive(_ active: Bool) {
+        guard drawingActive != active else { return }
+        drawingActive = active
+        nameCanvas.isHidden = !active || button != nil
+        readingCanvas?.isHidden = !active || readingView != nil
+        if active {
+            nameCanvas.setNeedsDisplay(); readingCanvas?.setNeedsDisplay()
+        } else {
+            // Reconstructible pixels only. Keep all annotations, complete text,
+            // accessibility and an active native text selection intact.
+            nameCanvas.layer.contents = nil; readingCanvas?.layer.contents = nil
+        }
+    }
     private func updateCanvases(redraw: Bool) {
         nameCanvas.text = nameText; nameCanvas.colors = colors; nameCanvas.frame = nameFrame
-        nameCanvas.isHidden = button != nil
+        nameCanvas.isHidden = !drawingActive || button != nil
         if readingFrame.isEmpty {
             readingCanvas?.removeFromSuperview(); readingCanvas = nil
         } else {
@@ -331,7 +364,7 @@ final class LabelAnnotationView: MKAnnotationView {
                 insertSubview(canvas, at: 0); readingCanvas = canvas
             }
             readingCanvas?.text = previewText; readingCanvas?.frame = readingFrame
-            readingCanvas?.isHidden = readingView != nil
+            readingCanvas?.isHidden = !drawingActive || readingView != nil
         }
         if redraw { nameCanvas.setNeedsDisplay(); readingCanvas?.setNeedsDisplay() }
     }
@@ -357,13 +390,13 @@ final class LabelAnnotationView: MKAnnotationView {
         guard let text = readingView, !text.isFirstResponder, text.selectedRange.length == 0, text.contentOffset == .zero,
               CACurrentMediaTime() - lastReadingInteraction > 2,
               !(text.gestureRecognizers ?? []).contains(where: { $0.state == .began || $0.state == .changed }) else { return }
-        text.removeFromSuperview(); readingView = nil; readingCanvas?.isHidden = false; updateAccessibility()
+        text.removeFromSuperview(); readingView = nil; readingCanvas?.isHidden = !drawingActive; updateAccessibility()
     }
     override func prepareForReuse() {
         super.prepareForReuse()
         readingView?.resignFirstResponder(); readingView?.removeFromSuperview(); readingView = nil
         button?.removeFromSuperview(); button = nil; buttonGradient = nil
-        nameCanvas.isHidden = false; readingCanvas?.isHidden = false; updateAccessibility()
+        nameCanvas.isHidden = !drawingActive; readingCanvas?.isHidden = !drawingActive; updateAccessibility()
     }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
         self.choose = choose

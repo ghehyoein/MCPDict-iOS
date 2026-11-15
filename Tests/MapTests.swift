@@ -138,6 +138,11 @@ final class MapTests: XCTestCase {
         var opened = false
         label.configure(point, fontSize: 5) { opened = true }
         XCTAssertTrue(label.subviews.allSatisfy { !($0 is UIButton) && !($0 is UITextView) })
+        label.setDrawingActive(false)
+        XCTAssertTrue(label.subviews.allSatisfy(\.isHidden))
+        XCTAssertTrue(label.subviews.allSatisfy { $0.layer.contents == nil })
+        label.setDrawingActive(true)
+        XCTAssertTrue(label.subviews.allSatisfy { !$0.isHidden })
         let elements = try XCTUnwrap(label.accessibilityElements)
         let text = try XCTUnwrap(elements.first as? UIAccessibilityElement)
         let name = try XCTUnwrap(elements.last as? UIAccessibilityElement)
