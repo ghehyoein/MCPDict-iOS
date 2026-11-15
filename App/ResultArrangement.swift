@@ -46,10 +46,12 @@ struct DictionaryResultTable: View {
             characterSelection(index.characters)
             grid(index)
         }.onChange(of: index.characters) { _, _ in excluded = [] }
-            .sheet(item: $inspected) { char in
-                NavigationStack {
-                    List { AnalysisCharacterRow(character: char) }
-                        .toolbar { Button(ui("完成")) { inspected = nil } }
+            .sheet(isPresented: Binding(get: { inspected != nil }, set: { if !$0 { inspected = nil } })) {
+                if let char = inspected {
+                    NavigationStack {
+                        List { AnalysisCharacterRow(character: char) }
+                            .toolbar { Button(ui("完成")) { inspected = nil } }
+                    }
                 }
             }
     }
