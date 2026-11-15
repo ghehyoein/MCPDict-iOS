@@ -51,7 +51,12 @@ final class Version0107UITests: XCTestCase {
         cell.swipeLeft()
         // Native List can complete a full swipe immediately, or reveal its action.
         if history.exists {
-            cell.buttons.matching(NSPredicate(format: "label IN %@", ["刪除", "删除", "Delete"])).firstMatch.tap()
+            // UICollectionView exposes its swipe action beside the cell, not inside it.
+            let rowFrame = cell.frame
+            let action = app.buttons.matching(NSPredicate(format: "label IN %@", ["刪除", "删除", "Delete"]))
+                .allElementsBoundByIndex.first { $0.isHittable && abs($0.frame.midY - rowFrame.midY) < rowFrame.height / 2 }
+            XCTAssertNotNil(action, app.debugDescription)
+            action?.tap()
         }
         XCTAssertTrue(history.waitForNonExistence(timeout: 5))
     }
