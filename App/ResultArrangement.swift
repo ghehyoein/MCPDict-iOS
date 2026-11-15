@@ -38,10 +38,22 @@ struct DictionaryResultTable: View {
     @EnvironmentObject var model: AppModel
     let languagesAsRows: Bool
     var viewportHeight: CGFloat = 500
+    @State private var excluded = Set<String>()
+    @State private var inspected: String?
     var body: some View {
         let index = ResultTableIndex(model.results)
-        let rows = languagesAsRows ? index.languages : index.characters
-        let columns = languagesAsRows ? index.characters : index.languages
+        let characters = index.characters.filter { !excluded.contains($0) }
+        let rows = languagesAsRows ? index.languages : characters
+        let columns = languagesAsRows ? characters : index.languages
+        ScrollView(.horizontal) {
+            HStack {
+                ForEach(index.characters, id: \.self) { character in
+                    Button { if !excluded.insert(character).inserted { excluded.remove(character) } } label: {
+                        Label(character, systemImage: excluded.contains(character) ? "square" : "checkmark.square.fill")
+                    }.buttonStyle(.borderless)
+                }
+            }
+        }
         ScrollView([.horizontal, .vertical]) {
             LazyVStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top, spacing: 0) {
@@ -68,10 +80,14 @@ struct DictionaryResultTable: View {
                 }
             }
         }.frame(height: max(240, viewportHeight * 0.65)).accessibilityIdentifier("dictionary-result-table")
+            .onChange(of: index.characters) { _, _ in excluded = [] }
+            .sheet(item: $inspected) { char in
+                NavigationStack { List { AnalysisCharacterRow(character: char) }.toolbar { Button(ui("完成")) { inspected = nil } } }
+            }
     }
     @ViewBuilder private func header(_ value: String, language: Bool) -> some View {
         if language {
             Button { model.tableDetail = model.table(named: value) } label: { LanguageBadge(name: value, table: model.table(named: value)) }.buttonStyle(.plain)
-        } else { SystemText(value).font(.title3) }
+        } else { Button { inspected = value } label: { Text(value).font(.title3) }.buttonStyle(.borderless) }
     }
 }

@@ -1398,6 +1398,58 @@
   // Native iOS presentation calls the same parsing, grouping and comparison functions.
   globalThis.nativeAnalysis = (input) => {
     const dialects = (input.dialects || []).map(parseDialectRow);
+    if (input.kind === 'correspondence' || input.kind === 'soundClasses') {
+      const byLanguage = new Map(), dialectIndex = new Map(dialects.map(d=>[d.shortName,d]));
+      for (const row of input.rows || []) {
+        const name = row.language;
+        if (!byLanguage.has(name)) byLanguage.set(name, new Map());
+        const index = byLanguage.get(name), dialect = dialectIndex.get(name) || {toneConfig:{}};
+        // Use raw tone codes, independent of the user's display settings.
+        const values = [];
+        for (const reading of String(row.reading || '').split(/\t+/u)) {
+          const clean = reading.replace(/\{[^}]*\}|〚[^〛]*〛|\([^)]*\)/gu, '').trim();
+          const syllables = clean.split(/[\s\u00a0·‧.]+|(?<=[\p{L}\p{M}\p{N}])-+(?=\p{L})/u).filter(Boolean);
+          if (input.ignoreMultiple && syllables.length > 1) continue;
+          for (const syllable of syllables) {
+            const raw=syllable.replace(/^[*`]+|[*`+?@=\-]+$/gu,'');
+            if (!/\p{L}/u.test(raw)) continue;
+            const parts=decomposeModern(raw,dialect,{glidesAsFinal:true});
+            // Preserve distinct raw categories such as 2a / 2b even with equal tone names.
+            if (input.mode === 'tone') {
+              const code=raw.match(/^.+?([0-9]{1,2}[a-z=]?)$/u);
+              if (code) parts.tone=code[1];
+            }
+            values.push(getModernModeValue(parts,input.mode,dialect));
+          }
+        }
+        for (const char of Array.from(String(row.characters || '')).filter(c => /\p{Script=Han}/u.test(c))) {
+          if (!index.has(char)) index.set(char,new Set());
+          for (const value of values) index.get(char).add(value);
+        }
+      }
+      if (input.kind === 'soundClasses') {
+        const groups = new Map();
+        for (const [name,index] of byLanguage) for (const value of index.get(input.character) || []) {
+          if (!groups.has(value)) groups.set(value,new Set());
+          groups.get(value).add(name);
+        }
+        return [...groups].sort((a,b)=>a[0].localeCompare(b[0])).map(([value,names])=>({value,names:[...names].sort()}));
+      }
+      const left=byLanguage.get(input.left) || new Map(), right=byLanguage.get(input.right) || new Map(), links=new Map();
+      for (const [char,values] of left) for (const a of values) for (const b of right.get(char) || []) {
+        const key=JSON.stringify([a,b]);
+        if (!links.has(key)) links.set(key,{left:a,right:b,chars:new Set()});
+        links.get(key).chars.add(char);
+      }
+      const nodes=[new Map(),new Map()];
+      for (const link of links.values()) for (const [i,key] of [link.left,link.right].entries()) {
+        if (!nodes[i].has(key)) nodes[i].set(key,new Set());
+        for (const char of link.chars) nodes[i].get(key).add(char);
+      }
+      return [...links.values()].filter(g=>g.chars.size >= (input.minimumLink || 1) && nodes[0].get(g.left).size >= (input.minimumNode || 1) && nodes[1].get(g.right).size >= (input.minimumNode || 1))
+        .sort((a,b)=>b.chars.size-a.chars.size||a.left.localeCompare(b.left)||a.right.localeCompare(b.right))
+        .map(g=>({...g,chars:[...g.chars].sort()}));
+    }
     if (input.kind === 'compare') {
       const units = input.units || input.chars.map(char => [char]);
       const chars = [...new Set(units.flat())], byDialect = new Map();

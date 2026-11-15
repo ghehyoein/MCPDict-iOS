@@ -2,6 +2,7 @@ import SwiftUI
 
 struct YindianToolsView: View {
     var tool: BuiltinAnalysisTool = .evolution
+    var reverse = false
     @EnvironmentObject private var model: AppModel
     @StateObject private var selector = LanguageSelectionState(namespace: "evolution")
     @StateObject private var comparisonSelector = LanguageSelectionState(namespace: "comparisonResults")
@@ -96,7 +97,7 @@ struct YindianToolsView: View {
             }.disabled(busy)
             if tool == .evolution { evolutionFilters.disabled(busy); evolutionResults }
             else { comparisonResults }
-        }.navigationTitle(ui(tool.title)).navigationBarTitleDisplayMode(.inline)
+        }.navigationTitle(ui(reverse ? "方言→中古" : tool.title)).navigationBarTitleDisplayMode(.inline)
             .accessibilityIdentifier("nativeAnalysisView")
             .task { if tool == .evolution { mode = "initial"; await loadFilters() } }
             .task(id: input) { if tool == .compare { await resolveCharacters() } }
@@ -110,7 +111,7 @@ struct YindianToolsView: View {
                         Section(ui("音韻地位")) { ForEach(group.subtypes.sorted(), id: \.self) { SystemText($0) } }
                         Section(ui("發音")) { ForEach(group.readings.sorted(), id: \.self) { SystemText($0) } }
                         Section(ui("例字")) { SystemText(group.chars.joined(separator: " ")) }
-                    }.navigationTitle(group.oldValue + " → " + group.modernValue)
+                    }.navigationTitle(reverse ? group.modernValue + " → " + group.oldValue : group.oldValue + " → " + group.modernValue)
                         .navigationBarTitleDisplayMode(.inline).toolbar { Button(ui("完成")) { detail = nil } }
                 }
             }
@@ -176,7 +177,7 @@ struct YindianToolsView: View {
                 ForEach(evolution.filter { search.isEmpty || InterfaceLanguage.matches([$0.oldValue,$0.modernValue,$0.chars.joined(),$0.readings.joined(),$0.subtypes.joined()].joined(), search) }) { group in
                     Button { detail = group } label: {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(group.oldValue + " → " + group.modernValue).font(.headline)
+                            Text(reverse ? group.modernValue + " → " + group.oldValue : group.oldValue + " → " + group.modernValue).font(.headline)
                             Text("\(ui("字數"))：\(group.chars.count) · \(ui("涉及音韻地位數"))：\(group.positions.count)").foregroundStyle(.secondary)
                             Text(group.chars.prefix(22).joined() + (group.chars.count > 22 ? " … +\(group.chars.count - 22)" : ""))
                             Text(ui("查看詳情")).foregroundStyle(AppAccent.color)
@@ -305,6 +306,7 @@ struct YindianToolsView: View {
                 let input: [String: Any] = ["kind":"evolution","dialects":[dialect(table)],"guangyun":try await middleRows(),"rows":rows.map { ["漢字":$0.characters,"音標":display($0)] },"dimension":dimension,"mode":mode,"glides":glides,"filters":filters.mapValues { Array($0) }]
                 let data = try await NativeAnalysisEngine.run(JSONSerialization.data(withJSONObject: input))
                 evolution = try JSONDecoder().decode([EvolutionGroup].self, from: data)
+                if reverse { evolution.sort { ($0.modernValue, $0.oldValue) < ($1.modernValue, $1.oldValue) } }
                 evolutionCSV = EvolutionExportDocument.csv(groups: evolution, language: table.fullName,
                     dimension: ui(dimensions.first { $0.0 == dimension }?.1 ?? dimension),
                     mode: ui(modes.first { $0.0 == mode }?.1 ?? mode))

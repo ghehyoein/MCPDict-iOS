@@ -1341,3 +1341,33 @@ Clear cache
 
 [快取已清理]
 Cache cleared
+
+[方言→中古]
+Dialect → Middle Chinese
+
+[兩地對應]
+Correspondences between two languages
+
+[單字音類]
+Sound classes by character
+
+[連線最少字數]
+Minimum characters per link
+
+[節點最少字數]
+Minimum characters per node
+
+[忽略多音節讀音]
+Ignore multisyllabic readings
+
+[生成桑基圖]
+Generate Sankey diagram
+
+[桑基圖]
+Sankey diagram
+
+[沒有符合條件的結果。]
+No results match the conditions.
+
+[請輸入漢字。]
+Enter a character.
