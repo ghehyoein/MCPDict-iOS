@@ -619,7 +619,7 @@ struct SearchView: View {
                                 ScrollView(.horizontal) {
                                     HStack {
                                         ForEach(chars, id: \.self) { char in
-                                            Button(char) { selectedCharacter = char }.buttonStyle(.bordered).tint(char == current ? AppAccent.color : .gray)
+                                            Button { selectedCharacter = char } label: { GlyphChoiceText(char) }.buttonStyle(.bordered).tint(char == current ? AppAccent.color : .gray)
                                         }
                                     }
                                 }

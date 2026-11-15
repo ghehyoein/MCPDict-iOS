@@ -1,6 +1,7 @@
 import XCTest
 import UIKit
 import MapKit
+import CoreText
 @testable import MCPDictIOS
 
 final class Version0107ExpansionTests: XCTestCase {
@@ -51,6 +52,18 @@ final class Version0107ExpansionTests: XCTestCase {
         for _ in 0..<10 { coordinator.update(map, points: points, fit: 0, revision: revision) }
         XCTAssertEqual(Set(map.annotations.map { ObjectIdentifier($0 as AnyObject) }), before)
         XCTAssertEqual(map.annotations.count, 3000)
+    }
+    func testRareGlyphAndConnectedToneRemainOriginalText() {
+        let sample = "\u{30EDD}˥˧"
+        let text = GlyphStandard.attributed(sample, font: .systemFont(ofSize: 20))
+        XCTAssertEqual(text.string, sample)
+        XCTAssertEqual((text.attribute(.font, at: 2, effectiveRange: nil) as? UIFont)?.fontName, "Charis-Regular")
+        let line = CTLineCreateWithAttributedString(text as CFAttributedString)
+        for run in CTLineGetGlyphRuns(line) as! [CTRun] {
+            var glyphs = [CGGlyph](repeating: 0, count: CTRunGetGlyphCount(run))
+            CTRunGetGlyphs(run, CFRange(location: 0, length: 0), &glyphs)
+            XCTAssertFalse(glyphs.contains(0))
+        }
     }
     func testBundledFontsAreRegistered() {
         for name in ["Charis-Regular", "PlangothicP1", "PlangothicP2"] { XCTAssertNotNil(UIFont(name: name, size: 17), name) }

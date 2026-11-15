@@ -10,12 +10,12 @@ struct NoteVariantPicker: View {
             HStack {
                 ForEach(Array(choices.enumerated()), id: \.offset) { index, variants in
                     ForEach(variants, id: \.self) { variant in
-                        Button(variant) {
+                        Button {
                             var characters = query.map(String.init)
                             guard characters.indices.contains(index) else { return }
                             characters[index] = variant
                             select(characters.joined())
-                        }.buttonStyle(.bordered)
+                        } label: { GlyphChoiceText(variant) }.buttonStyle(.bordered)
                             .tint(inputCharacters.indices.contains(index) && String(inputCharacters[index]) == variant ? AppAccent.color : .gray)
                     }
                     if index + 1 < choices.count { Divider() }

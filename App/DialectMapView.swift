@@ -170,7 +170,7 @@ struct DialectMapView: View {
                     ScrollView(.horizontal) {
                         HStack {
                             ForEach(variants, id: \.self) { variant in
-                                Button(variant) { activeCharacter = variant }
+                                Button { activeCharacter = variant } label: { GlyphChoiceText(variant) }
                                     .buttonStyle(.bordered).tint(variant == activeCharacter ? AppAccent.color : .gray)
                             }
                         }.padding(.horizontal)
