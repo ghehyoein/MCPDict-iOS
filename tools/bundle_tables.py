@@ -60,7 +60,7 @@ def build(checkout, output):
     from build_guess_characters import build_guess_characters
     build_guess_characters(checkout, output)
     db = sqlite3.connect(output/'bundled.db')
-    db.executescript("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋, tokenize='unicode61 remove_diacritics 0'); CREATE VIRTUAL TABLE info USING fts5(簡稱, 語言); CREATE VIRTUAL TABLE mcpdict USING fts5(漢字);")
+    db.executescript("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋, tokenize='unicode61 remove_diacritics 0', columnsize=0); CREATE VIRTUAL TABLE info USING fts5(簡稱, 語言); CREATE VIRTUAL TABLE mcpdict USING fts5(漢字);")
     for file in sorted(source.glob('*.tsv')):
         name = file.stem
         if name not in details or not file.stat().st_size: continue
@@ -105,6 +105,9 @@ def build(checkout, output):
         entries.append(entry)
     (output/'installed-ids.json').write_text(json.dumps(included), encoding='utf-8')
     db.commit()
+    db.execute("INSERT INTO langs(langs) VALUES('optimize')")
+    db.commit()
+    db.execute('VACUUM')
     assert db.execute('PRAGMA quick_check').fetchone()[0]=='ok'
     assert db.execute('SELECT count(*) FROM langs').fetchone()[0]==total
     assert db.execute("SELECT count(*) FROM langs WHERE langs MATCH '字組 : 中'").fetchone()[0]>0

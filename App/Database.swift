@@ -69,13 +69,39 @@ final class SQLiteConnection {
             try Task.checkCancellation()
             let code = sqlite3_step(stmt)
             if code == SQLITE_DONE { return result }
-            guard code == SQLITE_ROW else { throw DictionaryFailure(message: String(cString: sqlite3_errmsg(db))) }
+            guard code == SQLITE_ROW else { try Task.checkCancellation(); throw DictionaryFailure(message: String(cString: sqlite3_errmsg(db))) }
             var row = [String: String]()
             for (index, key) in columns.enumerated() {
                 row[key] = sqlite3_column_text(stmt, Int32(index)).map { String(cString: $0) } ?? ""
             }
             result.append(row)
         }
+    }
+
+    // Token positions remain indexed; only unused per-document length statistics
+    // are omitted. No ranking functions are used by dictionary or map queries.
+    static func storageSchema(_ sql: String, table: String) -> String {
+        guard table == "langs", sql.range(of: "using\\s+fts5", options: [.regularExpression, .caseInsensitive]) != nil else { return sql }
+        if sql.range(of: "columnsize\\s*=", options: [.regularExpression, .caseInsensitive]) != nil {
+            return sql.replacingOccurrences(of: "columnsize\\s*=\\s*1", with: "columnsize=0", options: [.regularExpression, .caseInsensitive])
+        }
+        guard let end = sql.lastIndex(of: ")") else { return sql }
+        var result = sql; result.insert(contentsOf: ", columnsize=0", at: end); return result
+    }
+    func needsStorageOptimization() throws -> Bool {
+        let names = Set(try rows("SELECT name FROM sqlite_master WHERE type='table'").compactMap { $0["name"] })
+        // Do not rebuild an unrecognized custom database and lose extra tables.
+        let expected = Set(["langs", "info", "mcpdict"].flatMap { name in
+            [name] + ["data", "idx", "content", "docsize", "config"].map { name + "_" + $0 }
+        })
+        return names.contains("langs_docsize") && names.contains("langs_content") && names.subtracting(expected).allSatisfy { $0.hasPrefix("sqlite_") }
+    }
+    func enableCancellation() {
+        sqlite3_progress_handler(db, 10_000, { _ in Task.isCancelled ? 1 : 0 }, nil)
+    }
+    func compactStoragePages() throws {
+        _ = try rows("INSERT INTO langs(langs) VALUES('optimize')")
+        _ = try rows("VACUUM")
     }
 
     // Reuse one compiled INSERT for every row in a TSV instead of preparing it
@@ -132,7 +158,7 @@ final class SQLiteConnection {
     // When most tables are removed, copy the small retained set into a fresh
     // staging database instead of journaling and deleting millions of old rows.
     // Preserve row IDs, extra metadata columns and independent reference data.
-    func copyRetainedLanguages(from source: URL, names: [String]) throws {
+    func copyRetainedLanguages(from source: URL, names: [String]? = nil) throws {
         _ = try rows("ATTACH DATABASE ? AS retained", [source.path])
         defer { _ = try? rows("DETACH DATABASE retained") }
         func quoted(_ name: String) -> String { "\"" + name.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
@@ -142,26 +168,32 @@ final class SQLiteConnection {
                 guard let sql = try rows("SELECT sql FROM retained.sqlite_master WHERE name=?", [name]).first?["sql"] else {
                     throw DictionaryFailure(message: "字表結構缺失")
                 }
-                _ = try rows(sql)
+                _ = try rows(Self.storageSchema(sql, table: name))
                 let fields = try rows("PRAGMA retained.table_info(\(name))").compactMap { $0["name"] }
                 columns[name] = (["rowid"] + fields).map(quoted).joined(separator: ",")
             }
             let languageColumns = columns["langs"]!
-            for start in stride(from: 0, to: names.count, by: 128) {
-                try Task.checkCancellation()
-                let batch = Array(names[start..<min(start + 128, names.count)])
-                let indexed = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) != nil }
-                let fallback = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) == nil }
-                for (group, useIndex) in [(indexed, true), (fallback, false)] where !group.isEmpty {
-                    let json = String(data: try JSONEncoder().encode(group), encoding: .utf8)!
-                    let expression = "語言 : (" + group.map { quoted($0) }.joined(separator: " OR ") + ")"
-                    let condition = (useIndex ? "langs MATCH ? AND " : "") + "語言 IN (SELECT value FROM json_each(?))"
-                    _ = try rows("INSERT INTO main.langs (\(languageColumns)) SELECT \(languageColumns) FROM retained.langs WHERE \(condition)", useIndex ? [expression, json] : [json])
+            if let names {
+                for start in stride(from: 0, to: names.count, by: 128) {
+                    try Task.checkCancellation()
+                    let batch = Array(names[start..<min(start + 128, names.count)])
+                    let indexed = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) != nil }
+                    let fallback = batch.filter { $0.rangeOfCharacter(from: .alphanumerics) == nil }
+                    for (group, useIndex) in [(indexed, true), (fallback, false)] where !group.isEmpty {
+                        let json = String(data: try JSONEncoder().encode(group), encoding: .utf8)!
+                        let expression = "語言 : (" + group.map { quoted($0) }.joined(separator: " OR ") + ")"
+                        let condition = (useIndex ? "langs MATCH ? AND " : "") + "語言 IN (SELECT value FROM json_each(?))"
+                        _ = try rows("INSERT INTO main.langs (\(languageColumns)) SELECT \(languageColumns) FROM retained.langs WHERE \(condition)", useIndex ? [expression, json] : [json])
+                    }
                 }
+                let json = String(data: try JSONEncoder().encode(names), encoding: .utf8)!
+                let infoColumns = columns["info"]!
+                _ = try rows("INSERT INTO main.info (\(infoColumns)) SELECT \(infoColumns) FROM retained.info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [json])
+            } else {
+                _ = try rows("INSERT INTO main.langs (\(languageColumns)) SELECT \(languageColumns) FROM retained.langs ORDER BY rowid")
+                let infoColumns = columns["info"]!
+                _ = try rows("INSERT INTO main.info (\(infoColumns)) SELECT \(infoColumns) FROM retained.info ORDER BY rowid")
             }
-            let json = String(data: try JSONEncoder().encode(names), encoding: .utf8)!
-            let infoColumns = columns["info"]!
-            _ = try rows("INSERT INTO main.info (\(infoColumns)) SELECT \(infoColumns) FROM retained.info WHERE 簡稱 IN (SELECT value FROM json_each(?))", [json])
             let referenceColumns = columns["mcpdict"]!
             _ = try rows("INSERT INTO main.mcpdict (\(referenceColumns)) SELECT \(referenceColumns) FROM retained.mcpdict")
         }

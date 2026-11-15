@@ -177,6 +177,14 @@ final class AppModel: ObservableObject {
             languages = try await repository.languages()
             restoreLanguageSelection()
             status = "已下載 \(installed?.tables.count ?? 0) 份字表"
+            let originalFile = installed?.databaseFile
+            Task(priority: .utility) { [weak self] in
+                guard let self else { return }
+                if let optimized = try? await self.tableStore.optimizeStorageIfNeeded(),
+                   self.installed?.databaseFile == originalFile {
+                    self.installed = optimized
+                }
+            }
         } catch { self.error = error.localizedDescription }
     }
     func search(more: Bool = false, queryOverride: String? = nil, modeOverride: SearchMode? = nil) async {

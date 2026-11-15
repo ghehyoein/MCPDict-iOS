@@ -106,7 +106,7 @@ enum UpstreamTables {
             throw DictionaryFailure(message: "\(table.name)：上游檔案大小、Git 雜湊或編碼校驗失敗")
         }
         let db = try SQLiteConnection(url: file, readOnly: false)
-        _ = try db.rows("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋, tokenize='unicode61 remove_diacritics 0')")
+        _ = try db.rows("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋, tokenize='unicode61 remove_diacritics 0', columnsize=0)")
         _ = try db.rows("CREATE VIRTUAL TABLE info USING fts5(簡稱, 語言)")
         _ = try db.rows("CREATE VIRTUAL TABLE mcpdict USING fts5(漢字)")
         _ = try db.rows("INSERT INTO info VALUES (?,?)", [table.name, table.fullName])

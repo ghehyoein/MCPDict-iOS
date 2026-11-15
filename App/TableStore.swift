@@ -61,6 +61,7 @@ actor TableStore {
     private let repository: DictionaryRepository
     private let root: URL
     private var busy = false
+    private var compacting = false
     private let bundledRoot: URL?
     private let fetchTable: @Sendable (URL) async throws -> Data
     init(repository: DictionaryRepository, root: URL? = nil, bundledRoot: URL? = Bundle.main.resourceURL?.appendingPathComponent("BundledTables"), fetchTable: @escaping @Sendable (URL) async throws -> Data = { try await UpstreamTables.get($0, limit: 200_000_000) }) {
@@ -159,6 +160,57 @@ actor TableStore {
         if !busy { removeCommittedShards(state) }
         return state
     }
+    // Build a new immutable database in the background. Normal downloads/removals
+    // may proceed; a changed pointer makes this candidate obsolete, never authoritative.
+    func optimizeStorageIfNeeded(beforeActivation: @Sendable () async throws -> Void = {}) async throws -> TableInstallation? {
+        guard !busy, !compacting else { return nil }
+        compacting = true
+        defer { compacting = false }
+        try prepare()
+        for file in (try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)) ?? []
+            where file.lastPathComponent.hasPrefix(".storage-optimization-") && (file.pathExtension == "compact" || file.lastPathComponent.hasSuffix(".compact-journal")) {
+            try? FileManager.default.removeItem(at: file)
+        }
+        guard let original = try? Data(contentsOf: index) else { return nil }
+        let state = try JSONDecoder().decode(TableInstallation.self, from: original)
+        for table in state.tables { try table.validate() }
+        guard let filename = state.databaseFile,
+              filename.range(of: "^[0-9A-Fa-f-]{36}\\.db$", options: .regularExpression) != nil else { return nil }
+        let source = root.appendingPathComponent(filename)
+        guard try SQLiteConnection(url: source).needsStorageOptimization() else { return nil }
+        let size = (try FileManager.default.attributesOfItem(atPath: source.path)[.size] as? NSNumber)?.int64Value ?? 0
+        let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
+        guard available > size * 2 + 30_000_000 else { return nil }
+        let candidate = root.appendingPathComponent(".storage-optimization-" + UUID().uuidString + ".compact")
+        defer { try? FileManager.default.removeItem(at: candidate) }
+        let build = Task.detached(priority: .utility) {
+            let db = try SQLiteConnection(url: candidate, readOnly: false)
+            db.enableCancellation()
+            _ = try db.rows("PRAGMA cache_size=-8192")
+            try db.copyRetainedLanguages(from: source)
+            try db.compactStoragePages()
+            try db.validate(requireSample: false)
+        }
+        try await withTaskCancellationHandler(operation: { try await build.value }, onCancel: { build.cancel() })
+        try await beforeActivation()
+        try Task.checkCancellation()
+        // Only this short validation/activation phase blocks other mutations.
+        guard !busy, try Data(contentsOf: index) == original else { return nil }
+        busy = true
+        defer { busy = false }
+        let destination = root.appendingPathComponent(UUID().uuidString + ".db")
+        try FileManager.default.moveItem(at: candidate, to: destination)
+        let optimized = TableInstallation(catalogVersion: state.catalogVersion, tables: state.tables, databaseFile: destination.lastPathComponent)
+        let encoded = try JSONEncoder().encode(optimized), pointer = index
+        do {
+            try await repository.activate(destination, requireSample: false, checkIntegrity: false) {
+                try encoded.write(to: pointer, options: .atomic)
+            }
+        } catch { try? FileManager.default.removeItem(at: destination); throw error }
+        try? FileManager.default.removeItem(at: source)
+        return optimized
+    }
+
     // The active combined database owns these readings after the index commits.
     // Per-table imports are staging files, not a second permanent installation.
     private func removeCommittedShards(_ state: TableInstallation) {
@@ -270,6 +322,7 @@ actor TableStore {
         let previousByID = Dictionary(uniqueKeysWithValues: (previous?.tables ?? []).map { ($0.id, $0) })
         let reusable = previous?.databaseFile != nil
         let changed = tables.filter { !reusable || previousByID[$0.id]?.sha256 != $0.sha256 }
+        let changedIDs = Set(changed.map(\.id))
         if reusable, changed.isEmpty, selected == Set(previousByID.keys), let previous {
             let state = TableInstallation(catalogVersion: catalog.version, tables: tables, databaseFile: previous.databaseFile)
             try JSONEncoder().encode(state).write(to: index, options: .atomic)
@@ -278,7 +331,8 @@ actor TableStore {
         }
         let retainedSize = tables.reduce(Int64(0)) { $0 + $1.size }
         let previousSize = (previous?.tables ?? []).reduce(Int64(0)) { $0 + $1.size }
-        let rebuildRetained = reusable && changed.isEmpty && retainedSize < previousSize / 2
+        let compactLegacy = try previous?.databaseFile.map { try SQLiteConnection(url: root.appendingPathComponent($0)).needsStorageOptimization() } ?? false
+        let rebuildRetained = reusable && (compactLegacy || (changed.isEmpty && retainedSize < previousSize / 2))
         let bytes = changed.reduce(Int64(0)) { $0 + $1.size }
         let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
         var previousBytes: Int64 = 0
@@ -323,19 +377,19 @@ actor TableStore {
             }
             await phaseProgress(0.25)
             let output = try SQLiteConnection(url: assembled, readOnly: false)
+            output.enableCancellation()
             // This is an unpublished staging copy; a failed operation discards it.
             _ = try output.rows("PRAGMA journal_mode=MEMORY")
             _ = try output.rows("PRAGMA cache_size=-16384")
             if rebuildRetained, let oldFile = previous?.databaseFile {
-                try output.copyRetainedLanguages(from: root.appendingPathComponent(oldFile), names: tables.map(\.name))
+                try output.copyRetainedLanguages(from: root.appendingPathComponent(oldFile), names: tables.filter { !changedIDs.contains($0.id) }.map(\.name))
             } else if !reusable {
                 let first = try SQLiteConnection(url: root.appendingPathComponent(tables[0].localName))
                 for name in ["langs", "info", "mcpdict"] {
                     guard let sql = try first.rows("SELECT sql FROM sqlite_master WHERE name=?", [name]).first?["sql"] else { throw DictionaryFailure(message: "字表結構缺失") }
-                    _ = try output.rows(sql)
+                    _ = try output.rows(SQLiteConnection.storageSchema(sql, table: name))
                 }
             } else {
-                let changedIDs = Set(changed.map(\.id))
                 let removed = (previous?.tables ?? []).filter { !selected.contains($0.id) || changedIDs.contains($0.id) }.map(\.name)
                 try output.transaction { try output.removeLanguages(removed) }
             }
