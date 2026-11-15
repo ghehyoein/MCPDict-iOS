@@ -7,6 +7,11 @@ enum NativeAnalysisEngine {
         try await Task.detached(priority: .userInitiated) {
             guard let url = Bundle.main.url(forResource: "app", withExtension: "js", subdirectory: "YindianTools"),
                   let context = JSContext() else { throw DictionaryFailure(message: "Analysis engine unavailable") }
+            if let formatURL = Bundle.main.url(forResource: "ReadingFormats", withExtension: "js"),
+               let dataURL = Bundle.main.url(forResource: "ReadingFormatsData", withExtension: "json") {
+                context.setObject(try JSONSerialization.jsonObject(with: Data(contentsOf: dataURL)), forKeyedSubscript: "FORMAT_DATA" as NSString)
+                context.evaluateScript(try String(contentsOf: formatURL, encoding: .utf8))
+            }
             context.evaluateScript(try String(contentsOf: url, encoding: .utf8))
             if let error = context.exception { throw DictionaryFailure(message: error.toString()) }
             let input = try JSONSerialization.jsonObject(with: data)

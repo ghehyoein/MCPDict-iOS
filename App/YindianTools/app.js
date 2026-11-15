@@ -352,6 +352,7 @@
       try { toneConfig = JSON.parse(toneConfig); } catch { toneConfig = {}; }
     }
     return {
+      formatKey: row?.formatKey || "",
       fullName: row?.language || row?.fullName || '',
       shortName: row?.label || row?.shortName || '',
       coordinate: row?.coordinate || '',
@@ -1407,20 +1408,29 @@
         // Use raw tone codes, independent of the user's display settings.
         const values = [];
         for (const reading of String(row.reading || '').split(/\t+/u)) {
-          const clean = reading.replace(/\{[^}]*\}|〚[^〛]*〛|\([^)]*\)/gu, '').trim();
+          let canonical = reading;
+          if (dialect.formatKey && typeof readingFormat === 'function') {
+            const option = dialect.formatKey === 'mc_display' ? '109' : dialect.formatKey === 'zyyy_display' ? '4' : '0';
+            const converted = readingFormat(reading, dialect.formatKey, [option]);
+            if (converted?.length) canonical = converted.map(segment=>segment.text || '').join('').trim();
+          }
+          const clean = canonical.replace(/\{[^}]*\}|〚[^〛]*〛|\([^)]*\)/gu, '').trim();
           const syllables = clean.split(/[\s\u00a0·‧.]+|(?<=[\p{L}\p{M}\p{N}])-+(?=\p{L})/u).filter(Boolean);
           if (input.ignoreMultiple && syllables.length > 1) continue;
+          const sequence = [];
           for (const syllable of syllables) {
             const raw=syllable.replace(/^[*`]+|[*`+?@=\-]+$/gu,'');
             if (!/\p{L}/u.test(raw)) continue;
             const parts=decomposeModern(raw,dialect,{glidesAsFinal:true});
             // Preserve distinct raw categories such as 2a / 2b even with equal tone names.
             if (input.mode === 'tone') {
-              const code=raw.match(/^.+?([0-9]{1,2}[a-z=]?)$/u);
+              const code=(syllables.length === 1 ? reading : raw).replace(/\{[^}]*\}|〚[^〛]*〛|\([^)]*\)/gu, "").trim().match(/^.+?([0-9]{1,2}[a-z=]?)$/u);
               if (code) parts.tone=code[1];
             }
-            values.push(getModernModeValue(parts,input.mode,dialect));
+            const toneName = dialect.toneConfig?.[parts.tone]?.[3];
+            sequence.push(input.mode === 'tone' && toneName ? `${toneName}（${parts.tone}）` : getModernModeValue(parts,input.mode,dialect));
           }
+          if (sequence.length) values.push(sequence.join(" · "));
         }
         for (const char of Array.from(String(row.characters || '')).filter(c => /\p{Script=Han}/u.test(c))) {
           if (!index.has(char)) index.set(char,new Set());
@@ -1429,7 +1439,7 @@
       }
       if (input.kind === 'soundClasses') {
         const groups = new Map();
-        for (const [name,index] of byLanguage) for (const value of index.get(input.character) || []) {
+        for (const [name,index] of byLanguage) for (const value of new Set((input.characters || [input.character]).flatMap(c=>[...(index.get(c) || [])]))) {
           if (!groups.has(value)) groups.set(value,new Set());
           groups.get(value).add(name);
         }

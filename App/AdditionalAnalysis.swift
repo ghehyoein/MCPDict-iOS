@@ -21,7 +21,7 @@ struct AdditionalAnalysisView: View {
     @State private var left = ""
     @State private var right = ""
     @State private var input = ""
-    @State private var character = ""
+    @State private var characters = Set<String>()
     @State private var choices = [String]()
     @State private var mode = "initial"
     @State private var minimumLink = 1
@@ -53,7 +53,13 @@ struct AdditionalAnalysisView: View {
                 } else {
                     TextField(ui("漢字"), text: $input).textFieldStyle(.roundedBorder)
                     if !choices.isEmpty {
-                        Picker(ui("漢字"), selection: $character) { ForEach(choices, id: \.self) { Text($0).tag($0) } }
+                        ScrollView(.horizontal) {
+                            HStack { ForEach(choices, id: \.self) { char in
+                                Button { if !characters.insert(char).inserted { characters.remove(char) } } label: {
+                                    Label(char, systemImage: characters.contains(char) ? "checkmark.square.fill" : "square")
+                                }.buttonStyle(.borderless)
+                            } }
+                        }
                     }
                 }
                 Picker(ui("今音觀察維度"), selection: $mode) {
@@ -114,7 +120,7 @@ struct AdditionalAnalysisView: View {
             .task(id: input) {
                 guard kind == .soundClasses else { return }
                 choices = CharacterResults.characters(input).filter { $0.first.map(GuessLogic.isCharacter) ?? false }.prefix(1).flatMap(CharacterVariants.expand)
-                character = choices.first ?? ""
+                characters = Set(choices.prefix(1))
             }
             .sheet(item: $map) { ToolsComparisonMap(points: $0.points, title: title, legend: $0.legend) }
             .sheet(item: $detail) { link in
@@ -148,16 +154,16 @@ struct AdditionalAnalysisView: View {
         defer { busy = false }
         do {
             if kind == .correspondence && (left.isEmpty || right.isEmpty) { throw DictionaryFailure(message: ui("請先選擇一種語言。")) }
-            if kind == .soundClasses && character.isEmpty { throw DictionaryFailure(message: ui("請輸入漢字。")) }
+            if kind == .soundClasses && characters.isEmpty { throw DictionaryFailure(message: ui("請輸入漢字。")) }
             let rows: [Reading]
             if kind == .correspondence {
                 let a = try await model.repository.toolLanguageRows(left)
                 let b = left == right ? [] : try await model.repository.toolLanguageRows(right)
                 rows = a + b
-            } else { rows = try await model.repository.searchAllCharacters(character, language: "") }
-            let payload: [String: Any] = ["kind": kind.rawValue, "left": left, "right": right, "character": character,
+            } else { rows = try await model.repository.searchAllCharacters(characters.sorted().joined(), language: "") }
+            let payload: [String: Any] = ["kind": kind.rawValue, "left": left, "right": right, "characters": characters.sorted(),
                 "mode": mode, "minimumLink": minimumLink, "minimumNode": minimumNode, "ignoreMultiple": ignoreMultiple,
-                "dialects": tables.map { ["label": $0.name, "toneConfig": $0.metadata?["聲調"] ?? ""] },
+                "dialects": tables.map { ["label": $0.name, "toneConfig": $0.metadata?["聲調"] ?? "", "formatKey": ReadingFormatEngine.key(for: $0.name) ?? ""] },
                 "rows": rows.map { ["language": $0.language, "characters": $0.characters, "reading": $0.pronunciation] }]
             let result = try await NativeAnalysisEngine.run(JSONSerialization.data(withJSONObject: payload))
             if kind == .correspondence { links = try JSONDecoder().decode([CorrespondenceLink].self, from: result) }
@@ -177,7 +183,7 @@ struct AdditionalAnalysisView: View {
             let values = byName[name] ?? []
             return DialectPoint(id: name, name: table.fullName, longitude: location.longitude, latitude: location.latitude,
                 color: values.map { colors[$0.value] ?? palette[0] }.joined(separator: ","), reading: values.map(\.value).joined(separator: " / "),
-                copyText: character + " " + values.map(\.value).joined(separator: " / "))
+                copyText: characters.sorted().joined(separator: "、") + " " + values.map(\.value).joined(separator: " / "))
         }
         if points.isEmpty { error = ui("當前結果沒有可用的地圖座標。") }
         else { map = ToolMapResult(points: points, legend: groups.filter { selected.contains($0.value) }.map { AnalysisLegend(title: $0.value, color: colors[$0.value] ?? palette[0], names: Set($0.names)) }) }

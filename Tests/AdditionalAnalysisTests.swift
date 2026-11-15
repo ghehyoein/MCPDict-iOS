@@ -27,6 +27,13 @@ final class AdditionalAnalysisTests: XCTestCase {
         let links = try JSONDecoder().decode([CorrespondenceLink].self, from: data)
         XCTAssertEqual(Set(links.map(\.left)), ["1", "2"])
     }
+    func testMultisyllableSequenceStaysOneNode() async throws {
+        let rows = [["language":"a","characters":"中","reading":"a1 b2"], ["language":"b","characters":"中","reading":"b3"]]
+        let data = try await run([:], rows: rows)
+        let links = try JSONDecoder().decode([CorrespondenceLink].self, from: data)
+        XCTAssertEqual(links.count, 1)
+        XCTAssertEqual(links.first?.left, "1 · 2")
+    }
     func testSingleCharacterGroupsUseDistinctLanguages() async throws {
         let rows = [["language":"a","characters":"中 忠","reading":"a1\ta1"], ["language":"b","characters":"中","reading":"b1"], ["language":"b","characters":"忠","reading":"b2"]]
         let data = try await run(["kind":"soundClasses","character":"中"], rows: rows)
