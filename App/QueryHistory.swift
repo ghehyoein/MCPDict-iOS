@@ -30,6 +30,7 @@ struct QueryHistoryDropdown: View {
             ForEach(entries) { entry in
                 Button { select(entry) } label: {
                     HStack { Text(entry.query).lineLimit(1); Spacer(); Text(ui(entry.mode)).foregroundStyle(.secondary) }
+                        .contentShape(Rectangle())
                 }.buttonStyle(.plain).accessibilityIdentifier("history-" + namespace + "-" + entry.query)
             }.onDelete { indices in entries.remove(atOffsets: indices); QueryHistory.save(entries, namespace: namespace) }
             Button(ui("刪除"), role: .destructive) { confirm = true }.foregroundStyle(.red)

@@ -49,7 +49,10 @@ final class Version0107UITests: XCTestCase {
         input.tap(); XCTAssertTrue(history.waitForExistence(timeout: 5))
         let cell = app.cells.containing(.button, identifier: "history-map-好").firstMatch
         cell.swipeLeft()
-        cell.buttons.matching(NSPredicate(format: "label IN %@", ["刪除", "删除", "Delete"])).firstMatch.tap()
+        // Native List can complete a full swipe immediately, or reveal its action.
+        if history.exists {
+            cell.buttons.matching(NSPredicate(format: "label IN %@", ["刪除", "删除", "Delete"])).firstMatch.tap()
+        }
         XCTAssertTrue(history.waitForNonExistence(timeout: 5))
     }
     @MainActor func testReadingMarkerHelpInDictionaryAndMap() {
