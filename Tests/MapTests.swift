@@ -137,7 +137,7 @@ final class MapTests: XCTestCase {
         let point = DialectPoint(id: "touch", name: "測試", longitude: 1, latitude: 2, color: "#112233,#445566", reading: reading)
         var opened = false
         label.configure(point, fontSize: 5) { opened = true }
-        XCTAssertTrue(label.subviews.isEmpty)
+        XCTAssertTrue(label.subviews.allSatisfy { !($0 is UIButton) && !($0 is UITextView) })
         let elements = try XCTUnwrap(label.accessibilityElements)
         let text = try XCTUnwrap(elements.first as? UIAccessibilityElement)
         let name = try XCTUnwrap(elements.last as? UIAccessibilityElement)

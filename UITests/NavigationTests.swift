@@ -587,6 +587,7 @@ final class NavigationTests: XCTestCase {
         let loaded = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label CONTAINS %@", "3306"), object: count)
         XCTAssertEqual(XCTWaiter.wait(for: [loaded], timeout: 30), .completed)
         control("mapLanguageSelection").tap()
+        chooseClassification(app, "地圖集二分區")
         XCTAssertTrue(control("expand-根0").waitForExistence(timeout: 10))
         control("expand-根0").tap()
         control("expand-區0").tap()

@@ -188,14 +188,50 @@ final class CachedAccessibilityMapView: MKMapView {
     }
 }
 
-// Idle annotations draw in one layer. Native controls are created only for an
+// Idle annotations use tightly sized drawing layers. Native controls exist only for an
 // actual interaction; every point and the complete selectable reading remain.
+// Keep the name and reading backing stores tightly sized. A single bitmap for
+// their union wastes transparent pixels at every point in a dense map.
+private final class MapLabelCanvas: UIView {
+    var text = NSAttributedString(string: "")
+    var colors = [UIColor]()
+    private let centered: Bool
+    private let radius: CGFloat
+    private let inset: CGFloat
+    init(centered: Bool, radius: CGFloat, inset: CGFloat) {
+        self.centered = centered; self.radius = radius; self.inset = inset
+        super.init(frame: .zero)
+        backgroundColor = .clear; isOpaque = false; contentMode = .redraw
+        isUserInteractionEnabled = false; accessibilityElementsHidden = true
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: MapLabelCanvas, _: UITraitCollection) in view.setNeedsDisplay() }
+    }
+    required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    override func draw(_ rect: CGRect) {
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        context.saveGState()
+        UIBezierPath(roundedRect: bounds, cornerRadius: radius).addClip()
+        (colors.first ?? .clear).setFill(); context.fill(bounds)
+        if colors.count > 1, let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors.map(\.cgColor) as CFArray, locations: nil) {
+            context.drawLinearGradient(gradient, start: CGPoint(x: bounds.minX, y: bounds.midY), end: CGPoint(x: bounds.maxX, y: bounds.midY), options: [])
+        }
+        if centered {
+            let size = text.size()
+            text.draw(at: CGPoint(x: bounds.midX - size.width / 2, y: bounds.midY - size.height / 2))
+        } else {
+            text.draw(with: bounds.insetBy(dx: inset, dy: inset), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+        }
+        context.restoreGState()
+    }
+}
+
 private final class MapLabelElement: UIAccessibilityElement {
     var activate: (() -> Bool)?
     override func accessibilityActivate() -> Bool { activate?() ?? false }
 }
 
 final class LabelAnnotationView: MKAnnotationView {
+    private let nameCanvas = MapLabelCanvas(centered: true, radius: 5, inset: 0)
+    private var readingCanvas: MapLabelCanvas?
     private var button: UIButton?
     private var nameText = NSAttributedString(string: "")
     private var nameFrame = CGRect.zero
@@ -242,7 +278,7 @@ final class LabelAnnotationView: MKAnnotationView {
         value.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
         value.accessibilityLabel = nameElement.accessibilityLabel
         value.accessibilityIdentifier = nameElement.accessibilityIdentifier
-        addSubview(value); button = value; setNeedsDisplay(); updateAccessibility()
+        addSubview(value); button = value; nameCanvas.isHidden = true; updateAccessibility()
         return value
     }
     var readingText: UITextView {
@@ -260,7 +296,7 @@ final class LabelAnnotationView: MKAnnotationView {
         text.frame = readingFrame; text.isScrollEnabled = readingNeedsScroll
         text.accessibilityIdentifier = readingElement.accessibilityIdentifier
         text.accessibilityLabel = readingElement.accessibilityLabel
-        addSubview(text); readingView = text; setNeedsDisplay()
+        addSubview(text); readingView = text; readingCanvas?.isHidden = true
         if window != nil { MapTextGestureGate.install(above: self) }
         updateAccessibility()
         return text
@@ -280,32 +316,24 @@ final class LabelAnnotationView: MKAnnotationView {
         traitOverrides.preferredContentSizeCategory = .large
         backgroundColor = .clear; isOpaque = false
         isUserInteractionEnabled = true; isAccessibilityElement = false
-        contentMode = .redraw
-        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: LabelAnnotationView, _: UITraitCollection) in
-            view.setNeedsDisplay()
-        }
+        addSubview(nameCanvas)
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
-    override func draw(_ rect: CGRect) {
-        guard let context = UIGraphicsGetCurrentContext() else { return }
-        if button == nil, !nameFrame.isEmpty {
-            context.saveGState()
-            UIBezierPath(roundedRect: nameFrame, cornerRadius: 5).addClip()
-            (colors.first ?? .systemTeal).setFill(); context.fill(nameFrame)
-            if colors.count > 1, let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors.map(\.cgColor) as CFArray, locations: nil) {
-                context.drawLinearGradient(gradient, start: CGPoint(x: nameFrame.minX, y: nameFrame.midY), end: CGPoint(x: nameFrame.maxX, y: nameFrame.midY), options: [])
+    private func updateCanvases(redraw: Bool) {
+        nameCanvas.text = nameText; nameCanvas.colors = colors; nameCanvas.frame = nameFrame
+        nameCanvas.isHidden = button != nil
+        if readingFrame.isEmpty {
+            readingCanvas?.removeFromSuperview(); readingCanvas = nil
+        } else {
+            if readingCanvas == nil {
+                let canvas = MapLabelCanvas(centered: false, radius: 4, inset: 4)
+                canvas.colors = [UIColor.secondarySystemBackground.withAlphaComponent(0.85)]
+                insertSubview(canvas, at: 0); readingCanvas = canvas
             }
-            let size = nameText.size()
-            nameText.draw(at: CGPoint(x: nameFrame.midX - size.width / 2, y: nameFrame.midY - size.height / 2))
-            context.restoreGState()
+            readingCanvas?.text = previewText; readingCanvas?.frame = readingFrame
+            readingCanvas?.isHidden = readingView != nil
         }
-        if readingView == nil, !readingFrame.isEmpty {
-            context.saveGState()
-            UIBezierPath(roundedRect: readingFrame, cornerRadius: 4).addClip()
-            UIColor.secondarySystemBackground.withAlphaComponent(0.85).setFill(); context.fill(readingFrame)
-            previewText.draw(with: readingFrame.insetBy(dx: 4, dy: 4), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
-            context.restoreGState()
-        }
+        if redraw { nameCanvas.setNeedsDisplay(); readingCanvas?.setNeedsDisplay() }
     }
     override func didMoveToWindow() {
         super.didMoveToWindow()
@@ -329,13 +357,13 @@ final class LabelAnnotationView: MKAnnotationView {
         guard let text = readingView, !text.isFirstResponder, text.selectedRange.length == 0, text.contentOffset == .zero,
               CACurrentMediaTime() - lastReadingInteraction > 2,
               !(text.gestureRecognizers ?? []).contains(where: { $0.state == .began || $0.state == .changed }) else { return }
-        text.removeFromSuperview(); readingView = nil; setNeedsDisplay(); updateAccessibility()
+        text.removeFromSuperview(); readingView = nil; readingCanvas?.isHidden = false; updateAccessibility()
     }
     override func prepareForReuse() {
         super.prepareForReuse()
         readingView?.resignFirstResponder(); readingView?.removeFromSuperview(); readingView = nil
         button?.removeFromSuperview(); button = nil; buttonGradient = nil
-        setNeedsDisplay(); updateAccessibility()
+        nameCanvas.isHidden = false; readingCanvas?.isHidden = false; updateAccessibility()
     }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
         self.choose = choose
@@ -421,7 +449,7 @@ final class LabelAnnotationView: MKAnnotationView {
         readingElement.accessibilityFrameInContainerSpace = readingFrame
         collisionMode = .rectangle
         updateAccessibility()
-        if changed { setNeedsDisplay() }
+        updateCanvases(redraw: changed)
     }
 }
 

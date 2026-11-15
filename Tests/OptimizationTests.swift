@@ -58,7 +58,7 @@ final class OptimizationTests: XCTestCase {
             view.configure(point, fontSize: 16) {}
             views.append(view)
         }
-        XCTAssertTrue(views.allSatisfy { $0.readingView == nil && $0.subviews.isEmpty })
+        XCTAssertTrue(views.allSatisfy { $0.readingView == nil && $0.subviews.allSatisfy { !($0 is UIButton) && !($0 is UITextView) } })
         print("MAP_NAME_BENCH points=3306 seconds=\(Date().timeIntervalSince(start)) text_views=0 blur_views=0")
         let point = DialectPoint(id: "0", name: "點0", longitude: 113, latitude: 23, color: "#008080", reading: "可選取的完整讀音")
         views[0].configure(point, fontSize: 16) {}
@@ -69,7 +69,7 @@ final class OptimizationTests: XCTestCase {
         let cleared = DialectPoint(id: "0", name: "點0", longitude: 113, latitude: 23, color: "#008080", reading: "")
         views[0].configure(cleared, fontSize: 16) {}
         XCTAssertNil(views[0].readingView)
-        XCTAssertTrue(views[0].subviews.isEmpty)
+        XCTAssertTrue(views[0].subviews.allSatisfy { !($0 is UIButton) && !($0 is UITextView) })
         views[0].configure(point, fontSize: 16) {}
         XCTAssertNil(views[0].readingView)
         XCTAssertEqual(views[0].readingText.text, point.reading)
