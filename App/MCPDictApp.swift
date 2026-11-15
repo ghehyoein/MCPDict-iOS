@@ -306,10 +306,14 @@ final class AppModel: ObservableObject {
             } catch { self.error = error.localizedDescription }
         }
     }
-    private func refreshAfterTables() async throws {
+    func refreshAfterTables() async throws {
         generation += 1
-        results = []; hasMore = false; lastSearch = nil
-        languages = try await repository.languages()
+        results = []; hasMore = false; lastSearch = nil; searching = false
+        // A cancelled download still commits its completed tables. Refresh that
+        // committed state without inheriting the cancelled network task.
+        languages = try await Task.detached { [repository] in
+            try await repository.languages()
+        }.value
         let availableLanguages = Set(languages)
         if let selection = selectedLanguages {
             selectLanguages(Set(selection.filter { availableLanguages.contains($0) }))

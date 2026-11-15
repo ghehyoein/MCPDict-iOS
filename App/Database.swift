@@ -130,7 +130,12 @@ final class SQLiteConnection {
     func transaction(_ body: () throws -> Void) throws {
         _ = try rows("BEGIN IMMEDIATE")
         do { try body(); _ = try rows("COMMIT") }
-        catch { _ = try? rows("ROLLBACK"); throw error }
+        catch {
+            // Cleanup must run even when the importing task was cancelled.
+            // rows() checks cancellation before stepping and would skip rollback.
+            sqlite3_exec(db, "ROLLBACK", nil, nil, nil)
+            throw error
+        }
     }
     func removeLanguages(_ names: [String]) throws {
         // FTS already indexes language names. Exact equality still guards against
