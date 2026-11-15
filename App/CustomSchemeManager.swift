@@ -165,7 +165,8 @@ struct CustomSchemeManager: View {
     private func remove(_ names: Set<String>) {
         let removed = state.custom.branchNames(names)
         var snapshot = state.custom; snapshot.retainColors()
-        let removedSchemes = snapshot.schemes.filter { state.custom.branchNames(names).contains($0.name) }
+        let deletedNames = state.custom.branchNames(names)
+        let removedSchemes = snapshot.schemes.filter { deletedNames.contains($0.name) }
         guard !removedSchemes.isEmpty, removedSchemes.count < state.custom.schemes.count else { return }
         do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: removedSchemes)) }
         catch { model.error = error.localizedDescription; return }
@@ -336,7 +337,8 @@ struct CustomSchemeEditor: View {
     }
     private func removeChildren(_ names: Set<String>) {
         var snapshot = state.custom; snapshot.retainColors()
-        let removedSchemes = snapshot.schemes.filter { state.custom.branchNames(names).contains($0.name) }
+        let deletedNames = state.custom.branchNames(names)
+        let removedSchemes = snapshot.schemes.filter { deletedNames.contains($0.name) }
         guard !removedSchemes.isEmpty, removedSchemes.count < state.custom.schemes.count else { return }
         do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: removedSchemes)) }
         catch { model.error = error.localizedDescription; return }
