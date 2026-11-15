@@ -81,6 +81,9 @@ actor TableStore {
     func installBundledTablesIfNeeded() async throws {
         guard let bundledRoot, FileManager.default.fileExists(atPath: bundledRoot.appendingPathComponent("catalog.json").path) else { return }
         try prepare()
+        if FileManager.default.fileExists(atPath: TableDownloadCheckpoint.marker(in: root).path) {
+            _ = try await restore()
+        }
         let marker = root.appendingPathComponent("bundled-installed")
         let data = try Data(contentsOf: bundledRoot.appendingPathComponent("catalog.json"))
         let catalog = try JSONDecoder().decode(TableCatalog.self, from: data)
@@ -146,8 +149,16 @@ actor TableStore {
         let hash = Insecure.SHA1.hash(data: blob).map { String(format: "%02x", $0) }.joined()
         return hash == table.gitBlob ? data : nil
     }
+    private func recoverDownloadIfNeeded(checkIntegrity: Bool = true) async throws {
+        _ = try await TableDownloadCheckpoint.recover(in: root, repository: repository, checkIntegrity: checkIntegrity)
+    }
     func restore() async throws -> TableInstallation? {
         try prepare()
+        if !busy, FileManager.default.fileExists(atPath: TableDownloadCheckpoint.marker(in: root).path) {
+            busy = true
+            defer { busy = false }
+            try await recoverDownloadIfNeeded()
+        }
         guard FileManager.default.fileExists(atPath: index.path) else { return nil }
         let state = try JSONDecoder().decode(TableInstallation.self, from: Data(contentsOf: index))
         for table in state.tables { try table.validate() }
@@ -163,7 +174,7 @@ actor TableStore {
     // Build a new immutable database in the background. Normal downloads/removals
     // may proceed; a changed pointer makes this candidate obsolete, never authoritative.
     func optimizeStorageIfNeeded(beforeActivation: @Sendable () async throws -> Void = {}) async throws -> TableInstallation? {
-        guard !busy, !compacting else { return nil }
+        guard !busy, !compacting, !FileManager.default.fileExists(atPath: TableDownloadCheckpoint.marker(in: root).path) else { return nil }
         compacting = true
         defer { compacting = false }
         try prepare()
@@ -240,6 +251,7 @@ actor TableStore {
         guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
         busy = true
         defer { busy = false }
+        try await recoverDownloadIfNeeded()
         let cached = cachedCatalog()
         let latest = try await UpstreamTables.catalog(cached: cached, progress: { await progress($0 * 0.85) }, fetch: fetch)
         try Task.checkCancellation()
@@ -310,6 +322,7 @@ actor TableStore {
         guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
         busy = true
         defer { busy = false }
+        try await recoverDownloadIfNeeded()
         return try await applyInternal(catalog, selected: selected, localFiles: localFiles, progress: progress)
     }
     private func applyInternal(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], verifiedIDs: Set<String> = [], phaseProgress: @Sendable (Double) async -> Void = { _ in }, progress: @Sendable (String) async -> Void) async throws -> TableInstallation {
@@ -442,7 +455,8 @@ actor TableStore {
             return sources
         }
     }
-    // Download is additive. Completed, verified tables are activated even on cancellation.
+    // Count a table only after its readings and metadata are durably committed.
+    // Queries keep using the previous immutable database until stop/completion.
     func download(_ catalog: TableCatalog, selected: Set<String>, localFiles: [String: URL] = [:], completedCount: @escaping @Sendable (Int) async -> Void = { _ in }, progress: @escaping @Sendable (String) async -> Void) async throws -> TableDownloadResult {
         guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
         busy = true
@@ -450,8 +464,9 @@ actor TableStore {
         try catalog.validate()
         guard selected.isSubset(of: Set(catalog.tables.map(\.id))) else { throw DictionaryFailure(message: "選取項目不在目前目錄中") }
         try prepare()
+        try await recoverDownloadIfNeeded()
         let previous = try await restore()
-        var retained = Dictionary(uniqueKeysWithValues: (previous?.tables ?? []).map { ($0.id, $0) })
+        let retained = Dictionary(uniqueKeysWithValues: (previous?.tables ?? []).map { ($0.id, $0) })
         let requested = catalog.tables.filter {
             selected.contains($0.id) && (previous?.databaseFile == nil || retained[$0.id]?.sha256 != $0.sha256)
         }.sorted { $0.id < $1.id }
@@ -459,70 +474,69 @@ actor TableStore {
             return TableDownloadResult(installation: previous, cancelled: false, failure: nil, completed: 0)
         }
         let bytes = requested.reduce(Int64(0)) { $0 + $1.size }
+        let previousBytes = try previous?.databaseFile.map {
+            (try FileManager.default.attributesOfItem(atPath: root.appendingPathComponent($0).path)[.size] as? NSNumber)?.int64Value ?? 0
+        } ?? 0
         let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
-        guard available > bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請先釋放儲存空間") }
+        guard available > previousBytes + bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請先釋放儲存空間") }
         var failure: String?
         var completed = 0
-        var verifiedIDs = Set<String>()
+        var checkpoint: TableDownloadCheckpoint?
         await completedCount(0)
         do {
             for batch in TableDownloadBatch.make(requested) {
                 try Task.checkCancellation()
                 let sources = try await prefetchSources(batch, localFiles: localFiles)
                 for table in batch {
-                let offset = completed
-                try Task.checkCancellation()
-                await progress("\(offset + 1)/\(requested.count) · \(table.name)")
-                try Task.checkCancellation()
-                if previous?.databaseFile != nil, retained[table.id]?.sha256 == table.sha256 {
+                    try Task.checkCancellation()
+                    await progress("\(completed + 1)/\(requested.count) · \(table.name)")
+                    try Task.checkCancellation()
+                    let file = root.appendingPathComponent(table.localName)
+                    if !FileManager.default.fileExists(atPath: file.path) {
+                        let staging = root.appendingPathComponent(UUID().uuidString + ".partial")
+                        defer { try? FileManager.default.removeItem(at: staging) }
+                        if table.isUpstream {
+                            guard let data = sources[table.id] else { throw DictionaryFailure(message: "字表下載資料缺失") }
+                            try UpstreamTables.importTSV(data, table: table, to: staging)
+                        } else if let local = localFiles[table.id] {
+                            try FileManager.default.copyItem(at: local, to: staging)
+                        } else {
+                            let (temporary, response) = try await URLSession.shared.download(from: table.url)
+                            defer { try? FileManager.default.removeItem(at: temporary) }
+                            guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw DictionaryFailure(message: "\(table.name)：下載失敗") }
+                            try FileManager.default.moveItem(at: temporary, to: staging)
+                        }
+                        if !table.isUpstream { try verify(staging, table: table) }
+                        try FileManager.default.moveItem(at: staging, to: file)
+                    } else { try verify(file, table: table) }
+                    try Task.checkCancellation()
+                    if checkpoint == nil { checkpoint = try TableDownloadCheckpoint(root: root, previous: previous, version: catalog.version) }
+                    try checkpoint!.merge(table, from: file)
+                    try? FileManager.default.removeItem(at: file)
                     completed += 1
                     await completedCount(completed)
-                    continue
-                }
-                let file = root.appendingPathComponent(table.localName)
-                if !FileManager.default.fileExists(atPath: file.path) {
-                    let staging = root.appendingPathComponent(UUID().uuidString + ".partial")
-                    defer { try? FileManager.default.removeItem(at: staging) }
-                    if table.isUpstream {
-                        let data: Data
-                        if let prefetched = sources[table.id] { data = prefetched }
-                        else { throw DictionaryFailure(message: "字表下載資料缺失") }
-                        try UpstreamTables.importTSV(data, table: table, to: staging)
-                    } else if let local = localFiles[table.id] {
-                        try FileManager.default.copyItem(at: local, to: staging)
-                    } else {
-                        let (temporary, response) = try await URLSession.shared.download(from: table.url)
-                        defer { try? FileManager.default.removeItem(at: temporary) }
-                        guard (response as? HTTPURLResponse)?.statusCode == 200 else { throw DictionaryFailure(message: "\(table.name)：下載失敗") }
-                        try FileManager.default.moveItem(at: temporary, to: staging)
-                    }
-                    if !table.isUpstream { try verify(staging, table: table) }
-                    try FileManager.default.moveItem(at: staging, to: file)
-                } else { try verify(file, table: table) }
-                retained[table.id] = table
-                verifiedIDs.insert(table.id)
-                completed += 1
-                await completedCount(completed)
-                await progress("已完成 \(completed)/\(requested.count) · \(table.name)")
+                    await progress("已完成 \(completed)/\(requested.count) · \(table.name)")
                 }
             }
         } catch {
             if !Task.isCancelled && !(error is CancellationError) { failure = error.localizedDescription }
         }
-        let cancelled = Task.isCancelled
-        await progress(cancelled ? "正在保存已完成的字表…" : "正在建立查詢索引…")
-        let combined = TableCatalog(schemaVersion: 1, version: catalog.version, sourceRepository: catalog.sourceRepository, sourceCommit: catalog.sourceCommit, scope: "", tables: Array(retained.values))
-        // A new task intentionally finishes the atomic save after the user cancels networking.
-        let verified = verifiedIDs
-        let state = try await Task.detached {
-            try await self.applyInternal(combined, selected: Set(combined.tables.map(\.id)), verifiedIDs: verified) { _ in }
+        checkpoint?.close()
+        await progress(Task.isCancelled ? "正在保存已完成的字表…" : "正在建立查詢索引…")
+        // Only the small atomic activation is uncancellable, not the SQL imports.
+        // On force quit, restore() activates the same per-table checkpoints.
+        let root = root, repository = repository
+        let recovered = try await Task.detached {
+            try await TableDownloadCheckpoint.recover(in: root, repository: repository, checkIntegrity: false)
         }.value
-        return TableDownloadResult(installation: state, cancelled: cancelled, failure: failure, completed: completed)
+        let state = recovered ?? previous ?? TableInstallation(catalogVersion: catalog.version, tables: [], databaseFile: nil)
+        return TableDownloadResult(installation: state, cancelled: Task.isCancelled, failure: failure, completed: completed)
     }
     func remove(selected: Set<String>, progress: @escaping @Sendable (Double) async -> Void = { _ in }) async throws -> TableInstallation {
         guard !busy else { throw DictionaryFailure(message: "正在處理字表") }
         busy = true
         defer { busy = false }
+        try await recoverDownloadIfNeeded()
         let previous = try await restore()
         let remaining = (previous?.tables ?? []).filter { !selected.contains($0.id) }
         let catalog = TableCatalog(schemaVersion: 1, version: previous?.catalogVersion ?? "local", sourceRepository: UpstreamTables.repository, sourceCommit: remaining.first?.sourceCommit ?? "", scope: "", tables: remaining)

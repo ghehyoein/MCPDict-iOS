@@ -44,6 +44,9 @@ jobs:
       - name: Prepare opt-in dense map fixture
         if: contains(inputs.tests, 'MapStressTests')
         run: python3 tools/map_stress_fixture.py bundled-source App/BundledTables/catalog.json Tests/Fixtures/map-stress.json
+      - name: Prepare opt-in full download fixture
+        if: contains(inputs.tests, 'DownloadStressTests')
+        run: python3 tools/download_stress_fixture.py bundled-source App/BundledTables/catalog.json Tests/Fixtures/DownloadTables
       - name: Generate Xcode project
         run: |
           brew install xcodegen
