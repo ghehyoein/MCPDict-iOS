@@ -65,5 +65,6 @@ enum GlyphStandard: String, CaseIterable, Identifiable {
             }
             offset += length
         }
+        FontFallback.apply(to: text)
     }
 }

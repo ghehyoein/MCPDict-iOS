@@ -186,7 +186,7 @@ final class CachedAccessibilityMapView: MKMapView {
 final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     let nameButton = UIButton(type: .system)
     private(set) var readingView: UITextView?
-    private var readingBlur: UIVisualEffectView?
+    private var readingBlur: UIView?
     private var readingPreview: MapReadingPreview?
     private var renderedReading = NSAttributedString(string: "")
     private var readingFrame = CGRect.zero
@@ -203,7 +203,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
             guard let self else { return false }
             return self.readingText.becomeFirstResponder()
         }
-        let blur = UIVisualEffectView(effect: UIBlurEffect(style: .systemUltraThinMaterial))
+        let blur = UIView()
+        blur.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
         blur.isUserInteractionEnabled = false
         blur.layer.cornerRadius = 4; blur.clipsToBounds = true
         insertSubview(blur, at: 0); addSubview(preview)
@@ -316,7 +317,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
             readingView = nil; readingBlur = nil; readingPreview = nil
             renderedReading = NSAttributedString(string: ""); readingFrame = .zero
             previousParts = nil
-            let size = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
+            let size = nameButton.attributedTitle(for: .normal)?.size() ?? .zero
             bounds = CGRect(x: 0, y: 0, width: size.width + 12, height: max(size.height, CGFloat(labelSize) * 1.4))
             nameButton.frame = bounds; gradient.frame = nameButton.bounds
             accessibilityElements = [nameButton]
@@ -368,7 +369,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
             view.accessibilityIdentifier = "map-reading-" + point.id
             view.accessibilityLabel = point.reading
         }
-        let nameButtonSize = nameButton.sizeThatFits(CGSize(width: 260, height: 100))
+        let nameButtonSize = nameButton.attributedTitle(for: .normal)?.size() ?? .zero
         // Size only the viewport; the text view retains the entire selectable text.
         let readingRect = cachedReadingRect
         let nameWidth: CGFloat = nameButtonSize.width + 12, nameHeight: CGFloat = max(nameButtonSize.height, CGFloat(labelSize) * 1.4)
@@ -376,8 +377,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         let readingHeight: CGFloat = point.reading.isEmpty ? 0 : min(180, ceil(readingRect.height) + 8)
         let width = max(nameWidth, readingWidth)
         bounds = CGRect(x: 0, y: 0, width: width, height: nameHeight + readingHeight)
-        nameButton.frame = CGRect(x: (width-nameWidth)/2, y: readingHeight, width: nameWidth, height: nameHeight)
-        readingFrame = CGRect(x: (width-readingWidth)/2, y: 0, width: readingWidth, height: readingHeight)
+        nameButton.frame = CGRect(x: (width-nameWidth)/2, y: 0, width: nameWidth, height: nameHeight)
+        readingFrame = CGRect(x: (width-readingWidth)/2, y: nameHeight, width: readingWidth, height: readingHeight)
         readingNeedsScroll = ceil(readingRect.height) + 8 > readingHeight
         readingPreview?.frame = readingFrame; readingView?.frame = readingFrame
         readingView?.isScrollEnabled = readingNeedsScroll

@@ -167,7 +167,11 @@ struct PronunciationView: View {
     var body: some View {
         Group {
             if scrollable {
-                ScrollView(.horizontal, showsIndicators: false) { content }.fixedSize(horizontal: false, vertical: true)
+                PronunciationFlow {
+                    ForEach(Array(raw.components(separatedBy: "\t").enumerated()), id: \.offset) { _, reading in
+                        PronunciationView(raw: reading, table: table, pointSize: pointSize, scrollable: false)
+                    }
+                }
             } else { content }
         }
     }

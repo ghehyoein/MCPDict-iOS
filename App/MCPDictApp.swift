@@ -4,7 +4,7 @@ import SwiftUI
 struct MCPDictApp: App {
     @StateObject private var model = AppModel()
     var body: some Scene {
-        WindowGroup { RootView().environmentObject(model).task { await model.start() } }
+        WindowGroup { RootView().environmentObject(model).task { CacheMaintenance.scheduled(); try? RecentDeletions.shared.prune(); await model.start() } }
     }
 }
 
@@ -387,6 +387,7 @@ final class AppModel: ObservableObject {
         edit(&next)
         do {
             try FileManager.default.createDirectory(at: favoritesURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try RecentDeletions.shared.capture(before: notebook, after: next)
             try JSONEncoder().encode(next).write(to: favoritesURL, options: .atomic)
             notebook = next
             return true
@@ -527,6 +528,7 @@ struct SearchView: View {
     @State private var resultHeaderPinned = false
     private func submitQuery() {
         searchFocused = false
+        QueryHistory.record(model.query, mode: model.mode, namespace: "dictionary")
         Task { await model.search() }
     }
 
@@ -545,6 +547,11 @@ struct SearchView: View {
                             .focused($searchFocused).onSubmit { submitQuery() }
                         ReadingMarkerHelpButton()
                         Button(ui("查詢")) { submitQuery() }.disabled(model.searching).buttonStyle(.borderless)
+                    }
+                    if searchFocused {
+                        QueryHistoryDropdown(namespace: "dictionary") { entry in
+                            model.query = entry.query; model.mode = SearchMode(rawValue: entry.mode) ?? .character; submitQuery()
+                        }
                     }
                     LanguageSelectionPanel(tables: model.installed?.tables ?? [], names: Binding(get: { model.selectedLanguageNames }, set: { model.selectLanguages($0) }), state: selector, entryID: "dictionaryLanguageSelection", finished: { if !model.query.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { submitQuery() } })
                 }

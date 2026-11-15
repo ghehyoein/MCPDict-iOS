@@ -164,6 +164,10 @@ struct CustomSchemeManager: View {
     }
     private func remove(_ names: Set<String>) {
         let removed = state.custom.branchNames(names)
+        let removedSchemes = state.custom.schemes.filter { state.custom.branchNames(names).contains($0.name) }
+        guard !removedSchemes.isEmpty, removedSchemes.count < state.custom.schemes.count else { return }
+        do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: removedSchemes)) }
+        catch { model.error = error.localizedDescription; return }
         if state.custom.removeBranches(names) { selection.subtract(removed) }
     }
 
@@ -175,6 +179,7 @@ struct CustomSchemeEditor: View {
     let originalName: String
     @State private var identity = ""
     @State private var name = ""
+    @FocusState private var colorFocused: Bool
     @State private var hex = ""
     @State private var openedChild: String?
     @State private var addingChild = false
@@ -219,12 +224,13 @@ struct CustomSchemeEditor: View {
                     Spacer(minLength: 0)
                     TextField("#RRGGBB", text: $hex).textInputAutocapitalization(.characters).autocorrectionDisabled()
                         .multilineTextAlignment(.trailing).frame(width: 88).minimumScaleFactor(0.7).lineLimit(1)
-                        .accessibilityIdentifier("customSchemeHex")
+                        .focused($colorFocused).accessibilityIdentifier("customSchemeHex")
                     ColorPicker(ui("方案顏色"), selection: color, supportsOpacity: false).labelsHidden().frame(width: 32)
                     Button(ui("保存")) {
                         guard let i = index, let value = CustomLanguageSchemes.validColor(hex) else { invalid = true; return }
-                        state.custom.schemes[i].colorHex = value; hex = value
-                    }.fixedSize().buttonStyle(.borderless)
+                        var updated = state.custom; updated.schemes[i].colorHex = value
+                        state.custom = updated; hex = value; colorFocused = false
+                    }.fixedSize().buttonStyle(.borderless).accessibilityIdentifier("saveCustomSchemeColor")
                 }
             }
             Section(ui("自選子分區")) {
@@ -319,6 +325,10 @@ struct CustomSchemeEditor: View {
         else { map = ToolMapResult(points: points) }
     }
     private func removeChildren(_ names: Set<String>) {
+        let removedSchemes = state.custom.schemes.filter { state.custom.branchNames(names).contains($0.name) }
+        guard !removedSchemes.isEmpty, removedSchemes.count < state.custom.schemes.count else { return }
+        do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: removedSchemes)) }
+        catch { model.error = error.localizedDescription; return }
         if state.custom.removeBranches(names) { selection.subtract(names) }
     }
 }

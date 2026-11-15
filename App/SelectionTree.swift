@@ -22,8 +22,8 @@ struct SelectionTree: View {
         let selected = selection
         LazyVStack(alignment: .leading, spacing: 8) {
             ForEach(rows) { row in
-                let checked = scope == .terminalGroups ? selectedRegion.wrappedValue == row.node.region : selected.isSuperset(of: row.ids)
-                let mixed = scope == .terminalGroups ? RegionSelection.isAncestor(row.node.region, of: selectedRegion.wrappedValue) : !selected.isDisjoint(with: row.ids)
+                let checked = selected.isSuperset(of: row.ids)
+                let mixed = !selected.isDisjoint(with: row.ids)
                 HStack {
                     if !singleSelection || row.node.table != nil { Button { toggle(row) } label: {
                         Image(systemName: checked ? "checkmark.square.fill" : (mixed ? "minus.square.fill" : "square")).contentTransition(.identity).transaction { $0.animation = nil; $0.disablesAnimations = true }.font(.title3)
@@ -68,9 +68,6 @@ struct SelectionTree: View {
         if singleSelection {
             guard row.node.table != nil else { return }
             selection = selection == row.ids ? [] : row.ids
-        } else if scope == .terminalGroups {
-            if selectedRegion.wrappedValue == row.node.region { selection = []; selectedRegion.wrappedValue = nil }
-            else { selection = row.ids; selectedRegion.wrappedValue = row.node.region }
         } else {
             var chosen = selection
             if chosen.isSuperset(of: row.ids) { chosen.subtract(row.ids) } else { chosen.formUnion(row.ids) }
@@ -114,16 +111,8 @@ struct LanguageDropdown: View {
         }
         index = state.indexCache.index(tables: eligible, grouping: state.grouping, roles: state.roles, paths: additionalPaths)
         if prune && !preservesHiddenSelection && state.kind != .custom { names = names.intersection(Set(eligible.map(\.name))) }
-        if updateRegion, state.scope == .terminalGroups, let region = state.region {
-            if let ids = index.nodes["g:" + region]?.ids { names = Set(eligible.filter { ids.contains($0.id) }.map(\.name)) }
-        }
-        restoreRegion()
     }
-    private func restoreRegion() {
-        guard state.scope == .terminalGroups else { return }
-        state.region = index.region(names: names, saved: state.region)
-        if state.region == nil, !names.isEmpty { names = [] }
-    }
+    private func restoreRegion() {} // Selection is the persisted union of checked language IDs.
     private var selection: Binding<Set<String>> {
         Binding(get: { Set(tables.filter { names.contains($0.name) }.map(\.id)) },
                 set: { ids in

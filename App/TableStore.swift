@@ -103,7 +103,10 @@ actor TableStore {
             return
         }
         let previous = try await restore()
-        var merged = Dictionary(uniqueKeysWithValues: catalog.tables.map { ($0.id, $0) })
+        let selectionFile = bundledRoot.appendingPathComponent("installed-ids.json")
+        let bundledIDs = (try? Data(contentsOf: selectionFile)).flatMap { try? JSONDecoder().decode(Set<String>.self, from: $0) }
+        let included = catalog.tables.filter { bundledIDs?.contains($0.id) ?? true }
+        var merged = Dictionary(uniqueKeysWithValues: included.map { ($0.id, $0) })
         var overrides = [String]()
         for table in previous?.tables ?? [] where merged[table.id]?.sha256 != table.sha256 {
             merged[table.id] = table; overrides.append(table.name)

@@ -44,6 +44,12 @@ def build_references(checkout, output):
         assert db.execute("SELECT count(*) FROM entries WHERE hz='一'").fetchone()[0] == len(books+fields)
         assert db.execute("PRAGMA quick_check").fetchone()[0] == 'ok'
 
+def include_table(meta):
+    category = str(meta.get('音典分區', '')).split('－')[0]
+    if category in {'歷史音', '現代標準漢語', '戲劇', '域外方音'}:
+        return True
+    return bool(meta.get('省') or meta.get('市')) and not any(meta.get(k) for k in ['縣', '鎮', '村', '自然村'])
+
 def build(checkout, output):
     checkout, output = Path(checkout).resolve(), Path(output)
     def git(*args):
@@ -53,6 +59,7 @@ def build(checkout, output):
     details = json.loads((source/'_詳情.json').read_text(encoding='utf-8'))
     output.mkdir(parents=True, exist_ok=True)
     entries, total = [], 0
+    included = []
     build_references(checkout, output)
     from build_guess_characters import build_guess_characters
     build_guess_characters(checkout, output)
@@ -88,23 +95,27 @@ def build(checkout, output):
             chars=' '.join(c for c in regex.findall(r'\X',fields[0]) if not c.isspace())
             rows.append((chars,name,fields[1],'\t'.join(fields[2:])))
         if not rows: raise ValueError('Empty table '+file.name)
-        db.executemany('INSERT INTO langs VALUES (?,?,?,?)',rows)
-        db.execute('INSERT INTO info VALUES (?,?)',(name,meta.get('語言',name)))
-        (output/(identity+'.tsv')).write_bytes(raw)
+        if include_table(meta):
+            included.append(identity)
+            db.executemany('INSERT INTO langs VALUES (?,?,?,?)',rows)
+            db.execute('INSERT INTO info VALUES (?,?)',(name,meta.get('語言',name)))
+            (output/(identity+'.tsv')).write_bytes(raw)
+            total += len(rows)
         entry=dict(id=identity,name=name,fullName=meta.get('語言',name),atlas=path('地圖集二分區'),dictionary=path('音典分區'),administrative=[meta[k] for k in ['省','市','縣','鎮','村','自然村'] if meta.get(k)] or ['未標註行政區'],source=meta.get('字表來源',''),sourceCommit=commit,recordCount=len(rows),size=len(raw),sha256=hashlib.sha256(('tsv-v1:'+blob).encode()).hexdigest(),url='https://raw.githubusercontent.com/osfans/MCPDict/'+commit+'/tools/tables/output/'+file.name,metadata=meta,atlasColor=meta.get('地圖集二顏色',''),dictionaryColor=meta.get('音典顏色',''),format='upstream-tsv-v1',gitBlob=blob)
         try:
             lon,lat=map(float,meta.get('經緯度','').replace('，',',').split(','))
             if -180<=lon<=180 and -90<=lat<=90: entry['location']=dict(longitude=lon,latitude=lat)
         except ValueError: pass
-        entries.append(entry); total+=len(rows)
+        entries.append(entry)
+    (output/'installed-ids.json').write_text(json.dumps(included), encoding='utf-8')
     db.commit()
     assert db.execute('PRAGMA quick_check').fetchone()[0]=='ok'
     assert db.execute('SELECT count(*) FROM langs').fetchone()[0]==total
     assert db.execute("SELECT count(*) FROM langs WHERE langs MATCH '字組 : 中'").fetchone()[0]>0
     db.close()
-    catalog=dict(schemaVersion=1,version=commit,sourceRepository='https://github.com/osfans/MCPDict',sourceCommit=commit,scope='內置完整字表快照',tables=entries)
+    catalog=dict(schemaVersion=1,version=commit,sourceRepository='https://github.com/osfans/MCPDict',sourceCommit=commit,scope='完整目錄及精選內置字表',tables=entries)
     (output/'catalog.json').write_text(json.dumps(catalog,ensure_ascii=False),encoding='utf-8')
-    report=dict(sourceCommit=commit,tables=len(entries),readings=total,databaseBytes=(output/'bundled.db').stat().st_size,databaseSHA256=hashlib.sha256((output/'bundled.db').read_bytes()).hexdigest())
+    report=dict(sourceCommit=commit,tables=len(included),catalogTables=len(entries),readings=total,databaseBytes=(output/'bundled.db').stat().st_size,databaseSHA256=hashlib.sha256((output/'bundled.db').read_bytes()).hexdigest())
     (output/'bundle-report.json').write_text(json.dumps(report),encoding='utf-8')
     print(json.dumps(report),flush=True)
     return report

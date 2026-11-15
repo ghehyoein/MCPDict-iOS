@@ -149,12 +149,20 @@ struct DialectMapView: View {
         }
     }
     private var searchBar: some View {
+        VStack(spacing: 0) {
                 HStack {
                     TextField(ui(mode == .character ? "請輸入漢字" : mode == .pronunciation ? "請輸入讀音" : "請輸入註釋"), text: $character).textFieldStyle(.roundedBorder).focused($inputFocused).onSubmit { Task { await query() } }
                     ReadingMarkerHelpButton()
                     Button(ui("查字")) { Task { await query() } }.disabled(querying).buttonStyle(.borderless)
                     Button(ui("清除")) { character = ""; resetResults() }.foregroundStyle(.red).buttonStyle(.borderless)
                 }.padding(.horizontal)
+                if inputFocused {
+                    QueryHistoryDropdown(namespace: "map") { entry in
+                        character = entry.query; mode = SearchMode(rawValue: entry.mode) ?? .character
+                        Task { await query() }
+                    }.padding(.horizontal)
+                }
+        }
     }
     @ViewBuilder private var variantBar: some View {
                 if let variants = result?.choices {
@@ -200,6 +208,7 @@ struct DialectMapView: View {
         generation += 1; querying = false; result = nil; activeCharacter = ""; rebuildPoints()
     }
     @MainActor private func query(queryOverride: String? = nil, modeOverride: SearchMode? = nil, replaceInFlight: Bool = false) async {
+        if queryOverride == nil { QueryHistory.record(character, mode: mode, namespace: "map") }
         inputFocused = false
         let text = (queryOverride ?? character).trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, (!querying || replaceInFlight) else { return }
