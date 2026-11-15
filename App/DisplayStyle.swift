@@ -161,12 +161,13 @@ struct PronunciationView: View {
     let table: TablePackage?
     var pointSize: Double? = nil
     var scrollable = true
+    var wrapReadings = false
     @AppStorage(ReadingFormatPreferences.key) private var formats = ""
     @AppStorage("toneStyle") private var style = "baSheng"
     @AppStorage("pitchStyle") private var pitch = "curve"
     var body: some View {
         Group {
-            if scrollable {
+            if scrollable && wrapReadings {
                 PronunciationFlow {
                     ForEach(Array(raw.components(separatedBy: "\t").enumerated()), id: \.offset) { _, reading in
                         ViewThatFits(in: .horizontal) {
@@ -177,6 +178,8 @@ struct PronunciationView: View {
                         }
                     }
                 }
+            } else if scrollable {
+                ScrollView(.horizontal, showsIndicators: false) { content }.fixedSize(horizontal: false, vertical: true)
             } else { content }
         }
     }

@@ -164,7 +164,8 @@ struct CustomSchemeManager: View {
     }
     private func remove(_ names: Set<String>) {
         let removed = state.custom.branchNames(names)
-        let removedSchemes = state.custom.schemes.filter { state.custom.branchNames(names).contains($0.name) }
+        var snapshot = state.custom; snapshot.retainColors()
+        let removedSchemes = snapshot.schemes.filter { state.custom.branchNames(names).contains($0.name) }
         guard !removedSchemes.isEmpty, removedSchemes.count < state.custom.schemes.count else { return }
         do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: removedSchemes)) }
         catch { model.error = error.localizedDescription; return }
@@ -270,6 +271,7 @@ struct CustomSchemeEditor: View {
                 }, set: { value in
                     if let i = index {
                         var removed = state.custom.schemes[i]
+                        removed.colorHex = state.custom.color(at: i)
                         removed.languages.subtract(value)
                         if !removed.languages.isEmpty {
                             do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: [removed])) }
@@ -333,7 +335,8 @@ struct CustomSchemeEditor: View {
         else { map = ToolMapResult(points: points) }
     }
     private func removeChildren(_ names: Set<String>) {
-        let removedSchemes = state.custom.schemes.filter { state.custom.branchNames(names).contains($0.name) }
+        var snapshot = state.custom; snapshot.retainColors()
+        let removedSchemes = snapshot.schemes.filter { state.custom.branchNames(names).contains($0.name) }
         guard !removedSchemes.isEmpty, removedSchemes.count < state.custom.schemes.count else { return }
         do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: removedSchemes)) }
         catch { model.error = error.localizedDescription; return }

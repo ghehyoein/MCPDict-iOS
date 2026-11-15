@@ -11,12 +11,17 @@ final class RecentDeletions: ObservableObject {
     static let shared = RecentDeletions()
     @Published private(set) var items: [DeletedCollection] = []
     private let url: URL
+    private var loadFailure: Error?
     init(url: URL = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("recent-deletions.json")) {
         self.url = url
-        if let data = try? Data(contentsOf: url) { items = (try? JSONDecoder().decode([DeletedCollection].self, from: data)) ?? [] }
+        if FileManager.default.fileExists(atPath: url.path) {
+            do { items = try JSONDecoder().decode([DeletedCollection].self, from: Data(contentsOf: url)) }
+            catch { loadFailure = error }
+        }
         try? prune()
     }
     private func write(_ value: [DeletedCollection]) throws {
+        if let loadFailure { throw loadFailure }
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try JSONEncoder().encode(value).write(to: url, options: .atomic)
         items = value
@@ -47,7 +52,13 @@ struct RecentDeletionsView: View {
             ForEach(store.items) { item in
                 VStack(alignment: .leading) {
                     Text(ui(item.title)); Text(item.date, style: .date).foregroundStyle(.secondary)
-                    if let book = item.notebook { Text(book.books.map(\.title).joined(separator: "、")) }
+                    if let book = item.notebook {
+                        Text(book.books.map(\.title).joined(separator: "、"))
+                        NavigationLink(ui("查看詳情")) {
+                            List(book.entries) { entry in ReadingView(reading: entry.reading) }
+                                .navigationTitle(ui("最近刪除"))
+                        }
+                    }
                     if let schemes = item.schemes { Text(schemes.map(\.name).joined(separator: "、")) }
                     HStack {
                         Button(ui("還原")) { restore(item) }
@@ -57,7 +68,7 @@ struct RecentDeletionsView: View {
                 }
             }
         }.navigationTitle(ui("最近刪除"))
-            .onAppear { try? store.prune() }
+            .onAppear { do { try store.prune() } catch { self.error = error.localizedDescription } }
             .alert(ui("最近刪除"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button(ui("好")) {} } message: { Text(error ?? "") }
     }
     private func restore(_ item: DeletedCollection) {

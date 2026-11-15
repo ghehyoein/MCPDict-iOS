@@ -58,7 +58,7 @@ struct DictionaryResultTable: View {
                                 let readings = index.cells[language]?[character] ?? []
                                 if readings.isEmpty { Text("—").foregroundStyle(.secondary) }
                                 ForEach(readings) { reading in
-                                    HStack(alignment: .top) { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: language)) }
+                                    HStack(alignment: .top) { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: language), wrapReadings: true) }
                                     if !reading.displayNote.isEmpty { SystemText(reading.displayNote, color: .secondaryLabel) }
                                 }
                             }.frame(width: 180, alignment: .leading).padding(8)

@@ -17,7 +17,9 @@ enum GlyphStandard: String, CaseIterable, Identifiable {
     // Android's default_locale is ko-Kore-KR; this does not change interface translations.
     var language: String { self == .system ? "ko-Kore-KR" : rawValue }
     static var current: Self { Self(rawValue: UserDefaults.standard.string(forKey: "glyphStandard") ?? "") ?? .system }
-    private static let fontCache = NSCache<NSString, UIFont>()
+    private static let fontCache: NSCache<NSString, UIFont> = {
+        let cache = NSCache<NSString, UIFont>(); cache.countLimit = 256; return cache
+    }()
     static func font(_ base: UIFont, standard: Self = .current) -> UIFont {
         let key = "\(base.fontName)|\(base.pointSize)|\(base.fontDescriptor.symbolicTraits.rawValue)|\(standard.language)" as NSString
         if let cached = fontCache.object(forKey: key) { return cached }

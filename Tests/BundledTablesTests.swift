@@ -240,8 +240,22 @@ final class BundledTablesTests: XCTestCase {
         try db.validate()
         let counts = try db.rows("SELECT 語言, count(*) AS n FROM langs GROUP BY 語言")
         let actual = Dictionary(uniqueKeysWithValues: counts.map { ($0["語言"]!, Int($0["n"]!)!) })
-        XCTAssertEqual(actual.count, catalog.tables.count)
-        for table in catalog.tables {
+        let ids = try JSONDecoder().decode(Set<String>.self, from: Data(contentsOf: root.appendingPathComponent("installed-ids.json")))
+        let selected = catalog.tables.filter { ids.contains($0.id) }
+        let expected = catalog.tables.filter { table in
+            if ["歷史音", "現代標準漢語", "戲劇", "域外方音"].contains(table.dictionary.first ?? "") { return true }
+            let meta = table.metadata ?? [:]
+            return !(meta["省"] ?? "").isEmpty || !(meta["市"] ?? "").isEmpty
+                ? ["縣", "鎮", "村", "自然村"].allSatisfy { (meta[$0] ?? "").isEmpty } : false
+        }
+        XCTAssertEqual(ids, Set(expected.map(\.id)))
+        XCTAssertLessThan(selected.count, catalog.tables.count)
+        XCTAssertEqual(actual.count, selected.count)
+        for table in catalog.tables where !ids.contains(table.id) {
+            XCTAssertNil(actual[table.name])
+            XCTAssertFalse(FileManager.default.fileExists(atPath: root.appendingPathComponent(table.id + ".tsv").path))
+        }
+        for table in selected {
             XCTAssertEqual(actual[table.name], table.recordCount, table.name)
             XCTAssertTrue(FileManager.default.fileExists(atPath: root.appendingPathComponent(table.id + ".tsv").path))
         }

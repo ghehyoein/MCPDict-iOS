@@ -215,7 +215,7 @@ struct HomophoneResultsView: View {
             if let first = rows.first {
                 LazyVStack(alignment: .leading, spacing: 8) {
                     Button { model.tableDetail = model.table(named: first.language) } label: { LanguageBadge(name: first.language, table: model.table(named: first.language), grouping: palette == "atlas" ? .atlas : .dictionary) }.buttonStyle(.plain)
-                    PronunciationView(raw: first.pronunciation, table: model.table(named: first.language)).font(.title3)
+                    PronunciationView(raw: first.pronunciation, table: model.table(named: first.language), wrapReadings: true).font(.title3)
                         .textSelection(.enabled)
                     ForEach(rows) { row in
                         HStack(alignment: .top) {

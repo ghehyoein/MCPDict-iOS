@@ -96,7 +96,7 @@ final class MapTests: XCTestCase {
         XCTAssertFalse(label.readingText.isHidden)
         XCTAssertFalse(label.canShowCallout)
         label.nameButton.sendActions(for: .touchUpInside)
-        XCTAssertLessThan(label.readingText.frame.minY, label.nameButton.frame.minY)
+        XCTAssertGreaterThanOrEqual(label.readingText.frame.minY, label.nameButton.frame.maxY)
         XCTAssertNotNil(label.nameButton.backgroundColor)
         XCTAssertEqual(chosen, "gz")
         coordinator.update(map, points: [], fit: 0)

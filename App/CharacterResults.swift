@@ -53,7 +53,7 @@ struct CharacterResultsView: View {
                     LazyVStack(alignment: .leading, spacing: 8) {
                         ForEach(group.readings) { reading in
                             VStack(alignment: .leading, spacing: 2) {
-                                HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language)).font(.title3).contentShape(Rectangle()).textSelection(.enabled).accessibilityIdentifier("dictionary-reading-" + reading.language) }
+                                HStack { FavoriteButton(reading: reading); PronunciationView(raw: reading.pronunciation, table: model.table(named: reading.language), wrapReadings: true).font(.title3).contentShape(Rectangle()).textSelection(.enabled).accessibilityIdentifier("dictionary-reading-" + reading.language) }
                                 if !reading.displayNote.isEmpty { SystemText(reading.displayNote, color: .secondaryLabel).font(.subheadline) }
                             }
 
