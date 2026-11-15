@@ -25,6 +25,17 @@ final class MapStressTests: XCTestCase {
         }
         return result == KERN_SUCCESS ? info.phys_footprint : 0
     }
+    private func cacheDirectoryBytes() -> Int {
+        guard let root = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
+              let files = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.isRegularFileKey, .totalFileAllocatedSizeKey, .fileSizeKey]) else { return 0 }
+        var bytes = 0
+        for case let file as URL in files {
+            if let values = try? file.resourceValues(forKeys: [.isRegularFileKey, .totalFileAllocatedSizeKey, .fileSizeKey]), values.isRegularFile == true {
+                bytes += values.totalFileAllocatedSize ?? values.fileSize ?? 0
+            }
+        }
+        return bytes
+    }
     @MainActor func testAllGeocodedPointsWithReadings() async throws {
         guard let fixture = Bundle(for: Self.self).url(forResource: "map-stress", withExtension: "json") else {
             throw XCTSkip("Generate the pinned full-catalog map fixture for this opt-in stress test")
@@ -40,6 +51,7 @@ final class MapStressTests: XCTestCase {
             return point
         }
         XCTAssertGreaterThan(points.count, 2000)
+        let cacheBefore = cacheDirectoryBytes()
         let scene = try XCTUnwrap(UIApplication.shared.connectedScenes.first as? UIWindowScene)
         let window = UIWindow(windowScene: scene)
         let controller = UIViewController()
@@ -78,6 +90,8 @@ final class MapStressTests: XCTestCase {
         XCTAssertFalse(intervals.isEmpty)
         let report: [String: Any] = ["points": points.count, "max_views": maxViews, "viewport_width": map.bounds.width,
             "update_seconds": updateSeconds, "before_bytes": before, "loaded_bytes": loaded, "peak_bytes": peak,
+            "app_cache_before_bytes": cacheBefore, "app_cache_after_bytes": cacheDirectoryBytes(),
+            "http_memory_cache_bytes": URLCache.shared.currentMemoryUsage, "http_disk_cache_bytes": URLCache.shared.currentDiskUsage,
             "frames": intervals.count, "p95_gap_ms": intervals[Int(Double(intervals.count - 1) * 0.95)] * 1000,
             "max_gap_ms": (intervals.last ?? 0) * 1000, "gaps_over_50ms": intervals.filter { $0 > 0.05 }.count]
         print("MAP_STRESS " + String(data: try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys]), encoding: .utf8)!)
