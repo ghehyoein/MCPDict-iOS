@@ -16,3 +16,6 @@ App/Assets.xcassets/
 
 App/BundledTables/
 bundled-source/
+
+# Generated only for opt-in simulator stress checks
+Tests/Fixtures/map-stress.json

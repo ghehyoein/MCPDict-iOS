@@ -8,6 +8,11 @@ on:
         description: Optional space-separated Xcode test identifiers for focused checks
         type: string
         default: ''
+      device:
+        description: Simulator device for the requested focused check
+        type: choice
+        options: [iPhone-13, iPhone-SE-3rd-generation]
+        default: iPhone-13
 permissions:
   contents: read
 jobs:
@@ -16,7 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        device: [iPhone-13]
+        device: ["${{ inputs.device || 'iPhone-13' }}"]
         ios: ['26.2']
     runs-on: macos-15
     env:
@@ -36,6 +41,9 @@ jobs:
           python3 -m venv bundle-env
           bundle-env/bin/pip install regex==2026.9.29
           bundle-env/bin/python tools/bundle_tables.py bundled-source App/BundledTables
+      - name: Prepare opt-in dense map fixture
+        if: contains(inputs.tests, 'MapStressTests')
+        run: python3 tools/map_stress_fixture.py bundled-source App/BundledTables/catalog.json Tests/Fixtures/map-stress.json
       - name: Generate Xcode project
         run: |
           brew install xcodegen
