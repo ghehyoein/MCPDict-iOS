@@ -188,159 +188,181 @@ final class CachedAccessibilityMapView: MKMapView {
     }
 }
 
-final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
-    let nameButton = UIButton(type: .system)
+// Idle annotations draw in one layer. Native controls are created only for an
+// actual interaction; every point and the complete selectable reading remain.
+private final class MapLabelElement: UIAccessibilityElement {
+    var activate: (() -> Bool)?
+    override func accessibilityActivate() -> Bool { activate?() ?? false }
+}
+
+final class LabelAnnotationView: MKAnnotationView {
+    private var button: UIButton?
+    private var nameText = NSAttributedString(string: "")
+    private var nameFrame = CGRect.zero
+    private var colors = [UIColor]()
+    private var buttonGradient: CAGradientLayer?
     private(set) var readingView: UITextView?
-    private var readingPreview: MapReadingPreview?
     private var renderedReading = NSAttributedString(string: "")
+    private var previewText = NSAttributedString(string: "")
     private var readingFrame = CGRect.zero
-    private var lastReadingInteraction: CFTimeInterval = 0
     private var readingNeedsScroll = false
-    private func ensureReadingPreview() {
-        guard readingPreview == nil else { return }
-        let preview = MapReadingPreview()
-        preview.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
-        preview.layer.cornerRadius = 4
-        preview.clipsToBounds = true
-        preview.contentMode = .redraw
-        preview.isAccessibilityElement = true
-        preview.accessibilityTraits = .staticText
-        preview.activate = { [weak self] in
-            guard let self else { return false }
-            return self.readingText.becomeFirstResponder()
-        }
-        addSubview(preview)
-        readingPreview = preview
+    private var lastReadingInteraction: CFTimeInterval = 0
+    private var choose: (() -> Void)?
+    private var previousReading: String?
+    private var previousParts: [ToneDisplay.Part]?
+    private var previousFontSize: Double?
+    private var previousGlyph = ""
+    private var cachedReadingRect = CGRect.zero
+    private var glyphLabelKey = ""
+    private var previousColor: String?
+    private lazy var nameElement: MapLabelElement = {
+        let element = MapLabelElement(accessibilityContainer: self)
+        element.accessibilityTraits = .button
+        element.activate = { [weak self] in self?.choose?(); return true }
+        return element
+    }()
+    private lazy var readingElement: MapLabelElement = {
+        let element = MapLabelElement(accessibilityContainer: self)
+        element.accessibilityTraits = .staticText
+        element.activate = { [weak self] in self?.readingText.becomeFirstResponder() ?? false }
+        return element
+    }()
+    var nameButton: UIButton {
+        if let button { return button }
+        let value = UIButton(type: .system)
+        value.titleLabel?.adjustsFontForContentSizeCategory = false
+        value.setAttributedTitle(nameText, for: .normal)
+        value.frame = nameFrame; value.backgroundColor = colors.first
+        value.layer.cornerRadius = 5; value.clipsToBounds = true
+        let gradient = CAGradientLayer()
+        gradient.colors = colors.map(\.cgColor); gradient.isHidden = colors.count <= 1
+        gradient.startPoint = CGPoint(x: 0, y: 0.5); gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        gradient.frame = value.bounds; value.layer.insertSublayer(gradient, at: 0)
+        buttonGradient = gradient
+        value.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
+        value.accessibilityLabel = nameElement.accessibilityLabel
+        value.accessibilityIdentifier = nameElement.accessibilityIdentifier
+        addSubview(value); button = value; setNeedsDisplay(); updateAccessibility()
+        return value
     }
-    // TextKit and native selection machinery are needed only for a touched label.
-    // Hit testing creates the text view before UIKit delivers that same touch,
-    // preserving the first long press and native selection gestures.
     var readingText: UITextView {
         if let readingView { return readingView }
-        ensureReadingPreview()
         let text = UITextView()
         text.adjustsFontForContentSizeCategory = false
         text.isEditable = false; text.isSelectable = true
         text.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
         text.textContainer.lineFragmentPadding = 0
-        text.textColor = .label; text.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
-        text.layer.cornerRadius = 4
         text.textContainer.maximumNumberOfLines = 0
         text.textContainer.lineBreakMode = .byCharWrapping
+        text.textColor = .label; text.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
+        text.layer.cornerRadius = 4
         text.attributedText = renderedReading
         text.frame = readingFrame; text.isScrollEnabled = readingNeedsScroll
-        text.accessibilityIdentifier = readingPreview?.accessibilityIdentifier
-        text.accessibilityLabel = readingPreview?.accessibilityLabel
-        addSubview(text); readingView = text; readingPreview?.isHidden = true
+        text.accessibilityIdentifier = readingElement.accessibilityIdentifier
+        text.accessibilityLabel = readingElement.accessibilityLabel
+        addSubview(text); readingView = text; setNeedsDisplay()
         if window != nil { MapTextGestureGate.install(above: self) }
-        accessibilityElements = [text, nameButton]
-        (superviewOfMap() as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
+        updateAccessibility()
         return text
     }
-    private func superviewOfMap() -> MKMapView? {
+    private func updateAccessibility() {
+        let name: Any = button.map { $0 as Any } ?? nameElement
+        let reading: Any = readingView.map { $0 as Any } ?? readingElement
+        accessibilityElements = readingFrame.isEmpty ? [name] : [reading, name]
         var parent = superview
         while let view = parent {
-            if let map = view as? MKMapView { return map }
+            if let map = view as? CachedAccessibilityMapView { map.invalidateAccessibilitySnapshot(); break }
             parent = view.superview
         }
-        return nil
     }
-    func releaseInactiveTextView() {
-        guard let text = readingView, !text.isFirstResponder, text.selectedRange.length == 0, text.contentOffset == .zero,
-              CACurrentMediaTime() - lastReadingInteraction > 2,
-              !(text.gestureRecognizers ?? []).contains(where: { $0.state == .began || $0.state == .changed }) else { return }
-        text.removeFromSuperview(); readingView = nil; readingPreview?.isHidden = false
-        if let readingPreview { accessibilityElements = [readingPreview, nameButton] }
-        (superviewOfMap() as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
-    }
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        readingView?.resignFirstResponder(); readingView?.removeFromSuperview(); readingView = nil
-        readingPreview?.isHidden = false
-        if let readingPreview { accessibilityElements = [readingPreview, nameButton] }
-    }
-    private let gradient = CAGradientLayer()
-    private var choose: (() -> Void)?
-    private var previousReading: String?
-    private var previousParts: [ToneDisplay.Part]?
-    private var previousFontSize: Double?
-    private var cachedReadingRect = CGRect.zero
-    private var glyphLabelKey = ""
-    private var previousColor: String?
     override init(annotation: MKAnnotation?, reuseIdentifier: String?) {
         super.init(annotation: annotation, reuseIdentifier: reuseIdentifier)
-        // Only the map slider sizes annotation text; map controls keep their normal traits.
         traitOverrides.preferredContentSizeCategory = .large
-        nameButton.titleLabel?.adjustsFontForContentSizeCategory = false
-        nameButton.layer.insertSublayer(gradient, at: 0)
-        nameButton.layer.cornerRadius = 5; nameButton.clipsToBounds = true
-        nameButton.setTitleColor(.white, for: .normal)
-        addSubview(nameButton)
-        nameButton.addTarget(self, action: #selector(openDetails), for: .touchUpInside)
-        isUserInteractionEnabled = true
-        isAccessibilityElement = false
-        accessibilityElements = [nameButton]
-
+        backgroundColor = .clear; isOpaque = false
+        isUserInteractionEnabled = true; isAccessibilityElement = false
+        contentMode = .redraw
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
+    override func draw(_ rect: CGRect) {
+        guard let context = UIGraphicsGetCurrentContext() else { return }
+        if button == nil, !nameFrame.isEmpty {
+            context.saveGState()
+            UIBezierPath(roundedRect: nameFrame, cornerRadius: 5).addClip()
+            (colors.first ?? .systemTeal).setFill(); context.fill(nameFrame)
+            if colors.count > 1, let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(), colors: colors.map(\.cgColor) as CFArray, locations: nil) {
+                context.drawLinearGradient(gradient, start: CGPoint(x: nameFrame.minX, y: nameFrame.midY), end: CGPoint(x: nameFrame.maxX, y: nameFrame.midY), options: [])
+            }
+            let size = nameText.size()
+            nameText.draw(at: CGPoint(x: nameFrame.midX - size.width / 2, y: nameFrame.midY - size.height / 2))
+            context.restoreGState()
+        }
+        if readingView == nil, !readingFrame.isEmpty {
+            context.saveGState()
+            UIBezierPath(roundedRect: readingFrame, cornerRadius: 4).addClip()
+            UIColor.secondarySystemBackground.withAlphaComponent(0.85).setFill(); context.fill(readingFrame)
+            previewText.draw(with: readingFrame.insetBy(dx: 4, dy: 4), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+            context.restoreGState()
+        }
+    }
     override func didMoveToWindow() {
         super.didMoveToWindow()
         if window != nil && readingView != nil { MapTextGestureGate.install(above: self) }
     }
-    // MapKit handles annotation selection itself. Explicit child hit testing keeps the
-    // pronunciation and name controls interactive, including overlapping label bounds.
     override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
         guard !isHidden, alpha > 0.01, isUserInteractionEnabled else { return nil }
         let selecting = readingView?.isFirstResponder == true
-        // Reject off-label touches in O(1), without walking TextKit descendants.
         guard bounds.contains(point) || selecting else { return nil }
         if !readingFrame.isEmpty, readingFrame.contains(point) || selecting {
             lastReadingInteraction = CACurrentMediaTime()
             let text = readingText
             if let hit = text.hitTest(convert(point, to: text), with: event) { return hit }
         }
-        guard !nameButton.isHidden else { return nil }
-        return nameButton.hitTest(convert(point, to: nameButton), with: event)
+        guard nameFrame.contains(point) else { return nil }
+        let name = nameButton
+        return name.hitTest(convert(point, to: name), with: event)
     }
     @objc private func openDetails() { choose?() }
+    func releaseInactiveTextView() {
+        guard let text = readingView, !text.isFirstResponder, text.selectedRange.length == 0, text.contentOffset == .zero,
+              CACurrentMediaTime() - lastReadingInteraction > 2,
+              !(text.gestureRecognizers ?? []).contains(where: { $0.state == .began || $0.state == .changed }) else { return }
+        text.removeFromSuperview(); readingView = nil; setNeedsDisplay(); updateAccessibility()
+    }
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        readingView?.resignFirstResponder(); readingView?.removeFromSuperview(); readingView = nil
+        button?.removeFromSuperview(); button = nil; buttonGradient = nil
+        setNeedsDisplay(); updateAccessibility()
+    }
     func configure(_ point: DialectPoint, fontSize: Double, labelSize: Double = 16, choose: @escaping () -> Void) {
         self.choose = choose
-        if nameButton.currentTitle != point.name { nameButton.setTitle(point.name, for: .normal) }
-        nameButton.accessibilityLabel = point.name
-        nameButton.accessibilityIdentifier = "map-name-" + point.id
-        let labelKey = point.name + "|" + String(labelSize) + "|" + GlyphStandard.current.rawValue
+        let glyph = GlyphStandard.current.rawValue
+        let labelKey = point.name + "|" + String(labelSize) + "|" + glyph
+        var changed = false
+        nameElement.accessibilityLabel = point.name
+        nameElement.accessibilityIdentifier = "map-name-" + point.id
         if glyphLabelKey != labelKey {
-            glyphLabelKey = labelKey
+            glyphLabelKey = labelKey; changed = true
             let title = GlyphStandard.attributed(point.name, font: .systemFont(ofSize: labelSize))
             title.addAttribute(.foregroundColor, value: UIColor.white, range: NSRange(location: 0, length: title.length))
-            nameButton.setAttributedTitle(title, for: .normal)
+            nameText = title; button?.setAttributedTitle(title, for: .normal)
         }
+        button?.accessibilityLabel = point.name; button?.accessibilityIdentifier = nameElement.accessibilityIdentifier
         if previousColor != point.color {
-        previousColor = point.color
-        let colors = TableColors.hexes(point.color)
-        nameButton.backgroundColor = TableColors.uiColor(colors.first ?? "#008080")
-        gradient.isHidden = colors.count <= 1
-        gradient.colors = (colors.count == 1 ? colors + colors : colors).map { TableColors.uiColor($0).cgColor }
-        gradient.startPoint = CGPoint(x: 0, y: 0.5); gradient.endPoint = CGPoint(x: 1, y: 0.5)
+            previousColor = point.color; changed = true
+            colors = TableColors.hexes(point.color).map { TableColors.uiColor($0) }
+            if colors.isEmpty { colors = [TableColors.uiColor("#008080")] }
+            button?.backgroundColor = colors.first
+            buttonGradient?.colors = colors.map(\.cgColor); buttonGradient?.isHidden = colors.count <= 1
         }
+        let textChanged = previousReading != point.reading || previousParts != point.toneParts || previousFontSize != fontSize || previousGlyph != glyph
         if point.reading.isEmpty {
-            previousReading = nil
-            readingView?.removeFromSuperview(); readingPreview?.removeFromSuperview()
-            readingView = nil; readingPreview = nil
-            renderedReading = NSAttributedString(string: ""); readingFrame = .zero
-            previousParts = nil
-            let size = nameButton.attributedTitle(for: .normal)?.size() ?? .zero
-            bounds = CGRect(x: 0, y: 0, width: size.width + 12, height: max(size.height, CGFloat(labelSize) * 1.4))
-            nameButton.frame = bounds; gradient.frame = nameButton.bounds
-            accessibilityElements = [nameButton]
-            collisionMode = .rectangle
-            return
-        }
-        ensureReadingPreview()
-        if let readingView { accessibilityElements = [readingView, nameButton] }
-        else if let readingPreview { accessibilityElements = [readingPreview, nameButton] }
-        let textChanged = previousReading != point.reading || previousParts != point.toneParts || previousFontSize != fontSize
-        if textChanged {
+            if previousReading != nil { changed = true }
+            previousReading = nil; previousParts = nil
+            readingView?.removeFromSuperview(); readingView = nil
+            renderedReading = NSAttributedString(string: ""); previewText = renderedReading
+            cachedReadingRect = .zero
+        } else if textChanged {
         let text = NSMutableAttributedString(string: "")
         let font = GlyphStandard.font(UIFont.systemFont(ofSize: fontSize))
         let parts = point.toneParts ?? [.init(id: 0, base: point.reading, pitch: "", tone: "", stacked: false)]
@@ -365,37 +387,38 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         let contentChanged = previousReading != point.reading
         GlyphStandard.apply(to: text)
         renderedReading = text
-        if let readingView {
-            let selection = readingView.selectedRange
-            readingView.attributedText = text
-            if !contentChanged && NSMaxRange(selection) <= text.length { readingView.selectedRange = selection }
-            if contentChanged { readingView.setContentOffset(.zero, animated: false) }
+            if let readingView {
+                let selection = readingView.selectedRange
+                readingView.attributedText = text
+                if !contentChanged && NSMaxRange(selection) <= text.length { readingView.selectedRange = selection }
+                if contentChanged { readingView.setContentOffset(.zero, animated: false) }
+            }
+            previousReading = point.reading; previousParts = point.toneParts; previousFontSize = fontSize; previousGlyph = glyph
+            let range = (text.string as NSString).rangeOfComposedCharacterSequences(for: NSRange(location: 0, length: min(text.length, 1024)))
+            previewText = text.attributedSubstring(from: range)
+            cachedReadingRect = previewText.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
+            changed = true
         }
-        previousReading = point.reading; previousParts = point.toneParts; previousFontSize = fontSize
-        let range = (text.string as NSString).rangeOfComposedCharacterSequences(for: NSRange(location: 0, length: min(text.length, 1024)))
-        let previewText = text.attributedSubstring(from: range)
-        readingPreview?.text = previewText
-        cachedReadingRect = previewText.boundingRect(with: CGSize(width: 260, height: CGFloat.greatestFiniteMagnitude), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
-        }
-        for view in [readingPreview as UIView?, readingView as UIView?].compactMap({ $0 }) {
-            view.accessibilityIdentifier = "map-reading-" + point.id
-            view.accessibilityLabel = point.reading
-        }
-        let nameButtonSize = nameButton.attributedTitle(for: .normal)?.size() ?? .zero
-        // Size only the viewport; the text view retains the entire selectable text.
-        let readingRect = cachedReadingRect
-        let nameWidth: CGFloat = nameButtonSize.width + 12, nameHeight: CGFloat = max(nameButtonSize.height, CGFloat(labelSize) * 1.4)
-        let readingWidth: CGFloat = min(268, ceil(readingRect.width) + 8)
-        let readingHeight: CGFloat = point.reading.isEmpty ? 0 : min(180, ceil(readingRect.height) + 8)
-        let width = max(nameWidth, readingWidth)
-        bounds = CGRect(x: 0, y: 0, width: width, height: nameHeight + readingHeight)
-        nameButton.frame = CGRect(x: (width-nameWidth)/2, y: 0, width: nameWidth, height: nameHeight)
-        readingFrame = CGRect(x: (width-readingWidth)/2, y: nameHeight, width: readingWidth, height: readingHeight)
-        readingNeedsScroll = ceil(readingRect.height) + 8 > readingHeight
-        readingPreview?.frame = readingFrame; readingView?.frame = readingFrame
-        readingView?.isScrollEnabled = readingNeedsScroll
-        gradient.frame = nameButton.bounds
+        readingElement.accessibilityLabel = point.reading
+        readingElement.accessibilityIdentifier = "map-reading-" + point.id
+        readingView?.accessibilityLabel = point.reading; readingView?.accessibilityIdentifier = readingElement.accessibilityIdentifier
+        let nameSize = nameText.size()
+        let nameWidth = nameSize.width + 12, nameHeight = max(nameSize.height, CGFloat(labelSize) * 1.4)
+        let readingWidth = point.reading.isEmpty ? 0 : min(268, ceil(cachedReadingRect.width) + 8)
+        let readingHeight = point.reading.isEmpty ? 0 : min(180, ceil(cachedReadingRect.height) + 8)
+        let size = CGSize(width: max(nameWidth, readingWidth), height: nameHeight + readingHeight)
+        if bounds.size != size { changed = true }
+        bounds = CGRect(origin: .zero, size: size)
+        nameFrame = CGRect(x: (size.width - nameWidth) / 2, y: 0, width: nameWidth, height: nameHeight)
+        readingFrame = point.reading.isEmpty ? .zero : CGRect(x: (size.width - readingWidth) / 2, y: nameHeight, width: readingWidth, height: readingHeight)
+        readingNeedsScroll = renderedReading.length > previewText.length || ceil(cachedReadingRect.height) + 8 > readingHeight
+        button?.frame = nameFrame; buttonGradient?.frame = button?.bounds ?? .zero
+        readingView?.frame = readingFrame; readingView?.isScrollEnabled = readingNeedsScroll
+        nameElement.accessibilityFrameInContainerSpace = nameFrame
+        readingElement.accessibilityFrameInContainerSpace = readingFrame
         collisionMode = .rectangle
+        updateAccessibility()
+        if changed { setNeedsDisplay() }
     }
 }
 
@@ -437,17 +460,3 @@ private final class MapTextGestureGate: NSObject, UIGestureRecognizerDelegate {
     }
 }
 
-// Bounded, inert drawing for untouched results; full text remains available to
-// accessibility and is loaded into the native text view on interaction.
-private final class MapReadingPreview: UIView {
-    var text = NSAttributedString(string: "") { didSet { setNeedsDisplay() } }
-    var activate: (() -> Bool)?
-    override func draw(_ rect: CGRect) {
-        text.draw(with: bounds.insetBy(dx: 4, dy: 4), options: [.usesLineFragmentOrigin, .usesFontLeading], context: nil)
-    }
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-        super.traitCollectionDidChange(previousTraitCollection)
-        if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) { setNeedsDisplay() }
-    }
-    override func accessibilityActivate() -> Bool { activate?() ?? false }
-}

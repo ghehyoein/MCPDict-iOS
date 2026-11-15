@@ -131,4 +131,26 @@ final class MapTests: XCTestCase {
         XCTAssertTrue(result.groups["中"]?["甲"]?.last?.note.hasSuffix("134") == true)
     }
 
+    @MainActor func testIdleDrawingPreservesAccessibilityAndFirstTouch() throws {
+        let label = LabelAnnotationView(annotation: nil, reuseIdentifier: nil)
+        let reading = String(repeating: "完整可複製注釋", count: 400)
+        let point = DialectPoint(id: "touch", name: "測試", longitude: 1, latitude: 2, color: "#112233,#445566", reading: reading)
+        var opened = false
+        label.configure(point, fontSize: 5) { opened = true }
+        XCTAssertTrue(label.subviews.isEmpty)
+        let elements = try XCTUnwrap(label.accessibilityElements)
+        let text = try XCTUnwrap(elements.first as? UIAccessibilityElement)
+        let name = try XCTUnwrap(elements.last as? UIAccessibilityElement)
+        XCTAssertEqual(text.accessibilityLabel, reading)
+        XCTAssertEqual(name.accessibilityIdentifier, "map-name-touch")
+        XCTAssertTrue(name.accessibilityActivate()); XCTAssertTrue(opened)
+        let area = text.accessibilityFrameInContainerSpace
+        _ = label.hitTest(CGPoint(x: area.midX, y: area.midY), with: nil)
+        XCTAssertEqual(label.readingView?.text, reading)
+        XCTAssertTrue(label.readingView?.isSelectable == true)
+        XCTAssertTrue(label.readingView?.isScrollEnabled == true)
+        label.releaseInactiveTextView()
+        XCTAssertNotNil(label.readingView, "Do not remove a text view during the initial long-press gesture")
+    }
+
 }
