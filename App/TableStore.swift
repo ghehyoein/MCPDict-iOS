@@ -474,9 +474,11 @@ actor TableStore {
             return TableDownloadResult(installation: previous, cancelled: false, failure: nil, completed: 0)
         }
         let bytes = requested.reduce(Int64(0)) { $0 + $1.size }
-        let previousBytes = try previous?.databaseFile.map {
-            (try FileManager.default.attributesOfItem(atPath: root.appendingPathComponent($0).path)[.size] as? NSNumber)?.int64Value ?? 0
-        } ?? 0
+        var previousBytes: Int64 = 0
+        if let previousFile = previous?.databaseFile {
+            let attributes = try FileManager.default.attributesOfItem(atPath: root.appendingPathComponent(previousFile).path)
+            previousBytes = (attributes[.size] as? NSNumber)?.int64Value ?? 0
+        }
         let available = try root.resourceValues(forKeys: [.volumeAvailableCapacityForImportantUsageKey]).volumeAvailableCapacityForImportantUsage ?? 0
         guard available > previousBytes + bytes * 12 + 30_000_000 else { throw DictionaryFailure(message: "空間不足，請先釋放儲存空間") }
         var failure: String?
@@ -525,9 +527,9 @@ actor TableStore {
         await progress(Task.isCancelled ? "正在保存已完成的字表…" : "正在建立查詢索引…")
         // Only the small atomic activation is uncancellable, not the SQL imports.
         // On force quit, restore() activates the same per-table checkpoints.
-        let root = root, repository = repository
+        let checkpointRoot = root, checkpointRepository = repository
         let recovered = try await Task.detached {
-            try await TableDownloadCheckpoint.recover(in: root, repository: repository, checkIntegrity: false)
+            try await TableDownloadCheckpoint.recover(in: checkpointRoot, repository: checkpointRepository, checkIntegrity: false)
         }.value
         let state = recovered ?? previous ?? TableInstallation(catalogVersion: catalog.version, tables: [], databaseFile: nil)
         return TableDownloadResult(installation: state, cancelled: Task.isCancelled, failure: failure, completed: completed)

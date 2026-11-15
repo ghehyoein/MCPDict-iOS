@@ -46,7 +46,10 @@ final class TableDownloadCheckpoint {
         }
     }
 
-    func merge(_ table: TablePackage, from shard: URL, beforeCommit: () throws -> Void = {}) throws {
+    func merge(_ table: TablePackage, from shard: URL) throws {
+        try merge(table, from: shard, beforeCommit: {})
+    }
+    func merge(_ table: TablePackage, from shard: URL, beforeCommit: () throws -> Void) throws {
         guard let db = connection else { throw DictionaryFailure(message: "無法打開資料庫") }
         try db.attachReadOnly(shard, as: "downloaded")
         defer { _ = try? db.rows("DETACH DATABASE downloaded") }
