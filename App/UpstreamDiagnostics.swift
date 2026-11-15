@@ -5,6 +5,7 @@ import Foundation
 actor UpstreamDiagnostics {
     static let shared = UpstreamDiagnostics()
     private var cached = [String: String]()
+    func clearCache() { cached.removeAll() }
     func log(for table: TablePackage) async throws -> String {
         let text: String
         if let existing = cached[table.sourceCommit] { text = existing }
@@ -20,7 +21,8 @@ actor UpstreamDiagnostics {
             guard url.host == "github.com", url.path.hasPrefix("/ghehyoein/MCPDict-iOS/releases/download/") else { return "" }
             let raw = try await UpstreamTables.get(url)
             text = String(data: raw, encoding: .utf16) ?? String(data: raw, encoding: .utf8) ?? ""
-            cached[table.sourceCommit] = text
+            // Only one pinned diagnostics file is needed at a time.
+            cached = [table.sourceCommit: text]
         }
         return Self.extract(text, name: table.name)
     }

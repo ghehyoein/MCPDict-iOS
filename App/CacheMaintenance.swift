@@ -1,13 +1,27 @@
 import SwiftUI
 
 enum CacheMaintenance {
+    static let memoryBytes = 4 * 1024 * 1024
+    static let diskBytes = 32 * 1024 * 1024
+    static func configure() {
+        URLCache.shared.memoryCapacity = memoryBytes
+        URLCache.shared.diskCapacity = diskBytes
+    }
+    static func releaseMemory() {
+        URLCache.shared.memoryCapacity = 0
+        URLCache.shared.memoryCapacity = memoryBytes
+        GlyphStandard.clearCache(); FontFallback.clearCache(); CharacterVariants.clearCache()
+        ToneDisplay.clearCache()
+        Task { await UpstreamDiagnostics.shared.clearCache() }
+    }
     static func clear() {
         // Only disposable HTTP responses; installed databases, downloads and user data are excluded.
         URLCache.shared.removeAllCachedResponses()
-        GlyphStandard.clearCache(); FontFallback.clearCache()
+        releaseMemory()
         UserDefaults.standard.set(Date(), forKey: "cacheLastCleared")
     }
     static func scheduled() {
+        configure()
         guard UserDefaults.standard.object(forKey: "autoClearCache") as? Bool ?? true else { return }
         let last = UserDefaults.standard.object(forKey: "cacheLastCleared") as? Date ?? .distantPast
         if Date().timeIntervalSince(last) >= 7 * 86400 { clear() }

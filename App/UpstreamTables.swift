@@ -19,10 +19,18 @@ enum UpstreamTables {
         let sha: String
         let size: Int64?
     }
+    // Table bodies are persisted in the verified database; HTTP caching would
+    // retain a redundant second copy and expand memory on large downloads.
+    private static let session: URLSession = {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.urlCache = nil
+        configuration.requestCachePolicy = .reloadIgnoringLocalCacheData
+        return URLSession(configuration: configuration)
+    }()
     static func get(_ url: URL, limit: Int = 20_000_000) async throws -> Data {
         var request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 90)
         request.setValue("MCPDict-iOS", forHTTPHeaderField: "User-Agent")
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await session.data(for: request)
         let code = (response as? HTTPURLResponse)?.statusCode
         let remaining = (response as? HTTPURLResponse)?.value(forHTTPHeaderField: "X-RateLimit-Remaining")
         if code == 429 || (code == 403 && remaining == "0") { throw UpstreamRateLimit() }
@@ -90,9 +98,10 @@ enum UpstreamTables {
     }
 
     static func importTSV(_ data: Data, table: TablePackage, to file: URL) throws {
-        var blob = Data("blob \(data.count)\0".utf8)
-        blob.append(data)
-        let digest = Insecure.SHA1.hash(data: blob).map { String(format: "%02x", $0) }.joined()
+        var hash = Insecure.SHA1()
+        hash.update(data: Data("blob \(data.count)\0".utf8))
+        hash.update(data: data)
+        let digest = hash.finalize().map { String(format: "%02x", $0) }.joined()
         guard data.count == table.size, digest == table.gitBlob, let text = String(data: data, encoding: .utf8) else {
             throw DictionaryFailure(message: "\(table.name)：上游檔案大小、Git 雜湊或編碼校驗失敗")
         }
@@ -104,14 +113,14 @@ enum UpstreamTables {
         _ = try db.rows("BEGIN")
         var count = 0
         try db.batch("INSERT INTO langs VALUES (?,?,?,?)") { insert in
-        for line in text.components(separatedBy: "\n") {
+        for rawLine in text.split(separator: "\n") {
             try Task.checkCancellation()
-            let line = line.hasSuffix("\r") ? String(line.dropLast()) : line
+            let line = rawLine.hasSuffix("\r") ? rawLine.dropLast() : rawLine
             if line.isEmpty || line.hasPrefix("#") { continue }
-            let fields = line.components(separatedBy: "\t")
+            let fields = line.split(separator: "\t", omittingEmptySubsequences: false)
             guard fields.count >= 2, !fields[0].isEmpty, !fields[1].isEmpty else { throw DictionaryFailure(message: "\(table.name)：字表行格式不相容") }
             let characters = fields[0].map(String.init).filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }.joined(separator: " ")
-            try insert([characters, table.name, fields[1], fields.dropFirst(2).joined(separator: "\t")])
+            try insert([characters, table.name, String(fields[1]), fields.dropFirst(2).joined(separator: "\t")])
             count += 1
         }
         }

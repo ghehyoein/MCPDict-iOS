@@ -97,6 +97,7 @@ enum ToneDisplay {
         let values: [String: [String]]
         init(_ values: [String: [String]]) { self.values = values }
     }
+    static func clearCache() { mappings.removeAllObjects() }
     private static let mappings: NSCache<NSString, ToneMap> = {
         let cache = NSCache<NSString, ToneMap>(); cache.countLimit = 512; return cache
     }()

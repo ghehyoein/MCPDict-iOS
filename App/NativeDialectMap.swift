@@ -191,7 +191,6 @@ final class CachedAccessibilityMapView: MKMapView {
 final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     let nameButton = UIButton(type: .system)
     private(set) var readingView: UITextView?
-    private var readingBlur: UIView?
     private var readingPreview: MapReadingPreview?
     private var renderedReading = NSAttributedString(string: "")
     private var readingFrame = CGRect.zero
@@ -199,7 +198,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
     private func ensureReadingPreview() {
         guard readingPreview == nil else { return }
         let preview = MapReadingPreview()
-        preview.backgroundColor = .clear
+        preview.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
+        preview.layer.cornerRadius = 4
         preview.clipsToBounds = true
         preview.contentMode = .redraw
         preview.isAccessibilityElement = true
@@ -208,12 +208,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
             guard let self else { return false }
             return self.readingText.becomeFirstResponder()
         }
-        let blur = UIView()
-        blur.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
-        blur.isUserInteractionEnabled = false
-        blur.layer.cornerRadius = 4; blur.clipsToBounds = true
-        insertSubview(blur, at: 0); addSubview(preview)
-        readingPreview = preview; readingBlur = blur
+        addSubview(preview)
+        readingPreview = preview
     }
     // TextKit and native selection machinery are needed only for a touched label.
     // Hit testing creates the text view before UIKit delivers that same touch,
@@ -226,8 +222,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         text.isEditable = false; text.isSelectable = true
         text.textContainerInset = UIEdgeInsets(top: 4, left: 4, bottom: 4, right: 4)
         text.textContainer.lineFragmentPadding = 0
-        text.textColor = .label; text.backgroundColor = .clear
-        text.layer.cornerRadius = 3
+        text.textColor = .label; text.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
+        text.layer.cornerRadius = 4
         text.textContainer.maximumNumberOfLines = 0
         text.textContainer.lineBreakMode = .byCharWrapping
         text.attributedText = renderedReading
@@ -325,8 +321,8 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         }
         if point.reading.isEmpty {
             previousReading = nil
-            readingView?.removeFromSuperview(); readingBlur?.removeFromSuperview(); readingPreview?.removeFromSuperview()
-            readingView = nil; readingBlur = nil; readingPreview = nil
+            readingView?.removeFromSuperview(); readingPreview?.removeFromSuperview()
+            readingView = nil; readingPreview = nil
             renderedReading = NSAttributedString(string: ""); readingFrame = .zero
             previousParts = nil
             let size = nameButton.attributedTitle(for: .normal)?.size() ?? .zero
@@ -394,7 +390,6 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         readingNeedsScroll = ceil(readingRect.height) + 8 > readingHeight
         readingPreview?.frame = readingFrame; readingView?.frame = readingFrame
         readingView?.isScrollEnabled = readingNeedsScroll
-        readingBlur?.frame = readingFrame
         gradient.frame = nameButton.bounds
         collisionMode = .rectangle
     }

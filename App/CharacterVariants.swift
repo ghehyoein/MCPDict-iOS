@@ -6,6 +6,7 @@ enum CharacterVariants {
         init(_ values: [String: [String]]) { self.values = values }
     }
     private static let cache = NSCache<NSNumber, Shard>()
+    static func clearCache() { cache.removeAllObjects() }
     static func related(_ character: String) -> [String] {
         guard let scalar = character.unicodeScalars.first else { return [] }
         let index = Int(scalar.value % 16)

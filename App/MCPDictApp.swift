@@ -7,6 +7,9 @@ struct MCPDictApp: App {
     var body: some Scene {
         WindowGroup { RootView().environmentObject(model)
             .task { CacheMaintenance.scheduled(); try? RecentDeletions.shared.prune(); await model.start() }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
+                CacheMaintenance.releaseMemory()
+            }
             .onChange(of: scenePhase) { _, phase in
                 if phase == .active { CacheMaintenance.scheduled(); try? RecentDeletions.shared.prune() }
             }

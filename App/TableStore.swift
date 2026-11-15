@@ -156,7 +156,14 @@ actor TableStore {
             }
             try await repository.open(root.appendingPathComponent(file))
         }
+        if !busy { removeCommittedShards(state) }
         return state
+    }
+    // The active combined database owns these readings after the index commits.
+    // Per-table imports are staging files, not a second permanent installation.
+    private func removeCommittedShards(_ state: TableInstallation) {
+        guard state.databaseFile != nil else { return }
+        for table in state.tables { try? FileManager.default.removeItem(at: root.appendingPathComponent(table.localName)) }
     }
     func catalog() async throws -> TableCatalog {
         try await refreshCatalog().catalog
@@ -252,6 +259,7 @@ actor TableStore {
         if reusable, changed.isEmpty, selected == Set(previousByID.keys), let previous {
             let state = TableInstallation(catalogVersion: catalog.version, tables: tables, databaseFile: previous.databaseFile)
             try JSONEncoder().encode(state).write(to: index, options: .atomic)
+            removeCommittedShards(state)
             return state
         }
         let retainedSize = tables.reduce(Int64(0)) { $0 + $1.size }
@@ -343,7 +351,7 @@ actor TableStore {
         }
         await phaseProgress(0.95)
         committed = true
-        let retained = Set(tables.map(\.localName) + [assembled?.lastPathComponent].compactMap { $0 })
+        let retained = Set([assembled?.lastPathComponent].compactMap { $0 })
         for file in (try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)) ?? [] where file.pathExtension == "db" && !retained.contains(file.lastPathComponent) {
             try? FileManager.default.removeItem(at: file)
         }

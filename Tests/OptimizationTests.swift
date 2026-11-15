@@ -87,7 +87,7 @@ final class OptimizationTests: XCTestCase {
         for view in views { XCTAssertNil(view.hitTest(CGPoint(x: -1000, y: -1000), with: nil)) }
         XCTAssertTrue(views.allSatisfy { $0.readingView == nil })
         let first = views[0]
-        _ = first.hitTest(CGPoint(x: first.bounds.midX, y: 8), with: nil)
+        _ = first.hitTest(CGPoint(x: first.bounds.midX, y: first.nameButton.frame.maxY + 8), with: nil)
         XCTAssertTrue(first.readingView?.isSelectable == true)
         XCTAssertTrue(first.readingView?.text.contains("完整注釋") == true)
         XCTAssertEqual(views.filter { $0.readingView != nil }.count, 1)
