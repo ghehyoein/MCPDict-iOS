@@ -62,7 +62,14 @@ extension View {
                     let room = max(0, geometry.size.height - frame.maxY - 8)
                     if frame.maxY > 0, frame.minY < geometry.size.height {
                         ZStack(alignment: .topLeading) {
+                            // Leave the input row uncovered so typing, search and clear
+                            // still receive their first tap while history is open.
                             Color.clear.contentShape(Rectangle())
+                                .frame(height: max(0, frame.minY))
+                                .onTapGesture { presented.wrappedValue = false }
+                            Color.clear.contentShape(Rectangle())
+                                .frame(height: max(0, geometry.size.height - frame.maxY))
+                                .offset(y: max(0, frame.maxY))
                                 .onTapGesture { presented.wrappedValue = false }
                                 .accessibilityIdentifier("historyDismiss-" + namespace)
                             if room >= 44 {
