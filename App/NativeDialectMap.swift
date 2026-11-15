@@ -41,26 +41,42 @@ struct NativeDialectMap: UIViewRepresentable {
         var readingSize = 16.0
         var centerChanged: (TableLocation) -> Void = { _ in }
         var choose: (String) -> Void
-        init(choose: @escaping (String) -> Void) { self.choose = choose }
+        private weak var attachedMap: MKMapView?
+        private var releasedDrawingBuffers = false
+        init(choose: @escaping (String) -> Void) {
+            self.choose = choose
+            super.init()
+            NotificationCenter.default.addObserver(self, selector: #selector(releaseOffscreenBuffers(_:)),
+                name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
+        }
+        deinit { NotificationCenter.default.removeObserver(self) }
+        @objc private func releaseOffscreenBuffers(_ notification: Notification) {
+            guard let map = attachedMap else { return }
+            releasedDrawingBuffers = true
+            let nearby = drawingRect(map)
+            for annotation in map.annotations {
+                guard let point = annotation as? PointAnnotation else { continue }
+                (map.view(for: point) as? LabelAnnotationView)?.setDrawingActive(nearby.contains(MKMapPoint(point.coordinate)))
+            }
+        }
         // Keep a generous border for labels whose anchor is outside the screen.
-        // MapKit's spatial index restores only nearby drawing buffers while panning.
+        // Reclaim pixels only on memory pressure: discarding them after every
+        // zoom saves memory but forces large synchronous redraws on the next zoom.
+        // MapKit's spatial index restores nearby buffers after a memory warning.
         private func drawingRect(_ map: MKMapView) -> MKMapRect {
             let rect = map.visibleMapRect
             return rect.insetBy(dx: -rect.width * 300 / max(1, map.bounds.width),
                                 dy: -rect.height * 300 / max(1, map.bounds.height))
         }
         func mapViewDidChangeVisibleRegion(_ mapView: MKMapView) {
+            guard releasedDrawingBuffers else { return }
             for annotation in mapView.annotations(in: drawingRect(mapView)) {
                 guard let point = annotation.base as? PointAnnotation else { continue }
                 (mapView.view(for: point) as? LabelAnnotationView)?.setDrawingActive(true)
             }
         }
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
-            let nearby = drawingRect(mapView)
-            for annotation in mapView.annotations {
-                guard let point = annotation as? PointAnnotation else { continue }
-                (mapView.view(for: point) as? LabelAnnotationView)?.setDrawingActive(nearby.contains(MKMapPoint(point.coordinate)))
-            }
+            mapViewDidChangeVisibleRegion(mapView)
             (mapView as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
             for annotation in mapView.annotations(in: mapView.visibleMapRect) {
                 guard let point = annotation.base as? PointAnnotation,
@@ -71,6 +87,7 @@ struct NativeDialectMap: UIViewRepresentable {
             DispatchQueue.main.async { [weak self] in self?.centerChanged(center) }
         }
         func update(_ map: MKMapView, points: [DialectPoint], fit: Int, fontSize: Double = 16, readingSize: Double = 16, revision: UUID? = nil) {
+            attachedMap = map
             let fontChanged = self.fontSize != fontSize || self.readingSize != readingSize
             let contentChanged = revision.map { $0 != self.revision } ?? (self.points != points)
             if contentChanged || fontChanged {
@@ -132,7 +149,7 @@ struct NativeDialectMap: UIViewRepresentable {
             view.centerOffset = .zero
             view.canShowCallout = false
             view.configure(point.point, fontSize: readingSize, labelSize: fontSize) { [weak self] in self?.choose(point.point.id) }
-            view.setDrawingActive(drawingRect(mapView).contains(MKMapPoint(point.coordinate)))
+            view.setDrawingActive(!releasedDrawingBuffers || drawingRect(mapView).contains(MKMapPoint(point.coordinate)))
             return view
         }
 

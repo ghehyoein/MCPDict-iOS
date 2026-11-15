@@ -95,5 +95,23 @@ final class MapStressTests: XCTestCase {
             "frames": intervals.count, "p95_gap_ms": intervals[Int(Double(intervals.count - 1) * 0.95)] * 1000,
             "max_gap_ms": (intervals.last ?? 0) * 1000, "gaps_over_50ms": intervals.filter { $0 > 0.05 }.count]
         print("MAP_STRESS " + String(data: try JSONSerialization.data(withJSONObject: report, options: [.sortedKeys]), encoding: .utf8)!)
+        // Low-memory recovery must preserve every point and a native selection.
+        let selected = try XCTUnwrap(map.annotations.compactMap { map.view(for: $0) as? LabelAnnotationView }.first {
+            ($0.annotation as? NativeDialectMap.PointAnnotation)?.point.reading.isEmpty == false
+        })
+        let text = selected.readingText
+        let fullText = text.text
+        text.selectedRange = NSRange(location: 0, length: 1)
+        NotificationCenter.default.post(name: UIApplication.didReceiveMemoryWarningNotification, object: nil)
+        XCTAssertEqual(map.annotations.count, points.count)
+        XCTAssertTrue(selected.readingView === text)
+        XCTAssertEqual(text.text, fullText)
+        XCTAssertEqual(text.selectedRange.length, 1)
+        coordinator.mapViewDidChangeVisibleRegion(map)
+        for item in map.annotations(in: map.visibleMapRect) {
+            guard let point = item.base as? NativeDialectMap.PointAnnotation,
+                  let view = map.view(for: point) as? LabelAnnotationView else { continue }
+            XCTAssertTrue(view.subviews.contains { !$0.isHidden }, "Visible labels must recover after memory pressure")
+        }
     }
 }
