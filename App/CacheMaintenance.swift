@@ -1,15 +1,23 @@
 import SwiftUI
 
+// URLCache capacities are advisory and can be exceeded until asynchronous
+// eviction. Source bodies already live in verified databases, so never retain
+// redundant HTTP responses. MapKit manages its own system cache separately.
+private final class UncachedResponses: URLCache, @unchecked Sendable {
+    override func storeCachedResponse(_ cachedResponse: CachedURLResponse, for request: URLRequest) {}
+    override func storeCachedResponse(_ cachedResponse: CachedURLResponse, for dataTask: URLSessionDataTask) {}
+}
+
 enum CacheMaintenance {
-    static let memoryBytes = 4 * 1024 * 1024
-    static let diskBytes = 32 * 1024 * 1024
+    static let memoryBytes = 0
+    static let diskBytes = 0
     static func configure() {
-        URLCache.shared.memoryCapacity = memoryBytes
-        URLCache.shared.diskCapacity = diskBytes
+        guard !(URLCache.shared is UncachedResponses) else { return }
+        URLCache.shared.removeAllCachedResponses()
+        URLCache.shared = UncachedResponses(memoryCapacity: memoryBytes, diskCapacity: diskBytes, diskPath: nil)
     }
     static func releaseMemory() {
-        URLCache.shared.memoryCapacity = 0
-        URLCache.shared.memoryCapacity = memoryBytes
+        URLCache.shared.removeAllCachedResponses()
         GlyphStandard.clearCache(); FontFallback.clearCache(); CharacterVariants.clearCache()
         ToneDisplay.clearCache()
         Task { await UpstreamDiagnostics.shared.clearCache() }

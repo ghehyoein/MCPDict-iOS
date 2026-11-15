@@ -281,6 +281,9 @@ final class LabelAnnotationView: MKAnnotationView {
         backgroundColor = .clear; isOpaque = false
         isUserInteractionEnabled = true; isAccessibilityElement = false
         contentMode = .redraw
+        registerForTraitChanges([UITraitUserInterfaceStyle.self]) { (view: LabelAnnotationView, _: UITraitCollection) in
+            view.setNeedsDisplay()
+        }
     }
     required init?(coder: NSCoder) { fatalError("init(coder:) has not been implemented") }
     override func draw(_ rect: CGRect) {
@@ -459,4 +462,3 @@ private final class MapTextGestureGate: NSObject, UIGestureRecognizerDelegate {
         return super.forwardingTarget(for: selector)
     }
 }
-

@@ -163,7 +163,15 @@ actor TableStore {
     // Per-table imports are staging files, not a second permanent installation.
     private func removeCommittedShards(_ state: TableInstallation) {
         guard let file = state.databaseFile else { return }
-        let shards = state.tables.map { root.appendingPathComponent($0.localName) }.filter { FileManager.default.fileExists(atPath: $0.path) }
+        let committed = Set(state.tables.map(\.localName))
+        let shards = ((try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil)) ?? []).filter { url in
+            let name = url.lastPathComponent
+            guard name != file else { return false }
+            // UUID databases and .partial files are unpublished staging files.
+            // Uncommitted per-table imports remain available for download retry.
+            return committed.contains(name) || url.pathExtension == "partial" ||
+                name.range(of: "^[0-9A-Fa-f-]{36}\\.db$", options: .regularExpression) != nil
+        }
         guard !shards.isEmpty else { return }
         // A damaged legacy primary database must not cause its staging copies to
         // be discarded. This one-time check runs only while duplicates exist.
