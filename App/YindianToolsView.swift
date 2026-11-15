@@ -41,7 +41,7 @@ struct ToolsComparisonMap: View {
         var flags = LanguageFlags()
         flags.historyMode = showHistory ? .show : .hide
         flags.islandMode = showIslands ? .show : .hide
-        return points.filter { point in model.table(named: point.id).map { flags.matches($0) } ?? true }
+        return points.filter { point in (model.table(named: point.id) ?? model.table(named: point.name)).map { flags.matches($0) } ?? true }
     }
     var title = "字音比較"
     var legend: [AnalysisLegend] = []
