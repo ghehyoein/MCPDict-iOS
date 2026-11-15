@@ -118,7 +118,7 @@ actor TableStore {
         do {
             if !overrides.isEmpty, let oldFile = previous?.databaseFile {
                 let db = try SQLiteConnection(url: destination, readOnly: false)
-                _ = try db.rows("ATTACH DATABASE ? AS old", [root.appendingPathComponent(oldFile).path])
+                try db.attachReadOnly(root.appendingPathComponent(oldFile), as: "old")
                 let names = String(data: try JSONEncoder().encode(overrides), encoding: .utf8)!
                 _ = try db.rows("BEGIN")
                 _ = try db.rows("DELETE FROM langs WHERE 語言 IN (SELECT value FROM json_each(?))", [names])
@@ -396,7 +396,7 @@ actor TableStore {
             await phaseProgress(0.75)
             for table in changed {
                 try Task.checkCancellation()
-                _ = try output.rows("ATTACH DATABASE ? AS shard", [root.appendingPathComponent(table.localName).path])
+                try output.attachReadOnly(root.appendingPathComponent(table.localName), as: "shard")
                 try output.transaction {
                     _ = try output.rows("INSERT INTO main.langs SELECT 字組, 語言, 讀音, 註釋 FROM shard.langs ORDER BY rowid")
                     _ = try output.rows("INSERT INTO main.info (簡稱, 語言) SELECT 簡稱, 語言 FROM shard.info")

@@ -42,7 +42,7 @@ final class SQLiteConnection {
     private var db: OpaquePointer?
     init(url: URL, readOnly: Bool = true) throws {
         let flags = readOnly ? SQLITE_OPEN_READONLY : (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
-        guard sqlite3_open_v2(url.path, &db, flags | SQLITE_OPEN_FULLMUTEX, nil) == SQLITE_OK else {
+        guard sqlite3_open_v2(url.path, &db, flags | SQLITE_OPEN_FULLMUTEX | SQLITE_OPEN_URI, nil) == SQLITE_OK else {
             let message = db.map { String(cString: sqlite3_errmsg($0)) } ?? "無法打開資料庫"
             if let db { sqlite3_close(db) }
             db = nil
@@ -155,11 +155,26 @@ final class SQLiteConnection {
         }
     }
 
+    // BEGIN IMMEDIATE also reserves writable attached databases. Source tables
+    // are immutable inputs: opening them read-only lets downloads and background
+    // compaction read the same source without competing for its write lock.
+    func attachReadOnly(_ url: URL, as schema: String) throws {
+        guard schema.range(of: "^[A-Za-z][A-Za-z0-9_]*$", options: .regularExpression) != nil,
+              var components = URLComponents(url: url, resolvingAgainstBaseURL: true) else {
+            throw DictionaryFailure(message: "無法打開資料庫")
+        }
+        components.queryItems = [URLQueryItem(name: "mode", value: "ro")]
+        guard let uri = components.url?.absoluteString else {
+            throw DictionaryFailure(message: "無法打開資料庫")
+        }
+        _ = try rows("ATTACH DATABASE ? AS \(schema)", [uri])
+    }
+
     // When most tables are removed, copy the small retained set into a fresh
     // staging database instead of journaling and deleting millions of old rows.
     // Preserve row IDs, extra metadata columns and independent reference data.
     func copyRetainedLanguages(from source: URL, names: [String]? = nil) throws {
-        _ = try rows("ATTACH DATABASE ? AS retained", [source.path])
+        try attachReadOnly(source, as: "retained")
         defer { _ = try? rows("DETACH DATABASE retained") }
         func quoted(_ name: String) -> String { "\"" + name.replacingOccurrences(of: "\"", with: "\"\"") + "\"" }
         try transaction {

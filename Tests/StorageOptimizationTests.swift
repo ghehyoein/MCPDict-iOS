@@ -155,6 +155,44 @@ final class StorageOptimizationTests: XCTestCase {
         XCTAssertEqual(retained.first?.id, 20)
         XCTAssertEqual(try db.rows("SELECT 資料 FROM mcpdict WHERE rowid=17").first?["資料"], "獨立字頭資料")
     }
+    func testCopyDoesNotRequestWriteLockOnRetainedSource() throws {
+        let (root, source, _) = try fixture()
+        let original = try Data(contentsOf: source)
+        let otherCopy = try SQLiteConnection(url: root.appendingPathComponent("other.db"), readOnly: false)
+        // Reproduce the reservation taken by older background compaction code.
+        _ = try otherCopy.rows("ATTACH DATABASE ? AS retained", [source.path])
+        _ = try otherCopy.rows("BEGIN IMMEDIATE")
+        defer { _ = try? otherCopy.rows("ROLLBACK") }
+        let output = try SQLiteConnection(url: root.appendingPathComponent("download.db"), readOnly: false)
+        try output.copyRetainedLanguages(from: source)
+        try output.validate()
+        XCTAssertEqual(try output.rows("SELECT count(*) AS n FROM langs").first?["n"], "4003")
+        XCTAssertEqual(try Data(contentsOf: source), original)
+    }
+
+    func testAttachedSourcesStayReadOnlyAndAllowConcurrentCopies() throws {
+        let (root, source, _) = try fixture()
+        let escaped = root.appendingPathComponent("字表 # ? %.db")
+        try FileManager.default.copyItem(at: source, to: escaped)
+        let first = try SQLiteConnection(url: root.appendingPathComponent("first.db"), readOnly: false)
+        let second = try SQLiteConnection(url: root.appendingPathComponent("second.db"), readOnly: false)
+        for db in [first, second] {
+            try db.attachReadOnly(escaped, as: "shard")
+            _ = try db.rows("BEGIN IMMEDIATE")
+        }
+        defer {
+            for db in [first, second] { _ = try? db.rows("ROLLBACK") }
+        }
+        for db in [first, second] {
+            _ = try db.rows("CREATE TABLE copied AS SELECT rowid,* FROM shard.langs")
+            XCTAssertEqual(try db.rows("SELECT count(*) AS n FROM copied").first?["n"], "4003")
+            XCTAssertThrowsError(try db.rows("DELETE FROM shard.langs"))
+        }
+        for db in [first, second] { _ = try db.rows("COMMIT") }
+        let unchanged = try SQLiteConnection(url: escaped)
+        XCTAssertEqual(try unchanged.rows("SELECT count(*) AS n FROM langs").first?["n"], "4003")
+    }
+
     func testUnrecognizedExtraDataIsNotDiscarded() async throws {
         let (root, source, _) = try fixture()
         let db = try SQLiteConnection(url: source, readOnly: false)
