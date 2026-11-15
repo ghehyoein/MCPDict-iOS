@@ -143,7 +143,7 @@ struct YindianToolsView: View {
                 }
             }
             .navigationDestination(item: $editingComparisonColor) { ComparisonColorEditor(status: $0, storage: $comparisonColors) }
-            .sheet(item: $map) { ToolsComparisonMap(points: $0.points) }
+            .sheet(item: $map) { ToolsComparisonMap(points: $0.points, legend: $0.legend) }
             .fileExporter(isPresented: $exporting, document: EvolutionExportDocument(text: evolutionCSV), contentType: .commaSeparatedText, defaultFilename: "MCPDict-correspondences") { result in
                 if case .failure(let failure) = result { error = failure.localizedDescription }
             }
@@ -247,7 +247,11 @@ struct YindianToolsView: View {
             let text = ui(row.title) + "\n" + resultChars.enumerated().map { line(row, index: $0.offset, char: $0.element) }.joined(separator: "\n")
             return DialectPoint(id: row.name, name: table.fullName, longitude: location.longitude, latitude: location.latitude, color: ComparisonPalette(comparisonColors).color(row.status), reading: "", copyText: text)
         }
-        if points.isEmpty { error = ui("當前結果沒有可用的地圖座標。") } else { map = ToolMapResult(points: points) }
+        if points.isEmpty { error = ui("當前結果沒有可用的地圖座標。") } else { map = ToolMapResult(points: points, legend: ["same", "partial", "different", "missing"].compactMap { status in
+            let members = shownComparisons.filter { $0.status == status }
+            guard let sample = members.first else { return nil }
+            return AnalysisLegend(title: ui(sample.title), color: ComparisonPalette(comparisonColors).color(status), names: Set(members.map(\.name)))
+        }) }
     }
     private func rerun() { if !busy && (!comparison.isEmpty || !evolution.isEmpty) { Task { await run() } } }
     private func dialect(_ table: TablePackage) -> [String: Any] {

@@ -17,9 +17,16 @@ struct ToolsHomeView: View {
     }
 }
 
+struct AnalysisLegend: Identifiable {
+    let title: String
+    let color: String
+    let names: Set<String>
+    var id: String { title }
+}
 struct ToolMapResult: Identifiable {
     let id = UUID()
     let points: [DialectPoint]
+    var legend: [AnalysisLegend] = []
 }
 enum BuiltinAnalysisTool: String {
     case evolution, compare
@@ -37,6 +44,7 @@ struct ToolsComparisonMap: View {
         return points.filter { point in model.table(named: point.id).map { flags.matches($0) } ?? true }
     }
     var title = "字音比較"
+    var legend: [AnalysisLegend] = []
     @Environment(\.dismiss) private var dismiss
     @State private var selected: DialectPoint?
     @AppStorage("baseMapStyle") private var style = "standard"
@@ -48,6 +56,19 @@ struct ToolsComparisonMap: View {
                     Toggle(ui("方言島"), isOn: $showIslands)
                     Text("\(visible.count)").monospacedDigit()
                 }.padding()
+                if !legend.isEmpty {
+                    let names = Set(visible.map(\.id))
+                    ScrollView(.horizontal) {
+                        HStack {
+                            ForEach(legend) { item in
+                                HStack {
+                                    Circle().fill(TableColors.color(item.color)).frame(width: 10, height: 10)
+                                    Text(item.title + " (\(item.names.intersection(names).count))")
+                                }
+                            }
+                        }.padding(.horizontal)
+                    }
+                }
                 NativeDialectMap(points: visible, fit: 1, mapStyle: style) { id in selected = points.first { $0.id == id } }
                 }
                 .navigationTitle(ui(title))

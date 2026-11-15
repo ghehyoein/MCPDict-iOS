@@ -10,7 +10,7 @@ final class NewAnalysisUITests: XCTestCase {
         app.buttons["兩地對應"].tap()
         XCTAssertTrue(app.buttons["runAdditionalAnalysis"].waitForExistence(timeout: 5))
         app.buttons["runAdditionalAnalysis"].tap()
-        XCTAssertTrue(app.staticTexts["請先選擇一種語言。"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["additionalAnalysisError"].waitForExistence(timeout: 5))
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["單字音類"].tap()
         let input = app.textFields.firstMatch

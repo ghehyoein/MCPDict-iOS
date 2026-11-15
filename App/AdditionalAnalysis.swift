@@ -66,7 +66,7 @@ struct AdditionalAnalysisView: View {
                 Button(ui(kind == .correspondence ? "生成桑基圖" : "生成對應表")) { Task { await run() } }
                     .accessibilityIdentifier("runAdditionalAnalysis")
                 if busy { ProgressView() }
-                if let error { SystemText(error).foregroundStyle(.red) }
+                if let error { SystemText(error).foregroundStyle(.red).accessibilityIdentifier("additionalAnalysisError") }
             }.disabled(busy)
             if hasResult && links.isEmpty && groups.isEmpty { Text(ui("沒有符合條件的結果。")) }
             if !links.isEmpty {
@@ -116,7 +116,7 @@ struct AdditionalAnalysisView: View {
                 choices = CharacterResults.characters(input).filter { $0.first.map(GuessLogic.isCharacter) ?? false }.prefix(1).flatMap(CharacterVariants.expand)
                 character = choices.first ?? ""
             }
-            .sheet(item: $map) { ToolsComparisonMap(points: $0.points, title: title) }
+            .sheet(item: $map) { ToolsComparisonMap(points: $0.points, title: title, legend: $0.legend) }
             .sheet(item: $detail) { link in
                 NavigationStack {
                     List {
@@ -180,7 +180,7 @@ struct AdditionalAnalysisView: View {
                 copyText: character + " " + values.map(\.value).joined(separator: " / "))
         }
         if points.isEmpty { error = ui("當前結果沒有可用的地圖座標。") }
-        else { map = ToolMapResult(points: points) }
+        else { map = ToolMapResult(points: points, legend: groups.filter { selected.contains($0.value) }.map { AnalysisLegend(title: $0.value, color: colors[$0.value] ?? palette[0], names: Set($0.names)) }) }
     }
 }
 
