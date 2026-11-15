@@ -26,7 +26,11 @@ final class RecentDeletions: ObservableObject {
         try JSONEncoder().encode(value).write(to: url, options: .atomic)
         items = value
     }
-    func prune() throws { try write(items.filter { Date().timeIntervalSince($0.date) < 30 * 86400 }) }
+    func prune() throws {
+        if let loadFailure { throw loadFailure }
+        let retained = items.filter { Date().timeIntervalSince($0.date) < 30 * 86400 }
+        if retained.count != items.count { try write(retained) }
+    }
     func add(_ item: DeletedCollection) throws { try write([item] + items.filter { Date().timeIntervalSince($0.date) < 30 * 86400 }) }
     func remove(_ id: UUID) throws { try write(items.filter { $0.id != id }) }
     func capture(before: NotebookArchive, after: NotebookArchive) throws {

@@ -44,6 +44,11 @@ struct NativeDialectMap: UIViewRepresentable {
         init(choose: @escaping (String) -> Void) { self.choose = choose }
         func mapView(_ mapView: MKMapView, regionDidChangeAnimated animated: Bool) {
             (mapView as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
+            for annotation in mapView.annotations(in: mapView.visibleMapRect) {
+                guard let point = annotation.base as? PointAnnotation,
+                      let view = mapView.view(for: point) as? LabelAnnotationView else { continue }
+                view.releaseInactiveTextView()
+            }
             let center = TableLocation(longitude: mapView.centerCoordinate.longitude, latitude: mapView.centerCoordinate.latitude)
             DispatchQueue.main.async { [weak self] in self?.centerChanged(center) }
         }
@@ -243,6 +248,12 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         }
         return nil
     }
+    func releaseInactiveTextView() {
+        guard let text = readingView, !text.isFirstResponder, text.selectedRange.length == 0, text.contentOffset == .zero else { return }
+        text.removeFromSuperview(); readingView = nil; readingPreview?.isHidden = false
+        if let readingPreview { accessibilityElements = [readingPreview, nameButton] }
+        (superviewOfMap() as? CachedAccessibilityMapView)?.invalidateAccessibilitySnapshot()
+    }
     override func prepareForReuse() {
         super.prepareForReuse()
         readingView?.resignFirstResponder(); readingView?.removeFromSuperview(); readingView = nil
@@ -308,6 +319,7 @@ final class LabelAnnotationView: MKAnnotationView, UIGestureRecognizerDelegate {
         previousColor = point.color
         let colors = TableColors.hexes(point.color)
         nameButton.backgroundColor = TableColors.uiColor(colors.first ?? "#008080")
+        gradient.isHidden = colors.count <= 1
         gradient.colors = (colors.count == 1 ? colors + colors : colors).map { TableColors.uiColor($0).cgColor }
         gradient.startPoint = CGPoint(x: 0, y: 0.5); gradient.endPoint = CGPoint(x: 1, y: 0.5)
         }

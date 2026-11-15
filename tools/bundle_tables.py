@@ -44,11 +44,7 @@ def build_references(checkout, output):
         assert db.execute("SELECT count(*) FROM entries WHERE hz='一'").fetchone()[0] == len(books+fields)
         assert db.execute("PRAGMA quick_check").fetchone()[0] == 'ok'
 
-def include_table(meta):
-    category = str(meta.get('音典分區', '')).split('－')[0]
-    if category in {'歷史音', '現代標準漢語', '戲劇', '域外方音'}:
-        return True
-    return bool(meta.get('省') or meta.get('市')) and not any(meta.get(k) for k in ['縣', '鎮', '村', '自然村'])
+from bundled_scope import include_table
 
 def build(checkout, output):
     checkout, output = Path(checkout).resolve(), Path(output)

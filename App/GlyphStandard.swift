@@ -20,6 +20,7 @@ enum GlyphStandard: String, CaseIterable, Identifiable {
     private static let fontCache: NSCache<NSString, UIFont> = {
         let cache = NSCache<NSString, UIFont>(); cache.countLimit = 256; return cache
     }()
+    static func clearCache() { fontCache.removeAllObjects() }
     static func font(_ base: UIFont, standard: Self = .current) -> UIFont {
         let key = "\(base.fontName)|\(base.pointSize)|\(base.fontDescriptor.symbolicTraits.rawValue)|\(standard.language)" as NSString
         if let cached = fontCache.object(forKey: key) { return cached }

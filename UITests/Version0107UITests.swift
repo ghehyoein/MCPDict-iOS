@@ -60,11 +60,11 @@ final class Version0107UITests: XCTestCase {
         let hex = app.textFields["customSchemeHex"]
         XCTAssertTrue(hex.waitForExistence(timeout: 5))
         let original = hex.value as? String ?? ""
-        hex.tap(); hex.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: original.count) + "#123ABC")
+        hex.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap(); hex.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: original.count) + "#123ABC")
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["schemeEditor-默認方案"].tap()
         XCTAssertEqual(hex.value as? String, original)
-        hex.tap(); hex.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: original.count) + "#123ABC")
+        hex.coordinate(withNormalizedOffset: CGVector(dx: 0.98, dy: 0.5)).tap(); hex.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: original.count) + "#123ABC")
         XCTAssertEqual(hex.value as? String, "#123ABC")
         app.buttons["saveCustomSchemeColor"].tap()
         app.navigationBars.buttons.element(boundBy: 0).tap()

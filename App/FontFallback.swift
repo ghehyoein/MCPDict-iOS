@@ -5,6 +5,7 @@ enum FontFallback {
     private static let supportCache: NSCache<NSString, NSNumber> = {
         let cache = NSCache<NSString, NSNumber>(); cache.countLimit = 8192; return cache
     }()
+    static func clearCache() { supportCache.removeAllObjects() }
     private static func supports(_ font: UIFont, text: String) -> Bool {
         let key = (font.fontName + "|" + text) as NSString
         if let cached = supportCache.object(forKey: key) { return cached.boolValue }

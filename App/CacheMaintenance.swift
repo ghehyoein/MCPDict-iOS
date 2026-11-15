@@ -4,6 +4,7 @@ enum CacheMaintenance {
     static func clear() {
         // Only disposable HTTP responses; installed databases, downloads and user data are excluded.
         URLCache.shared.removeAllCachedResponses()
+        GlyphStandard.clearCache(); FontFallback.clearCache()
         UserDefaults.standard.set(Date(), forKey: "cacheLastCleared")
     }
     static func scheduled() {
