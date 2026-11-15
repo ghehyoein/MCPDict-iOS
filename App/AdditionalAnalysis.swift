@@ -76,7 +76,7 @@ struct AdditionalAnalysisView: View {
             }.disabled(busy)
             if hasResult && links.isEmpty && groups.isEmpty { Text(ui("沒有符合條件的結果。")) }
             if !links.isEmpty {
-                Section(ui("桑基圖")) { CorrespondenceDiagram(links: links) { detail = $0 } }
+                Section(ui("桑基圖")) { CorrespondenceDiagram(links: links) { detail = $0 }.accessibilityIdentifier("correspondenceDiagram") }
                 Section(ui("對應")) {
                     ForEach(links) { link in
                         Button { detail = link } label: {

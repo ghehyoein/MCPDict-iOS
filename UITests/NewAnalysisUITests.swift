@@ -11,6 +11,20 @@ final class NewAnalysisUITests: XCTestCase {
         XCTAssertTrue(app.buttons["runAdditionalAnalysis"].waitForExistence(timeout: 5))
         app.buttons["runAdditionalAnalysis"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["additionalAnalysisError"].waitForExistence(timeout: 5))
+        for entry in ["correspondenceLeft", "correspondenceRight"] {
+            app.buttons[entry].tap()
+            let choice = app.buttons["check-示例語言點"]
+            XCTAssertTrue(choice.waitForExistence(timeout: 5))
+            choice.tap()
+            app.buttons["finishLanguages"].tap()
+        }
+        app.buttons["runAdditionalAnalysis"].tap()
+        let chart = app.descendants(matching: .any)["correspondenceDiagram"]
+        for _ in 0..<4 {
+            if chart.exists { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(chart.waitForExistence(timeout: 10))
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["單字音類"].tap()
         let input = app.textFields.firstMatch

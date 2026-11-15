@@ -31,15 +31,27 @@ final class ToolsNavigationTests: XCTestCase {
         compare.tap()
         XCTAssertTrue(app.buttons["nativeComparisonMap"].waitForExistence(timeout: 15))
         let language = app.buttons["comparisonLanguage-示例語言點"]
+        for _ in 0..<5 {
+            if language.exists && language.isHittable { break }
+            app.swipeUp()
+        }
         XCTAssertTrue(language.waitForExistence(timeout: 5)); language.tap()
         XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "解析日誌")).firstMatch.waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["將該語言加入自選語言"].exists)
         app.buttons["完成"].tap()
         let status = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "comparisonStatus-")).firstMatch
+        for _ in 0..<5 {
+            if status.exists && status.isHittable { break }
+            app.swipeDown()
+        }
         XCTAssertTrue(status.exists); status.tap()
         XCTAssertFalse(app.buttons["comparisonLanguage-示例語言點"].exists)
         status.tap()
-        XCTAssertTrue(app.buttons["comparisonLanguage-示例語言點"].exists)
+        for _ in 0..<5 {
+            if language.exists { break }
+            app.swipeUp()
+        }
+        XCTAssertTrue(language.exists)
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = "0.10.3-native-tools"
         shot.lifetime = .keepAlways
