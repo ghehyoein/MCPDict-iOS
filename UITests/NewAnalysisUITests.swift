@@ -29,7 +29,7 @@ final class NewAnalysisUITests: XCTestCase {
             let export = app.buttons[id]
             for _ in 0..<4 where !export.isHittable { app.swipeDown() }
             XCTAssertTrue(export.exists); export.tap()
-            let cancel = app.buttons.matching(NSPredicate(format: "label IN %@", ["Cancel", "取消"])).firstMatch
+            let cancel = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Cancel", "取消"])).firstMatch
             XCTAssertTrue(cancel.waitForExistence(timeout: 10)); cancel.tap()
         }
         app.navigationBars.buttons.element(boundBy: 0).tap()
