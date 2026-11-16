@@ -12,6 +12,8 @@ enum AppTheme {
         }
     }
     static let accent = adaptive(0x3E5637, dark: .systemTeal)
+    static let tabSelected = adaptive(0x344E2D, dark: .systemTeal)
+    static let tabUnselected = adaptive(0x6C7465, dark: .label)
     static let page = adaptive(0xF8F7F3, dark: .systemGroupedBackground)
     static let surface = adaptive(0xFFFFFF, dark: .secondarySystemGroupedBackground)
     static let inset = adaptive(0xEEF1E8, dark: .secondarySystemBackground)
@@ -21,6 +23,29 @@ enum AppTheme {
     static let info = adaptive(0x3E5637, dark: .systemBlue)
     static let navigation = adaptive(0xF8F7F3, dark: .systemBackground)
     static let pinnedHeader = adaptive(0xF8F7F3, dark: .black)
+
+    @MainActor static func configureTabBar() {
+        // Keep native materials, selection indicators, and all tab layouts.
+        // Dynamic colors also follow an in-app appearance change.
+        func styled(_ base: UITabBarAppearance) -> UITabBarAppearance {
+            let appearance = base.copy() as! UITabBarAppearance
+            for item in [appearance.stackedLayoutAppearance,
+                         appearance.inlineLayoutAppearance,
+                         appearance.compactInlineLayoutAppearance] {
+                item.normal.iconColor = tabUnselected
+                item.normal.titleTextAttributes[.foregroundColor] = tabUnselected
+                item.selected.iconColor = tabSelected
+                item.selected.titleTextAttributes[.foregroundColor] = tabSelected
+            }
+            return appearance
+        }
+        let tabBar = UITabBar.appearance()
+        tabBar.standardAppearance = styled(tabBar.standardAppearance)
+        if let scrollEdge = tabBar.scrollEdgeAppearance {
+            tabBar.scrollEdgeAppearance = styled(scrollEdge)
+        }
+        tabBar.unselectedItemTintColor = tabUnselected
+    }
 }
 
 private struct AppPageStyle: ViewModifier {

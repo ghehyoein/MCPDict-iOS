@@ -4,6 +4,7 @@ import SwiftUI
 struct MCPDictApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var model = AppModel()
+    init() { AppTheme.configureTabBar() }
     var body: some Scene {
         WindowGroup { RootView().environmentObject(model)
             .task { CacheMaintenance.scheduled(); try? RecentDeletions.shared.prune(); await model.start() }
