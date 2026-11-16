@@ -1401,3 +1401,6 @@ MCPDict for iOS is developed by Ghehyoein for iPhone and iPad. It lets you explo
 
 [電子郵箱]
 Email
+
+[友情連結]
+Related links

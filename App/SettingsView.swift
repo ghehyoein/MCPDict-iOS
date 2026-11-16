@@ -51,6 +51,8 @@ struct SettingsView: View {
                         .accessibilityIdentifier("contactSettings")
                     NavigationLink(ui("關於")) { AboutView() }
                         .accessibilityIdentifier("aboutSettings")
+                    NavigationLink(ui("友情連結")) { RelatedLinksView() }
+                        .accessibilityIdentifier("relatedLinksSettings")
                 }
                 Section {
                     Button(ui("還原默認設定"), role: .destructive) { confirmReset = true }
