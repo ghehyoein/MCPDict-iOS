@@ -1,4 +1,4 @@
-name: Sync GitHub release to internal TestFlight
+name: Upload GitHub release to App Store Connect
 on:
   workflow_dispatch:
   workflow_run:
@@ -110,7 +110,7 @@ jobs:
           rm identity.p12
           security set-key-partition-list -S apple-tool:,apple: -k "$pw" "$kc" >/dev/null
           security list-keychains -d user -s "$kc" "$HOME/Library/Keychains/login.keychain-db"
-      - name: Archive and upload for internal testing only
+      - name: Archive and upload for App Store and TestFlight
         env:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}
           ISSUER: ${{ secrets.ASC_ISSUER_ID }}
@@ -131,7 +131,67 @@ jobs:
           python3 - <<'PY'
           import os,plistlib
           with open('export.plist','wb') as f:
-              plistlib.dump(dict(method='app-store-connect',destination='upload',testFlightInternalTestingOnly=True,signingStyle='manual',teamID=os.environ['TEAM'],manageAppVersionAndBuildNumber=False,signingCertificate='Apple Distribution',provisioningProfiles={'io.github.ghehyoein.MCPDictIOS':os.environ['PROFILE_UUID']}),f)
+              plistlib.dump(dict(method='app-store-connect',destination='upload',testFlightInternalTestingOnly=False,signingStyle='manual',teamID=os.environ['TEAM'],manageAppVersionAndBuildNumber=False,signingCertificate='Apple Distribution',provisioningProfiles={'io.github.ghehyoein.MCPDictIOS':os.environ['PROFILE_UUID']}),f)
           PY
           xcodebuild -exportArchive -archivePath "$archive" -exportPath exported -exportOptionsPlist export.plist -authenticationKeyPath "$RUNNER_TEMP/AuthKey.p8" -authenticationKeyID "$KEY_ID" -authenticationKeyIssuerID "$ISSUER"
-          echo "Internal TestFlight: $TAG → $VERSION ($build), release SHA-256 $DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          echo "App Store Connect upload: $TAG → $VERSION ($build), release SHA-256 $DIGEST" >> "$GITHUB_STEP_SUMMARY"
+          export BUILD_NUMBER="$build"
+          python3 - <<'PYVERIFY'
+          import base64, json, os, subprocess, time, urllib.error, urllib.parse, urllib.request
+
+          def b64(value):
+              return base64.urlsafe_b64encode(value).rstrip(b'=')
+
+          def token():
+              now = int(time.time())
+              header = b64(json.dumps(dict(alg='ES256', kid=os.environ['KEY_ID'], typ='JWT')).encode())
+              payload = b64(json.dumps(dict(iss=os.environ['ISSUER'], iat=now-30, exp=now+600, aud='appstoreconnect-v1')).encode())
+              message = header + b'.' + payload
+              signature = subprocess.run(['openssl', 'dgst', '-sha256', '-sign', 'AuthKey.p8'], input=message, capture_output=True, check=True).stdout
+              # OpenSSL emits DER; ES256 JWTs require two fixed-width integers.
+              assert signature[0] == 0x30 and signature[1] == len(signature)-2 and signature[2] == 2
+              r_length = signature[3]
+              offset = 4 + r_length
+              assert signature[offset] == 2 and offset+2+signature[offset+1] == len(signature)
+              r = int.from_bytes(signature[4:offset], 'big').to_bytes(32, 'big')
+              s = int.from_bytes(signature[offset+2:], 'big').to_bytes(32, 'big')
+              return (message + b'.' + b64(r+s)).decode()
+
+          def get(path, params):
+              url = 'https://api.appstoreconnect.apple.com/v1/' + path + '?' + urllib.parse.urlencode(params)
+              request = urllib.request.Request(url, headers={'Authorization': 'Bearer ' + token(), 'Accept': 'application/json'})
+              try:
+                  with urllib.request.urlopen(request, timeout=45) as response:
+                      return json.load(response)
+              except urllib.error.HTTPError as error:
+                  try:
+                      codes = [item.get('code', 'unknown') for item in json.load(error).get('errors', [])]
+                  except (ValueError, AttributeError):
+                      codes = ['unreadable response']
+                  raise RuntimeError(f'App Store Connect verification HTTP {error.code}: {codes}') from None
+              except urllib.error.URLError:
+                  raise RuntimeError('App Store Connect verification network connection failed') from None
+
+          apps = get('apps', {'filter[bundleId]': 'io.github.ghehyoein.MCPDictIOS'})['data']
+          assert len(apps) == 1, 'Expected exactly one App Store Connect app'
+          params = {'filter[app]': apps[0]['id'], 'filter[version]': os.environ['BUILD_NUMBER'],
+                    'filter[preReleaseVersion.version]': os.environ['VERSION'], 'limit': 10}
+          deadline = time.monotonic() + 900
+          while True:
+              builds = get('builds', params)['data']
+              for build in builds:
+                  attributes = build['attributes']
+                  state = attributes.get('processingState')
+                  audience = attributes.get('buildAudienceType')
+                  print(f"Apple build {build['id']}: {os.environ['VERSION']} ({attributes['version']}), processing={state}, audience={audience}", flush=True)
+                  if state in ('FAILED', 'INVALID') or audience == 'INTERNAL_ONLY':
+                      raise RuntimeError('Apple build is not eligible for App Store submission')
+                  if state == 'VALID' and audience == 'APP_STORE_ELIGIBLE':
+                      with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+                          summary.write(f"\nApple verified: {os.environ['VERSION']} ({attributes['version']}), VALID / APP_STORE_ELIGIBLE. Build ID: {build['id']}\n")
+                      raise SystemExit(0)
+              if time.monotonic() >= deadline:
+                  raise RuntimeError('Upload completed, but Apple processing/eligibility was not confirmed within 15 minutes')
+              print('Waiting for Apple processing and App Store eligibility…', flush=True)
+              time.sleep(30)
+          PYVERIFY
