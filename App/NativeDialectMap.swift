@@ -2,6 +2,14 @@ import SwiftUI
 import MapKit
 import ObjectiveC
 
+enum MapReadingAppearance {
+    static let background = UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(white: 0.30, alpha: 0.92)
+            : UIColor.secondarySystemBackground.resolvedColor(with: traits).withAlphaComponent(0.85)
+    }
+}
+
 struct NativeDialectMap: UIViewRepresentable {
     let points: [DialectPoint]
     let fit: Int
@@ -327,7 +335,7 @@ final class LabelAnnotationView: MKAnnotationView {
         text.textContainer.lineFragmentPadding = 0
         text.textContainer.maximumNumberOfLines = 0
         text.textContainer.lineBreakMode = .byCharWrapping
-        text.textColor = .label; text.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.85)
+        text.textColor = .label; text.backgroundColor = MapReadingAppearance.background
         text.layer.cornerRadius = 4
         text.attributedText = renderedReading
         text.frame = readingFrame; text.isScrollEnabled = readingNeedsScroll
@@ -377,7 +385,7 @@ final class LabelAnnotationView: MKAnnotationView {
         } else {
             if readingCanvas == nil {
                 let canvas = MapLabelCanvas(centered: false, radius: 4, inset: 4)
-                canvas.colors = [UIColor.secondarySystemBackground.withAlphaComponent(0.85)]
+                canvas.colors = [MapReadingAppearance.background]
                 insertSubview(canvas, at: 0); readingCanvas = canvas
             }
             readingCanvas?.text = previewText; readingCanvas?.frame = readingFrame

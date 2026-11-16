@@ -209,7 +209,7 @@ struct YindianToolsView: View {
                             }
                         }.buttonStyle(.borderless).accessibilityIdentifier("comparisonStatus-" + status)
                         Button { editingComparisonColor = status } label: {
-                            Image(systemName: "paintpalette.fill").foregroundStyle(TableColors.color(ComparisonPalette(comparisonColors).color(status)))
+                            AnalysisColorSwatch(hex: ComparisonPalette(comparisonColors).color(status))
                         }.buttonStyle(.borderless).fixedSize().accessibilityLabel(ui("方案顏色")).accessibilityIdentifier("editComparisonColor-" + status)
                         }
                     }
@@ -313,7 +313,7 @@ struct YindianToolsView: View {
                 if reverse { evolution.sort { ($0.modernValue, $0.oldValue) < ($1.modernValue, $1.oldValue) } }
                 evolutionCSV = EvolutionExportDocument.csv(groups: evolution, language: table.fullName,
                     dimension: ui(dimensions.first { $0.0 == dimension }?.1 ?? dimension),
-                    mode: ui(modes.first { $0.0 == mode }?.1 ?? mode))
+                    mode: ui(modes.first { $0.0 == mode }?.1 ?? mode), reverse: reverse)
                 if evolution.isEmpty { error = ui("沒有符合當前中古篩選條件的對應關係。") }
             } else {
                 let groups = ComparisonUnit.effective(units, choices: choices, selected: selected)

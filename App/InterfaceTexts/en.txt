@@ -1371,3 +1371,6 @@ No results match the conditions.
 
 [請輸入漢字。]
 Enter a character.
+
+[匯出桑基圖圖片]
+Export Sankey diagram image

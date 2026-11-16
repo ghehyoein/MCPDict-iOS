@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct CorrespondenceLink: Decodable, Identifiable {
     let left: String
@@ -36,7 +37,14 @@ struct AdditionalAnalysisView: View {
     @State private var map: ToolMapResult?
     @State private var detail: CorrespondenceLink?
     @State private var editingColor: String?
-    @State private var draftColor = Color.teal
+    @State private var exportingCSV = false
+    @State private var exportingImage = false
+    @State private var exportCSV = ""
+    @State private var exportImage = Data()
+    @State private var resultLeft = ""
+    @State private var resultRight = ""
+    @State private var resultMode = ""
+    @State private var resultCharacters = [String]()
     @State private var hasResult = false
     private var tables: [TablePackage] { model.installed?.tables ?? [] }
     private var title: String { kind == .correspondence ? "兩地對應" : "單字音類" }
@@ -75,6 +83,18 @@ struct AdditionalAnalysisView: View {
                 if let error { SystemText(error).foregroundStyle(.red).accessibilityIdentifier("additionalAnalysisError") }
             }.disabled(busy)
             if hasResult && links.isEmpty && groups.isEmpty { Text(ui("沒有符合條件的結果。")) }
+            if !links.isEmpty || !groups.isEmpty {
+                Section {
+                    Button(ui("匯出對應表"), systemImage: "square.and.arrow.up") { prepareCSV() }
+                        .accessibilityIdentifier("exportAdditionalCSV")
+                    if !links.isEmpty {
+                        Button(ui("匯出桑基圖圖片"), systemImage: "photo") {
+                            exportImage = SankeyImageExport.png(links: links, left: resultLeft, right: resultRight, mode: resultMode)
+                            exportingImage = true
+                        }.accessibilityIdentifier("exportSankeyImage")
+                    }
+                }.disabled(busy)
+            }
             if !links.isEmpty {
                 Section(ui("桑基圖")) { CorrespondenceDiagram(links: links) { detail = $0 }.accessibilityIdentifier("correspondenceDiagram") }
                 Section(ui("對應")) {
@@ -98,9 +118,9 @@ struct AdditionalAnalysisView: View {
                             }.buttonStyle(.borderless)
                             Spacer()
                             Button {
-                                draftColor = TableColors.color(colors[group.value] ?? palette[0]); editingColor = group.value
-                            } label: { Image(systemName: "paintpalette.fill").foregroundStyle(TableColors.color(colors[group.value] ?? palette[0])) }
-                                .buttonStyle(.borderless).accessibilityLabel(ui("方案顏色"))
+                                editingColor = group.value
+                            } label: { AnalysisColorSwatch(hex: colors[group.value] ?? palette[0]) }
+                                .buttonStyle(.borderless).accessibilityLabel(ui("方案顏色")).accessibilityIdentifier("analysisColor-" + group.value)
                         }
                         DisclosureGroup(ui("語言")) {
                             ForEach(group.names, id: \.self) { name in
@@ -131,22 +151,23 @@ struct AdditionalAnalysisView: View {
                     }.navigationTitle(ui("例字")).toolbar { Button(ui("完成")) { detail = nil } }
                 }
             }
-            .sheet(isPresented: Binding(get: { editingColor != nil }, set: { if !$0 { editingColor = nil } })) {
-                NavigationStack {
-                    Form { ColorPicker(ui("方案顏色"), selection: $draftColor, supportsOpacity: false) }
-                        .toolbar {
-                            ToolbarItem(placement: .cancellationAction) { Button(ui("取消")) { editingColor = nil } }
-                            ToolbarItem(placement: .confirmationAction) { Button(ui("保存")) {
-                                if let key = editingColor {
-                                    var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-                                    UIColor(draftColor).getRed(&r, green: &g, blue: &b, alpha: &a)
-                                    colors[key] = String(format: "#%02X%02X%02X", Int(r * 255), Int(g * 255), Int(b * 255))
-                                }
-                                editingColor = nil
-                            } }
-                        }
-                }
+            .navigationDestination(item: $editingColor) { key in
+                AnalysisColorEditor(initial: colors[key] ?? palette[0]) { colors[key] = $0 }
             }
+            .fileExporter(isPresented: $exportingCSV, document: EvolutionExportDocument(text: exportCSV), contentType: .commaSeparatedText, defaultFilename: "MCPDict-" + kind.rawValue) { result in
+                if case .failure(let failure) = result { error = failure.localizedDescription }
+            }
+            .fileExporter(isPresented: $exportingImage, document: AnalysisImageDocument(data: exportImage), contentType: .png, defaultFilename: "MCPDict-Sankey") { result in
+                if case .failure(let failure) = result { error = failure.localizedDescription }
+            }
+    }
+    private func prepareCSV() {
+        if kind == .correspondence {
+            exportCSV = AnalysisCSV.correspondences(links, left: resultLeft, right: resultRight, mode: resultMode)
+        } else {
+            exportCSV = AnalysisCSV.soundClasses(groups.filter { selected.contains($0.value) }, characters: resultCharacters, mode: resultMode, colors: colors)
+        }
+        exportingCSV = true
     }
     private func run() async {
         guard !busy else { return }
@@ -172,6 +193,10 @@ struct AdditionalAnalysisView: View {
                 selected = Set(groups.map(\.value))
                 for (i, group) in groups.enumerated() where colors[group.value] == nil { colors[group.value] = palette[i % palette.count] }
             }
+            resultLeft = model.table(named: left)?.fullName ?? left
+            resultRight = model.table(named: right)?.fullName ?? right
+            resultMode = ui(["initial":"聲母", "final":"韻母", "tone":"聲調", "notone":"忽略聲調", "full":"完整讀音"][mode] ?? mode)
+            resultCharacters = characters.sorted()
             hasResult = true
         } catch { self.error = error.localizedDescription }
     }
@@ -183,7 +208,7 @@ struct AdditionalAnalysisView: View {
             let values = byName[name] ?? []
             return DialectPoint(id: name, name: table.fullName, longitude: location.longitude, latitude: location.latitude,
                 color: values.map { colors[$0.value] ?? palette[0] }.joined(separator: ","), reading: values.map(\.value).joined(separator: " / "),
-                copyText: characters.sorted().joined(separator: "、") + " " + values.map(\.value).joined(separator: " / "))
+                copyText: resultCharacters.joined(separator: "、") + " " + values.map(\.value).joined(separator: " / "))
         }
         if points.isEmpty { error = ui("當前結果沒有可用的地圖座標。") }
         else { map = ToolMapResult(points: points, legend: groups.filter { selected.contains($0.value) }.map { AnalysisLegend(title: $0.value, color: colors[$0.value] ?? palette[0], names: Set($0.names)) }) }
