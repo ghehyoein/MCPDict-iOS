@@ -6,6 +6,7 @@ struct ContactView: View {
         Form {
             Section {
                 SystemText(ui("ios音典等反映qq群: 1127851625"))
+                SystemText(ui("電子郵箱") + ": contact@ghehyoein.com", detectLinks: true)
                 SystemText(ui("作者主頁") + ": https://ghehyoein.com/", detectLinks: true)
             }
         }
@@ -29,7 +30,15 @@ struct AboutView: View {
 
 enum AboutContent {
     // The full upstream README, including its original links and attribution.
-    static let sourceURL = "https://github.com/osfans/MCPDict/blob/232064ec009e524f2299bea9cc29602c667a22cc/README.md"
+    static let sourceURL: String = {
+        guard let url = Bundle.main.url(forResource: "AndroidAboutSource", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let source = try? JSONSerialization.jsonObject(with: data) as? [String: String],
+              let link = source["source_url"] else {
+            return "https://github.com/osfans/MCPDict#readme"
+        }
+        return link
+    }()
     private static let androidHTML: String = {
         guard let url = Bundle.main.url(forResource: "AndroidAbout", withExtension: "html"),
               let html = try? String(contentsOf: url, encoding: .utf8) else {

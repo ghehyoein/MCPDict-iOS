@@ -16,6 +16,7 @@ final class InformationPagesTests: XCTestCase {
         XCTAssertTrue(contact.isHittable)
         contact.tap()
         XCTAssertTrue(app.textViews.containing(NSPredicate(format: "label CONTAINS %@", "1127851625")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.textViews.containing(NSPredicate(format: "label CONTAINS %@", "contact@ghehyoein.com")).firstMatch.exists)
         XCTAssertTrue(app.textViews.containing(NSPredicate(format: "label CONTAINS %@", "https://ghehyoein.com/")).firstMatch.exists)
         capture(app, "contact-page")
         app.navigationBars.buttons.element(boundBy: 0).tap()

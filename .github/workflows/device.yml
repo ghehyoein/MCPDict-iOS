@@ -33,6 +33,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Require current Android project description before publishing
+        if: github.event_name == 'workflow_dispatch' && inputs.publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python tools/sync_android_about.py --check
       - name: Test package and query contracts
         run: python -m unittest discover -s tools -p 'test_*.py' -v
       - uses: actions/checkout@v4
