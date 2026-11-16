@@ -9,7 +9,10 @@ final class AppearanceUITests: XCTestCase {
         app.tabBars.buttons["設定"].tap()
         for _ in 0..<6 where !app.buttons[title].isHittable { app.swipeUp() }
         XCTAssertTrue(app.buttons[title].isHittable); app.buttons[title].tap()
-        for _ in 0..<6 where !app.buttons["字表下載"].isHittable { app.swipeDown() }
+        // Offscreen Form rows can report isHittable before they are materialized
+        // on iOS 26. Scroll to the top rather than trusting that cached flag.
+        for _ in 0..<4 { app.swipeDown() }
+        XCTAssertTrue(app.buttons["讀音格式"].waitForExistence(timeout: 5))
     }
     @MainActor func testWarmLightAppearanceScreens() {
         let app = XCUIApplication()
