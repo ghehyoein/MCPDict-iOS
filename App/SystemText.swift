@@ -12,12 +12,13 @@ struct SystemText: UIViewRepresentable {
     var parts: [ToneDisplay.Part]? = nil
     var boldPrefix: String? = nil
     var smallerPitch = false
+    var detectLinks = false
     var onTap: (() -> Void)? = nil
     @AppStorage("glyphStandard") private var glyphStandard = ""
     @Environment(\.font) private var font
     @Environment(\.dynamicTypeSize) private var dynamicType
-    init(_ text: String, color: UIColor = AppTheme.text, pointSize: CGFloat? = nil, weight: UIFont.Weight = .regular, serif: Bool = false, parts: [ToneDisplay.Part]? = nil, boldPrefix: String? = nil, smallerPitch: Bool = false, onTap: (() -> Void)? = nil) {
-        self.text = text; self.color = color.isEqual(UIColor.secondaryLabel) ? AppTheme.secondaryText : color; self.pointSize = pointSize; self.weight = weight; self.serif = serif; self.parts = parts; self.boldPrefix = boldPrefix; self.smallerPitch = smallerPitch; self.onTap = onTap
+    init(_ text: String, color: UIColor = AppTheme.text, pointSize: CGFloat? = nil, weight: UIFont.Weight = .regular, serif: Bool = false, parts: [ToneDisplay.Part]? = nil, boldPrefix: String? = nil, smallerPitch: Bool = false, detectLinks: Bool = false, onTap: (() -> Void)? = nil) {
+        self.text = text; self.color = color.isEqual(UIColor.secondaryLabel) ? AppTheme.secondaryText : color; self.pointSize = pointSize; self.weight = weight; self.serif = serif; self.parts = parts; self.boldPrefix = boldPrefix; self.smallerPitch = smallerPitch; self.detectLinks = detectLinks; self.onTap = onTap
     }
     private var category: UIContentSizeCategory {
         switch dynamicType {
@@ -69,6 +70,8 @@ struct SystemText: UIViewRepresentable {
     }
     func updateUIView(_ view: UITextView, context: Context) {
         context.coordinator.action = onTap
+        view.dataDetectorTypes = detectLinks ? .link : []
+        if detectLinks { view.linkTextAttributes = [.foregroundColor: AppAccent.uiColor] }
         let pitchFont: UIFont? = smallerPitch ? (pointSize.map { UIFont.systemFont(ofSize: $0 * 0.7) } ?? UIFont.preferredFont(forTextStyle: .caption1, compatibleWith: UITraitCollection(preferredContentSizeCategory: category))) : nil
         let content = parts.map { ToneAttributedText.make($0, font: resolvedFont, color: color, pitchFont: pitchFont) }
             ?? NSAttributedString(string: text, attributes: [.font: resolvedFont, .foregroundColor: color])

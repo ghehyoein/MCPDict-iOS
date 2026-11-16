@@ -47,6 +47,12 @@ struct SettingsView: View {
                 }
                 MapSettingsSection()
                 Section {
+                    NavigationLink(ui("聯繫方式")) { ContactView() }
+                        .accessibilityIdentifier("contactSettings")
+                    NavigationLink(ui("關於")) { AboutView() }
+                        .accessibilityIdentifier("aboutSettings")
+                }
+                Section {
                     Button(ui("還原默認設定"), role: .destructive) { confirmReset = true }
                         .foregroundStyle(.red).accessibilityIdentifier("resetSettings")
                 }
