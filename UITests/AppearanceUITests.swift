@@ -5,13 +5,18 @@ final class AppearanceUITests: XCTestCase {
         let image = XCTAttachment(screenshot: app.screenshot())
         image.name = name; image.lifetime = .keepAlways; add(image)
     }
+    @MainActor private func scrollSettings(_ app: XCUIApplication, towardTop: Bool) {
+        // Drag in the Form gutter: a centered vertical swipe can be consumed by
+        // the font sliders instead of scrolling the list.
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: towardTop ? 0.3 : 0.8))
+        let end = app.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: towardTop ? 0.8 : 0.3))
+        start.press(forDuration: 0.05, thenDragTo: end)
+    }
     @MainActor private func setAppearance(_ title: String, in app: XCUIApplication) {
         app.tabBars.buttons["設定"].tap()
-        for _ in 0..<6 where !app.buttons[title].isHittable { app.swipeUp() }
+        for _ in 0..<6 where !app.buttons[title].isHittable { scrollSettings(app, towardTop: false) }
         XCTAssertTrue(app.buttons[title].isHittable); app.buttons[title].tap()
-        // Offscreen Form rows can report isHittable before they are materialized
-        // on iOS 26. Scroll to the top rather than trusting that cached flag.
-        for _ in 0..<4 { app.swipeDown() }
+        for _ in 0..<4 { scrollSettings(app, towardTop: true) }
         XCTAssertTrue(app.buttons["讀音格式"].waitForExistence(timeout: 5))
     }
     @MainActor func testWarmLightAppearanceScreens() {
