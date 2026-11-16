@@ -34,7 +34,7 @@ final class NewAnalysisUITests: XCTestCase {
         let csv = app.buttons["exportAdditionalCSV"]
         for _ in 0..<4 where !csv.isHittable { app.swipeDown() }
         csv.tap()
-        let share = app.buttons.matching(NSPredicate(format: "label IN %@", ["Save to Files", "儲存到檔案", "存储到文件"])).firstMatch
+        let share = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Save to Files", "儲存到檔案", "存储到文件"])).firstMatch
         XCTAssertTrue(share.waitForExistence(timeout: 15))
         let shareShot = XCTAttachment(screenshot: app.screenshot()); shareShot.name = "system-share-menu"; shareShot.lifetime = .keepAlways; add(shareShot)
         let close = app.buttons.matching(NSPredicate(format: "label IN %@", ["Close", "關閉", "关闭"])).firstMatch
