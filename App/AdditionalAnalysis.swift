@@ -189,17 +189,29 @@ struct AdditionalAnalysisView: View {
             let chosenNames = chosenTables.map(\.name)
             if kind == .correspondence && chosenNames.count < 2 { throw DictionaryFailure(message: ui("請至少選擇兩個語言點。")) }
             if kind == .soundClasses && characters.isEmpty { throw DictionaryFailure(message: ui("請輸入漢字。")) }
-            var rows = [Reading]()
+            func analyze(_ rows: [Reading], tables: [TablePackage], names: [String]) async throws -> Data {
+                let payload: [String: Any] = ["kind": kind.rawValue, "languages": names, "characters": characters.sorted(),
+                    "mode": mode, "minimumLink": minimumLink, "minimumNode": minimumNode, "ignoreMultiple": ignoreMultiple,
+                    "dialects": tables.map { ["label": $0.name, "toneConfig": $0.metadata?["聲調"] ?? "", "formatKey": ReadingFormatEngine.key(for: $0.name) ?? ""] },
+                    "rows": rows.map { ["language": $0.language, "characters": $0.characters, "reading": $0.pronunciation] }]
+                return try await NativeAnalysisEngine.run(JSONSerialization.data(withJSONObject: payload))
+            }
             if kind == .correspondence {
-                for name in chosenNames { rows.append(contentsOf: try await model.repository.toolLanguageRows(name)) }
-            } else { rows = try await model.repository.searchAllCharacters(characters.sorted().joined(), language: "") }
-            let payload: [String: Any] = ["kind": kind.rawValue, "languages": chosenNames, "characters": characters.sorted(),
-                "mode": mode, "minimumLink": minimumLink, "minimumNode": minimumNode, "ignoreMultiple": ignoreMultiple,
-                "dialects": tables.map { ["label": $0.name, "toneConfig": $0.metadata?["聲調"] ?? "", "formatKey": ReadingFormatEngine.key(for: $0.name) ?? ""] },
-                "rows": rows.map { ["language": $0.language, "characters": $0.characters, "reading": $0.pronunciation] }]
-            let result = try await NativeAnalysisEngine.run(JSONSerialization.data(withJSONObject: payload))
-            if kind == .correspondence { links = try JSONDecoder().decode([CorrespondenceLink].self, from: result) }
-            else {
+                // Keep only two raw tables in memory, irrespective of selection
+                // size. Reuse the right table on the next edge, reading it once.
+                var previous = try await model.repository.toolLanguageRows(chosenNames[0])
+                var computed = [CorrespondenceLink]()
+                for stage in 0..<(chosenNames.count - 1) {
+                    let next = try await model.repository.toolLanguageRows(chosenNames[stage + 1])
+                    let data = try await analyze(previous + next, tables: Array(chosenTables[stage...stage + 1]), names: Array(chosenNames[stage...stage + 1]))
+                    let pair = try JSONDecoder().decode([CorrespondenceLink].self, from: data)
+                    computed.append(contentsOf: pair.map { CorrespondenceLink(left: $0.left, right: $0.right, chars: $0.chars, stage: stage) })
+                    previous = next
+                }
+                links = computed
+            } else {
+                let rows = try await model.repository.searchAllCharacters(characters.sorted().joined(), language: "")
+                let result = try await analyze(rows, tables: tables, names: [])
                 groups = try JSONDecoder().decode([SoundClass].self, from: result)
                 selected = Set(groups.map(\.value))
                 for (i, group) in groups.enumerated() where colors[group.value] == nil { colors[group.value] = palette[i % palette.count] }
