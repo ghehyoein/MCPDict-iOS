@@ -486,7 +486,7 @@ final class AppModel: ObservableObject {
 private struct ResettableTabContent<Content: View>: View {
     let revision: String
     @ViewBuilder let content: () -> Content
-    var body: some View { content().id(revision) }
+    var body: some View { content().id(revision).background(NativeTabBarPalette().frame(width: 0, height: 0)) }
 }
 
 struct RootView: View {

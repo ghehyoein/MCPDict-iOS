@@ -25,6 +25,10 @@ enum AppTheme {
     static let pinnedHeader = adaptive(0xF8F7F3, dark: .black)
 
     @MainActor static func configureTabBar() {
+        applyTabBarColors(to: UITabBar.appearance())
+    }
+
+    @MainActor static func applyTabBarColors(to tabBar: UITabBar) {
         // Keep native materials, selection indicators, and all tab layouts.
         // Dynamic colors also follow an in-app appearance change.
         func styled(_ base: UITabBarAppearance) -> UITabBarAppearance {
@@ -39,12 +43,41 @@ enum AppTheme {
             }
             return appearance
         }
-        let tabBar = UITabBar.appearance()
         tabBar.standardAppearance = styled(tabBar.standardAppearance)
         if let scrollEdge = tabBar.scrollEdgeAppearance {
             tabBar.scrollEdgeAppearance = styled(scrollEdge)
         }
+        tabBar.tintColor = tabSelected
         tabBar.unselectedItemTintColor = tabUnselected
+    }
+}
+
+// SwiftUI on iOS 26 can replace UIAppearance colors when creating its tab bar.
+// Apply only colors to the live native bar after SwiftUI finishes updating it.
+struct NativeTabBarPalette: UIViewControllerRepresentable {
+    func makeUIViewController(context: Context) -> Controller { Controller() }
+    func updateUIViewController(_ controller: Controller, context: Context) { controller.refresh() }
+
+    final class Controller: UIViewController {
+        override func loadView() {
+            view = UIView()
+            view.backgroundColor = .clear
+            view.isUserInteractionEnabled = false
+        }
+        override func viewDidAppear(_ animated: Bool) {
+            super.viewDidAppear(animated)
+            refresh()
+        }
+        override func didMove(toParent parent: UIViewController?) {
+            super.didMove(toParent: parent)
+            refresh()
+        }
+        func refresh() {
+            DispatchQueue.main.async { [weak self] in
+                guard let bar = self?.tabBarController?.tabBar else { return }
+                AppTheme.applyTabBarColors(to: bar)
+            }
+        }
     }
 }
 
