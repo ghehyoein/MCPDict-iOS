@@ -35,18 +35,24 @@ final class InformationPagesTests: XCTestCase {
         for _ in 0..<3 where !related.isHittable { app.swipeUp() }
         XCTAssertTrue(related.isHittable)
         related.tap()
-        XCTAssertTrue(app.textViews["方言相似度"].waitForExistence(timeout: 5))
-        let webEdition = app.textViews["唯二網頁版"]
-        let miniApp = app.textViews["汉字音典小程序"]
+        XCTAssertTrue(relatedLink(app, "方言相似度").waitForExistence(timeout: 5))
+        let webEdition = relatedLink(app, "唯二網頁版")
+        let miniApp = relatedLink(app, "汉字音典小程序")
         XCTAssertTrue(webEdition.isHittable)
         XCTAssertTrue(miniApp.isHittable)
         XCTAssertGreaterThan(miniApp.frame.minY, webEdition.frame.minY)
         capture(app, "related-links-top")
-        let lastLink = app.textViews["字海（叶典）"]
+        let lastLink = relatedLink(app, "字海（叶典）")
         for _ in 0..<6 where !lastLink.isHittable { app.swipeUp() }
         XCTAssertTrue(lastLink.isHittable)
-        XCTAssertTrue(app.textViews["漢語多功能字庫"].exists)
+        XCTAssertTrue(relatedLink(app, "漢語多功能字庫").exists)
         capture(app, "related-links-bottom")
+    }
+
+    @MainActor private func relatedLink(_ app: XCUIApplication, _ title: String) -> XCUIElement {
+        // Linked UITextViews are exposed as Link on iOS 26; match by label
+        // so the same check covers both accessibility representations.
+        app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", title)).firstMatch
     }
 
     @MainActor private func capture(_ app: XCUIApplication, _ name: String) {
