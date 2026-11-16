@@ -46,11 +46,16 @@ final class AnalysisExportTests: XCTestCase {
         XCTAssertGreaterThan(incoming.height, outgoing.height)
     }
     @MainActor func testMultiLanguagePNGIncludesAllColumns() throws {
-        let links = (0..<3).map { CorrespondenceLink(left: "a", right: "a", chars: ["身"], stage: $0) }
+        let links = (0..<3).flatMap { stage in
+            [CorrespondenceLink(left: "ɕ", right: "ɕ", chars: ["身", "書", "詩"], stage: stage),
+             CorrespondenceLink(left: "tɕ", right: "tɕ", chars: ["中"], stage: stage)]
+        }
         let png = SankeyImageExport.png(links: links, languages: ["甲", "乙", "丙", "丁"], mode: "聲母")
         let image = try XCTUnwrap(UIImage(data: png)?.cgImage)
         XCTAssertGreaterThan(image.width, 2000)
         XCTAssertLessThanOrEqual(image.width, 8192)
+        let attachment = XCTAttachment(data: png, uniformTypeIdentifier: "public.png")
+        attachment.name = "sankey-export.png"; attachment.lifetime = .keepAlways; add(attachment)
     }
     func testReadingBackgroundIsGrayInDarkModeAndRetainsLightColor() {
         let dark = MapReadingAppearance.background.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))

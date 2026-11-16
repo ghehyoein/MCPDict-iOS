@@ -34,16 +34,14 @@ final class NewAnalysisUITests: XCTestCase {
         let csv = app.buttons["exportAdditionalCSV"]
         for _ in 0..<4 where !csv.isHittable { app.swipeDown() }
         csv.tap()
-        let share = app.descendants(matching: .any)["exportActivitySheet"].firstMatch
+        let share = app.buttons.matching(NSPredicate(format: "label IN %@", ["Save to Files", "儲存到檔案", "存储到文件"])).firstMatch
         XCTAssertTrue(share.waitForExistence(timeout: 15))
         let shareShot = XCTAttachment(screenshot: app.screenshot()); shareShot.name = "system-share-menu"; shareShot.lifetime = .keepAlways; add(shareShot)
         let close = app.buttons.matching(NSPredicate(format: "label IN %@", ["Close", "關閉", "关闭"])).firstMatch
         if close.exists { close.tap() }
         else {
-            let frame = share.frame
-            let origin = app.coordinate(withNormalizedOffset: .zero)
-            origin.withOffset(CGVector(dx: frame.midX, dy: frame.minY + 10)).press(forDuration: 0.1,
-                thenDragTo: origin.withOffset(CGVector(dx: frame.midX, dy: frame.maxY - 5)))
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.08)).press(forDuration: 0.1,
+                thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.95)))
         }
         XCTAssertTrue(csv.waitForExistence(timeout: 10))
         app.buttons["exportSankeyImage"].tap()
@@ -52,6 +50,7 @@ final class NewAnalysisUITests: XCTestCase {
         if allow.waitForExistence(timeout: 8) { allow.tap() }
         XCTAssertTrue(app.alerts.staticTexts["圖片已儲存至相簿"].waitForExistence(timeout: 30))
         app.alerts.buttons["好"].tap()
+        app.swipeUp()
         let chartShot = XCTAttachment(screenshot: app.screenshot()); chartShot.name = "centered-sankey-cells"; chartShot.lifetime = .keepAlways; add(chartShot)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["單字音類"].tap()
