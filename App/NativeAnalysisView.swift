@@ -144,9 +144,7 @@ struct YindianToolsView: View {
             }
             .navigationDestination(item: $editingComparisonColor) { ComparisonColorEditor(status: $0, storage: $comparisonColors) }
             .sheet(item: $map) { ToolsComparisonMap(points: $0.points, legend: $0.legend) }
-            .fileExporter(isPresented: $exporting, document: EvolutionExportDocument(text: evolutionCSV), contentType: .commaSeparatedText, defaultFilename: "MCPDict-correspondences") { result in
-                if case .failure(let failure) = result { error = failure.localizedDescription }
-            }
+            .exportShareSheet(isPresented: $exporting, filename: "MCPDict-correspondences.csv", data: { Data(evolutionCSV.utf8) }, onError: { error = $0.localizedDescription })
     }
     private var evolutionFilters: some View {
         Section(ui("中古條件篩選")) {

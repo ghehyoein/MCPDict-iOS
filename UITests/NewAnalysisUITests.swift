@@ -31,17 +31,28 @@ final class NewAnalysisUITests: XCTestCase {
             app.swipeUp()
         }
         XCTAssertTrue(chart.waitForExistence(timeout: 10))
-        for id in ["exportAdditionalCSV", "exportSankeyImage"] {
-            let export = app.buttons[id]
-            for _ in 0..<4 where !export.isHittable { app.swipeDown() }
-            XCTAssertTrue(export.exists); export.tap()
-            // The iOS 26 document picker exposes a hidden SwiftUI "Cancel"
-            // element over its options menu. Exercise the actual Save action.
-            let save = app.buttons.matching(NSPredicate(format: "label IN %@", ["Save", "儲存", "存储"])).firstMatch
-            XCTAssertTrue(save.waitForExistence(timeout: 30)); save.tap()
-            let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: save)
-            XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 15), .completed)
+        let csv = app.buttons["exportAdditionalCSV"]
+        for _ in 0..<4 where !csv.isHittable { app.swipeDown() }
+        csv.tap()
+        let share = app.descendants(matching: .any)["exportActivitySheet"].firstMatch
+        XCTAssertTrue(share.waitForExistence(timeout: 15))
+        let shareShot = XCTAttachment(screenshot: app.screenshot()); shareShot.name = "system-share-menu"; shareShot.lifetime = .keepAlways; add(shareShot)
+        let close = app.buttons.matching(NSPredicate(format: "label IN %@", ["Close", "關閉", "关闭"])).firstMatch
+        if close.exists { close.tap() }
+        else {
+            let frame = share.frame
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            origin.withOffset(CGVector(dx: frame.midX, dy: frame.minY + 10)).press(forDuration: 0.1,
+                thenDragTo: origin.withOffset(CGVector(dx: frame.midX, dy: frame.maxY - 5)))
         }
+        XCTAssertTrue(csv.waitForExistence(timeout: 10))
+        app.buttons["exportSankeyImage"].tap()
+        let system = XCUIApplication(bundleIdentifier: "com.apple.springboard")
+        let allow = system.buttons.matching(NSPredicate(format: "label BEGINSWITH 'Allow' OR label BEGINSWITH '允許' OR label BEGINSWITH '允许'")).firstMatch
+        if allow.waitForExistence(timeout: 8) { allow.tap() }
+        XCTAssertTrue(app.alerts.staticTexts["圖片已儲存至相簿"].waitForExistence(timeout: 30))
+        app.alerts.buttons["好"].tap()
+        let chartShot = XCTAttachment(screenshot: app.screenshot()); chartShot.name = "centered-sankey-cells"; chartShot.lifetime = .keepAlways; add(chartShot)
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["單字音類"].tap()
         let input = app.textFields.firstMatch

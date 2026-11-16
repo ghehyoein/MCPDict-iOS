@@ -47,9 +47,19 @@ enum SankeyImageExport {
             for (index, name) in languages.enumerated() {
                 (name as NSString).draw(in: CGRect(x: CorrespondenceLayout.x(index), y: 12, width: CorrespondenceLayout.columnWidth, height: 64), withAttributes: title)
             }
-            let labels: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 12), .foregroundColor: UIColor.black]
+            let paragraph = NSMutableParagraphStyle()
+            paragraph.alignment = .center
+            let labels: [NSAttributedString.Key: Any] = [.font: UIFont.systemFont(ofSize: 12), .foregroundColor: UIColor.black, .paragraphStyle: paragraph]
             for node in layout.nodes {
-                (node.value as NSString).draw(in: node.rect, withAttributes: labels)
+                UIColor.white.setFill(); output.fill(node.rect)
+                output.cgContext.setStrokeColor(UIColor.darkGray.cgColor)
+                output.cgContext.setLineWidth(1.5)
+                output.cgContext.stroke(node.rect.insetBy(dx: 0.75, dy: 0.75))
+                let bounds = node.rect.insetBy(dx: 4, dy: 2)
+                let height = min(bounds.height, ceil((node.value as NSString).boundingRect(
+                    with: CGSize(width: bounds.width, height: .greatestFiniteMagnitude),
+                    options: [.usesLineFragmentOrigin, .usesFontLeading], attributes: labels, context: nil).height))
+                (node.value as NSString).draw(in: CGRect(x: bounds.minX, y: node.rect.midY - height / 2, width: bounds.width, height: height), withAttributes: labels)
             }
         }
         return image.pngData() ?? Data()

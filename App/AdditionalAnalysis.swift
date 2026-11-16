@@ -44,7 +44,8 @@ struct AdditionalAnalysisView: View {
     @State private var editingColor: String?
     @State private var exporting = false
     @State private var exportData = Data()
-    @State private var exportType: UTType = .commaSeparatedText
+    @State private var savingImage = false
+    @State private var exportMessage: String?
     @State private var exportName = "MCPDict-analysis"
     @State private var resultLanguages = [String]()
     @State private var resultMode = ""
@@ -93,9 +94,9 @@ struct AdditionalAnalysisView: View {
                         .accessibilityIdentifier("exportAdditionalCSV")
                     if !links.isEmpty {
                         Button(ui("匯出桑基圖圖片"), systemImage: "photo") {
-                            exportData = SankeyImageExport.png(links: links, languages: resultLanguages, mode: resultMode)
-                            exportType = .png; exportName = "MCPDict-Sankey"; exporting = true
-                        }.accessibilityIdentifier("exportSankeyImage")
+                            saveImage()
+                        }.disabled(savingImage).accessibilityIdentifier("exportSankeyImage")
+                        if savingImage { ProgressView() }
                     }
                 }.disabled(busy)
             }
@@ -160,9 +161,22 @@ struct AdditionalAnalysisView: View {
             .navigationDestination(item: $editingColor) { key in
                 AnalysisColorEditor(initial: colors[key] ?? palette[0]) { colors[key] = $0 }
             }
-            .fileExporter(isPresented: $exporting, document: AnalysisResultDocument(data: exportData), contentType: exportType, defaultFilename: exportName) { result in
-                if case .failure(let failure) = result { error = failure.localizedDescription }
-            }
+            .exportShareSheet(isPresented: $exporting, filename: exportName + ".csv", data: { exportData }, onError: { error = $0.localizedDescription })
+            .alert(ui("提示"), isPresented: Binding(get: { exportMessage != nil }, set: { if !$0 { exportMessage = nil } })) {
+                Button(ui("好")) { exportMessage = nil }
+            } message: { Text(exportMessage ?? "") }
+    }
+    private func saveImage() {
+        guard !savingImage else { return }
+        savingImage = true
+        Task { @MainActor in
+            defer { savingImage = false }
+            do {
+                let data = SankeyImageExport.png(links: links, languages: resultLanguages, mode: resultMode)
+                try await PhotoExport.savePNG(data)
+                exportMessage = ui("圖片已儲存至相簿")
+            } catch { exportMessage = error.localizedDescription }
+        }
     }
     private func languagePair(_ link: CorrespondenceLink) -> String {
         guard resultLanguages.indices.contains(link.stage), resultLanguages.indices.contains(link.stage + 1) else { return "" }
@@ -175,7 +189,7 @@ struct AdditionalAnalysisView: View {
         } else {
             csv = AnalysisCSV.soundClasses(groups.filter { selected.contains($0.value) }, characters: resultCharacters, mode: resultMode, colors: colors)
         }
-        exportData = Data(csv.utf8); exportType = .commaSeparatedText
+        exportData = Data(csv.utf8)
         exportName = "MCPDict-" + kind.rawValue; exporting = true
     }
     private func run() async {
@@ -280,7 +294,10 @@ struct CorrespondenceDiagram: View {
                         .offset(x: CorrespondenceLayout.x(index), y: 12)
                 }
                 ForEach(layout.nodes) { node in
-                    Text(node.value).font(.caption).frame(width: CorrespondenceLayout.columnWidth, alignment: .leading)
+                    Text(node.value).font(.caption).multilineTextAlignment(.center)
+                        .frame(width: node.rect.width, height: node.rect.height, alignment: .center)
+                        .background(Color(uiColor: AppTheme.surface))
+                        .overlay(Rectangle().strokeBorder(Color.primary.opacity(0.7), lineWidth: 1.5))
                         .offset(x: node.rect.minX, y: node.rect.minY)
                 }
             }.frame(width: layout.size.width, height: layout.size.height)

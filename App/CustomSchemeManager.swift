@@ -141,9 +141,9 @@ struct CustomSchemeManager: View {
                     } else if !state.custom.create(name) { message = ui("方案名稱不能為空或重複") }
                 }
             }
-            .fileExporter(isPresented: $exporting, document: CustomSchemeDocument(exported), contentType: .plainText, defaultFilename: "MCPDict-custom-languages") { result in
-                if case .failure(let error) = result { model.error = error.localizedDescription }
-            }
+            .exportShareSheet(isPresented: $exporting, filename: "MCPDict-custom-languages.txt", data: {
+                try ExportFiles.json(CustomSchemeArchive(exported))
+            }, onError: { model.error = $0.localizedDescription })
             .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText]) { result in
                 do {
                     let url = try result.get(), access = url.startAccessingSecurityScopedResource()

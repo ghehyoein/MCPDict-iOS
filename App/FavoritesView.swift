@@ -140,9 +140,9 @@ struct FavoritesView: View {
                         .padding(.horizontal).padding(.bottom, 6).accessibilityIdentifier("notebookSelectionActions")
                 }
             }
-            .fileExporter(isPresented: $exporting, document: NotebookTextDocument(archive: model.notebook.exportingSelected()), contentType: .plainText, defaultFilename: "漢字音典生字本") { result in
-                if case .failure(let error) = result { model.error = error.localizedDescription }
-            }
+            .exportShareSheet(isPresented: $exporting, filename: "漢字音典生字本.txt", data: {
+                try ExportFiles.json(model.notebook.exportingSelected())
+            }, onError: { model.error = $0.localizedDescription })
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json, .plainText]) { result in
                 do {
                     let url = try result.get()

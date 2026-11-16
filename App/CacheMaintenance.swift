@@ -38,11 +38,16 @@ enum CacheMaintenance {
 struct CacheSettingsView: View {
     @AppStorage("autoClearCache") private var automatic = true
     @State private var cleared = false
+    @State private var confirmClear = false
     var body: some View {
         Form {
             Toggle(ui("每週自動清理快取"), isOn: $automatic)
-            Button(ui("清理快取")) { CacheMaintenance.clear(); cleared = true }
+            Button(ui("清理快取")) { confirmClear = true }.accessibilityIdentifier("clearCache")
             if cleared { Text(ui("快取已清理")) }
         }.appPageStyle().navigationTitle(ui("清理快取"))
+            .alert(ui("是否確認清理緩存？"), isPresented: $confirmClear) {
+                Button(ui("取消"), role: .cancel) {}
+                Button(ui("清理快取"), role: .destructive) { CacheMaintenance.clear(); cleared = true }
+            }
     }
 }

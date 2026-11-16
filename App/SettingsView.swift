@@ -19,8 +19,6 @@ struct SettingsView: View {
                     NavigationLink { ReferenceSettingsView() } label: { Text(ui("字頭資料顯示")).foregroundStyle(.primary) }
                     NavigationLink(ui("讀音格式")) { ReadingFormatSettingsView() }
                 } header: { Text(ui("字頭資料顯示") + " / " + ui("讀音格式")).foregroundStyle(.primary) }
-                Section { NavigationLink(ui("最近刪除")) { RecentDeletionsView() } }
-                Section { NavigationLink(ui("清理快取")) { CacheSettingsView() } }
                 FavoriteSettingsSection()
 
 
@@ -47,6 +45,10 @@ struct SettingsView: View {
                 }
                 MapSettingsSection()
                 Section {
+                    NavigationLink(ui("最近刪除")) { RecentDeletionsView() }
+                        .accessibilityIdentifier("recentDeletionsSettings")
+                    NavigationLink(ui("清理快取")) { CacheSettingsView() }
+                        .accessibilityIdentifier("cacheSettings")
                     NavigationLink(ui("聯繫方式")) { ContactView() }
                         .accessibilityIdentifier("contactSettings")
                     NavigationLink(ui("關於")) { AboutView() }
