@@ -4,7 +4,7 @@ import UIKit
 
 final class AnalysisExportTests: XCTestCase {
     func testCorrespondenceCSVRetainsUnicodeQuotesAndAllExamples() {
-        let csv = AnalysisCSV.correspondences([.init(left: "a,\"b", right: "ɕ\niŋ", chars: ["身", "𠀀"])], left: "甲", right: "乙", mode: "聲母")
+        let csv = AnalysisCSV.correspondences([.init(left: "a,\"b", right: "ɕ\niŋ", chars: ["身", "𠀀"])], languages: ["甲", "乙"], mode: "聲母")
         XCTAssertTrue(csv.hasPrefix("\u{FEFF}"))
         XCTAssertTrue(csv.contains("\"a,\"\"b\""))
         XCTAssertTrue(csv.contains("\"ɕ\niŋ\""))
@@ -22,11 +22,35 @@ final class AnalysisExportTests: XCTestCase {
     }
     @MainActor func testPNGIncludesFullTallDiagramBeyondViewport() throws {
         let links = (0..<30).map { CorrespondenceLink(left: "a\($0)", right: "b\($0)", chars: ["身"]) }
-        let png = SankeyImageExport.png(links: links, left: "甲", right: "乙", mode: "聲母")
+        let png = SankeyImageExport.png(links: links, languages: ["甲", "乙"], mode: "聲母")
         XCTAssertEqual(Array(png.prefix(8)), [137,80,78,71,13,10,26,10])
         let image = try XCTUnwrap(UIImage(data: png)?.cgImage)
         XCTAssertGreaterThan(image.height, 1000)
         XCTAssertLessThanOrEqual(image.height, 8192)
+    }
+    func testMultiLanguageCSVAndSharedIntermediateNodeLayout() {
+        let links = [CorrespondenceLink(left: "a", right: "b", chars: ["身", "中"]),
+                     CorrespondenceLink(left: "b", right: "c", chars: ["身"], stage: 1),
+                     CorrespondenceLink(left: "a", right: "b", chars: ["中"], stage: 1)]
+        let csv = AnalysisCSV.correspondences(links, languages: ["甲", "乙", "丙"], mode: "聲母")
+        XCTAssertTrue(csv.contains("\"甲\",\"乙\""))
+        XCTAssertTrue(csv.contains("\"乙\",\"丙\""))
+        XCTAssertEqual(Set(links.map(\.id)).count, 3)
+        let layout = CorrespondenceLayout(links: Array(links.prefix(2)), languages: ["甲", "乙", "丙"])
+        XCTAssertEqual(layout.nodes.filter { $0.column == 1 && $0.value == "b" }.count, 1)
+        XCTAssertEqual(layout.bands.count, 2)
+        XCTAssertTrue(layout.nodes.allSatisfy { $0.rect.maxX <= layout.size.width && $0.rect.maxY <= layout.size.height })
+        let incoming = layout.bands[0].path.boundingBoxOfPath
+        let outgoing = layout.bands[1].path.boundingBoxOfPath
+        XCTAssertEqual(incoming.minY, outgoing.minY, accuracy: 0.01)
+        XCTAssertGreaterThan(incoming.height, outgoing.height)
+    }
+    @MainActor func testMultiLanguagePNGIncludesAllColumns() throws {
+        let links = (0..<3).map { CorrespondenceLink(left: "a", right: "a", chars: ["身"], stage: $0) }
+        let png = SankeyImageExport.png(links: links, languages: ["甲", "乙", "丙", "丁"], mode: "聲母")
+        let image = try XCTUnwrap(UIImage(data: png)?.cgImage)
+        XCTAssertGreaterThan(image.width, 2000)
+        XCTAssertLessThanOrEqual(image.width, 8192)
     }
     func testReadingBackgroundIsGrayInDarkModeAndRetainsLightColor() {
         let dark = MapReadingAppearance.background.resolvedColor(with: UITraitCollection(userInterfaceStyle: .dark))

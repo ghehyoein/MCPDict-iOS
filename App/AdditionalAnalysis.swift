@@ -5,7 +5,11 @@ struct CorrespondenceLink: Decodable, Identifiable {
     let left: String
     let right: String
     let chars: [String]
-    var id: String { left + "\u{0}" + right }
+    let stage: Int
+    init(left: String, right: String, chars: [String], stage: Int = 0) {
+        self.left = left; self.right = right; self.chars = chars; self.stage = stage
+    }
+    var id: String { String(stage) + "\u{0}" + left + "\u{0}" + right }
 }
 struct SoundClass: Decodable, Identifiable {
     let value: String
@@ -17,10 +21,11 @@ struct AdditionalAnalysisView: View {
     enum Kind: String { case correspondence, soundClasses }
     let kind: Kind
     @EnvironmentObject private var model: AppModel
-    @StateObject private var leftSelector = LanguageSelectionState(namespace: "correspondenceLeft")
-    @StateObject private var rightSelector = LanguageSelectionState(namespace: "correspondenceRight")
-    @State private var left = ""
-    @State private var right = ""
+    @StateObject private var languageSelector = LanguageSelectionState(namespace: "correspondence")
+    @State private var languages: Set<String> = {
+        let cache = LanguageSelectionCache(), suffix = "." + MapSearchKind.language.rawValue
+        return (cache.load("correspondenceLeft" + suffix) ?? []).union(cache.load("correspondenceRight" + suffix) ?? [])
+    }()
     @State private var input = ""
     @State private var characters = Set<String>()
     @State private var choices = [String]()
@@ -41,20 +46,19 @@ struct AdditionalAnalysisView: View {
     @State private var exportData = Data()
     @State private var exportType: UTType = .commaSeparatedText
     @State private var exportName = "MCPDict-analysis"
-    @State private var resultLeft = ""
-    @State private var resultRight = ""
+    @State private var resultLanguages = [String]()
     @State private var resultMode = ""
     @State private var resultCharacters = [String]()
     @State private var hasResult = false
     private var tables: [TablePackage] { model.installed?.tables ?? [] }
-    private var title: String { kind == .correspondence ? "兩地對應" : "單字音類" }
+    private var title: String { kind == .correspondence ? "多地對應" : "單字音類" }
     private let palette = ["#0072B2", "#D55E00", "#009E73", "#CC79A7", "#E69F00", "#56B4E9"]
     var body: some View {
         List {
             Section {
                 if kind == .correspondence {
-                    SingleLanguageSelectionPanel(tables: tables, language: $left, state: leftSelector, entryID: "correspondenceLeft")
-                    SingleLanguageSelectionPanel(tables: tables, language: $right, state: rightSelector, entryID: "correspondenceRight")
+                    LanguageSelectionPanel(tables: tables, names: $languages, state: languageSelector,
+                        entryID: "correspondenceLanguages", inspect: { model.tableDetail = $0 }, languageOnly: true)
                     Stepper("\(ui("連線最少字數"))：\(minimumLink)", value: $minimumLink, in: 1...50)
                     Stepper("\(ui("節點最少字數"))：\(minimumNode)", value: $minimumNode, in: 1...100)
                     Toggle(ui("忽略多音節讀音"), isOn: $ignoreMultiple)
@@ -89,18 +93,19 @@ struct AdditionalAnalysisView: View {
                         .accessibilityIdentifier("exportAdditionalCSV")
                     if !links.isEmpty {
                         Button(ui("匯出桑基圖圖片"), systemImage: "photo") {
-                            exportData = SankeyImageExport.png(links: links, left: resultLeft, right: resultRight, mode: resultMode)
+                            exportData = SankeyImageExport.png(links: links, languages: resultLanguages, mode: resultMode)
                             exportType = .png; exportName = "MCPDict-Sankey"; exporting = true
                         }.accessibilityIdentifier("exportSankeyImage")
                     }
                 }.disabled(busy)
             }
             if !links.isEmpty {
-                Section(ui("桑基圖")) { CorrespondenceDiagram(links: links) { detail = $0 }.accessibilityIdentifier("correspondenceDiagram") }
+                Section(ui("桑基圖")) { CorrespondenceDiagram(links: links, languages: resultLanguages) { detail = $0 }.accessibilityIdentifier("correspondenceDiagram") }
                 Section(ui("對應")) {
                     ForEach(links) { link in
                         Button { detail = link } label: {
                             VStack(alignment: .leading) {
+                                Text(languagePair(link)).font(.caption).foregroundStyle(.secondary)
                                 Text(link.left + " → " + link.right)
                                 Text("\(ui("字數"))：\(link.chars.count)").foregroundStyle(.secondary)
                             }
@@ -146,6 +151,7 @@ struct AdditionalAnalysisView: View {
             .sheet(item: $detail) { link in
                 NavigationStack {
                     List {
+                        SystemText(languagePair(link))
                         SystemText(link.left + " → " + link.right)
                         ForEach(link.chars, id: \.self) { char in AnalysisCharacterRow(character: char) }
                     }.navigationTitle(ui("例字")).toolbar { Button(ui("完成")) { detail = nil } }
@@ -158,10 +164,14 @@ struct AdditionalAnalysisView: View {
                 if case .failure(let failure) = result { error = failure.localizedDescription }
             }
     }
+    private func languagePair(_ link: CorrespondenceLink) -> String {
+        guard resultLanguages.indices.contains(link.stage), resultLanguages.indices.contains(link.stage + 1) else { return "" }
+        return resultLanguages[link.stage] + " → " + resultLanguages[link.stage + 1]
+    }
     private func prepareCSV() {
         let csv: String
         if kind == .correspondence {
-            csv = AnalysisCSV.correspondences(links, left: resultLeft, right: resultRight, mode: resultMode)
+            csv = AnalysisCSV.correspondences(links, languages: resultLanguages, mode: resultMode)
         } else {
             csv = AnalysisCSV.soundClasses(groups.filter { selected.contains($0.value) }, characters: resultCharacters, mode: resultMode, colors: colors)
         }
@@ -173,15 +183,17 @@ struct AdditionalAnalysisView: View {
         busy = true; error = nil
         defer { busy = false }
         do {
-            if kind == .correspondence && (left.isEmpty || right.isEmpty) { throw DictionaryFailure(message: ui("請先選擇一種語言。")) }
+            // Preserve catalog order in both the diagram and its exports.
+            var seen = Set<String>()
+            let chosenTables = tables.filter { languages.contains($0.name) && seen.insert($0.name).inserted }
+            let chosenNames = chosenTables.map(\.name)
+            if kind == .correspondence && chosenNames.count < 2 { throw DictionaryFailure(message: ui("請至少選擇兩個語言點。")) }
             if kind == .soundClasses && characters.isEmpty { throw DictionaryFailure(message: ui("請輸入漢字。")) }
-            let rows: [Reading]
+            var rows = [Reading]()
             if kind == .correspondence {
-                let a = try await model.repository.toolLanguageRows(left)
-                let b = left == right ? [] : try await model.repository.toolLanguageRows(right)
-                rows = a + b
+                for name in chosenNames { rows.append(contentsOf: try await model.repository.toolLanguageRows(name)) }
             } else { rows = try await model.repository.searchAllCharacters(characters.sorted().joined(), language: "") }
-            let payload: [String: Any] = ["kind": kind.rawValue, "left": left, "right": right, "characters": characters.sorted(),
+            let payload: [String: Any] = ["kind": kind.rawValue, "languages": chosenNames, "characters": characters.sorted(),
                 "mode": mode, "minimumLink": minimumLink, "minimumNode": minimumNode, "ignoreMultiple": ignoreMultiple,
                 "dialects": tables.map { ["label": $0.name, "toneConfig": $0.metadata?["聲調"] ?? "", "formatKey": ReadingFormatEngine.key(for: $0.name) ?? ""] },
                 "rows": rows.map { ["language": $0.language, "characters": $0.characters, "reading": $0.pronunciation] }]
@@ -192,8 +204,7 @@ struct AdditionalAnalysisView: View {
                 selected = Set(groups.map(\.value))
                 for (i, group) in groups.enumerated() where colors[group.value] == nil { colors[group.value] = palette[i % palette.count] }
             }
-            resultLeft = model.table(named: left)?.fullName ?? left
-            resultRight = model.table(named: right)?.fullName ?? right
+            resultLanguages = chosenTables.map(\.fullName)
             resultMode = ui(["initial":"聲母", "final":"韻母", "tone":"聲調", "notone":"忽略聲調", "full":"完整讀音"][mode] ?? mode)
             resultCharacters = characters.sorted()
             hasResult = true
@@ -237,53 +248,30 @@ struct AnalysisCharacterRow: View {
     }
 }
 
-// Each ribbon's thickness represents its number of distinct shared characters.
+// Each column is one language; adjacent columns share node positions.
 struct CorrespondenceDiagram: View {
     let links: [CorrespondenceLink]
+    let languages: [String]
     let choose: (CorrespondenceLink) -> Void
-    private struct Band { let link: CorrespondenceLink; let left: CGFloat; let right: CGFloat; let height: CGFloat }
     var body: some View {
-        let left = Array(Set(links.map(\.left))).sorted(), right = Array(Set(links.map(\.right))).sorted()
-        let total = max(1, links.reduce(0) { $0 + $1.chars.count })
-        let height = max(360, CGFloat(max(left.count, right.count)) * 36)
-        let gap: CGFloat = 8
-        let scale = max(1, height - CGFloat(max(left.count, right.count)) * gap) / CGFloat(total)
-        let leftStarts = starts(left, key: \.left, scale: scale, gap: gap)
-        let rightStarts = starts(right, key: \.right, scale: scale, gap: gap)
-        let bands = bands(leftStarts, rightStarts, scale: scale)
+        let layout = CorrespondenceLayout(links: links, languages: languages)
         ScrollView([.horizontal, .vertical]) {
             ZStack(alignment: .topLeading) {
-                ForEach(Array(bands.enumerated()), id: \.element.link.id) { index, band in
-                    Path { p in
-                        let x1: CGFloat = 110, x2: CGFloat = 430
-                        p.move(to: .init(x: x1, y: band.left))
-                        p.addCurve(to: .init(x: x2, y: band.right), control1: .init(x: 260, y: band.left), control2: .init(x: 280, y: band.right))
-                        p.addLine(to: .init(x: x2, y: band.right + band.height))
-                        p.addCurve(to: .init(x: x1, y: band.left + band.height), control1: .init(x: 280, y: band.right + band.height), control2: .init(x: 260, y: band.left + band.height))
-                        p.closeSubpath()
-                    }.fill(Color(hue: Double(index % 12) / 12, saturation: 0.65, brightness: 0.8).opacity(0.6))
+                ForEach(Array(layout.bands.enumerated()), id: \.element.link.id) { index, band in
+                    Path(band.path).fill(Color(hue: Double(index % 12) / 12, saturation: 0.65, brightness: 0.8).opacity(0.6))
                         .onTapGesture { choose(band.link) }
                         .accessibilityLabel(band.link.left + " → " + band.link.right + " \(band.link.chars.count)")
                         .accessibilityAddTraits(.isButton)
                 }
-                ForEach(left, id: \.self) { value in Text(value).font(.caption).frame(width: 100, alignment: .trailing).offset(y: leftStarts[value] ?? 0) }
-                ForEach(right, id: \.self) { value in Text(value).font(.caption).frame(width: 100, alignment: .leading).offset(x: 440, y: rightStarts[value] ?? 0) }
-            }.frame(width: 550, height: height)
-        }.frame(height: min(height, 500))
-    }
-    private func starts(_ values: [String], key: KeyPath<CorrespondenceLink, String>, scale: CGFloat, gap: CGFloat) -> [String: CGFloat] {
-        var y: CGFloat = 0, result = [String: CGFloat]()
-        let counts = Dictionary(grouping: links, by: { $0[keyPath: key] }).mapValues { $0.reduce(0) { $0 + $1.chars.count } }
-        for value in values { result[value] = y; y += CGFloat(counts[value] ?? 0) * scale + gap }
-        return result
-    }
-    private func bands(_ a: [String: CGFloat], _ b: [String: CGFloat], scale: CGFloat) -> [Band] {
-        var a = a, b = b
-        return links.map { link in
-            let height = CGFloat(link.chars.count) * scale
-            let band = Band(link: link, left: a[link.left] ?? 0, right: b[link.right] ?? 0, height: height)
-            a[link.left, default: 0] += height; b[link.right, default: 0] += height
-            return band
-        }
+                ForEach(Array(languages.enumerated()), id: \.offset) { index, name in
+                    Text(name).font(.caption.bold()).frame(width: CorrespondenceLayout.columnWidth, alignment: .leading)
+                        .offset(x: CorrespondenceLayout.x(index), y: 12)
+                }
+                ForEach(layout.nodes) { node in
+                    Text(node.value).font(.caption).frame(width: CorrespondenceLayout.columnWidth, alignment: .leading)
+                        .offset(x: node.rect.minX, y: node.rect.minY)
+                }
+            }.frame(width: layout.size.width, height: layout.size.height)
+        }.frame(height: min(layout.size.height, 500))
     }
 }

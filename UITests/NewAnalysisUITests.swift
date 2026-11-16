@@ -3,21 +3,27 @@ import XCTest
 final class NewAnalysisUITests: XCTestCase {
     @MainActor func testNewNativeAnalysisEntrypoints() {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture"]
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--map-search-fixture", "--multi-correspondence-fixture"]
         app.launch()
         XCTAssertTrue(app.tabBars.buttons["工具"].waitForExistence(timeout: 15))
         app.tabBars.buttons["工具"].tap()
-        app.buttons["兩地對應"].tap()
+        app.buttons["多地對應"].tap()
         XCTAssertTrue(app.buttons["runAdditionalAnalysis"].waitForExistence(timeout: 5))
         app.buttons["runAdditionalAnalysis"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["additionalAnalysisError"].waitForExistence(timeout: 5))
-        for entry in ["correspondenceLeft", "correspondenceRight"] {
-            app.buttons[entry].tap()
-            let choice = app.buttons["check-示例語言點"]
-            XCTAssertTrue(choice.waitForExistence(timeout: 5))
-            choice.tap()
-            app.buttons["finishLanguages"].tap()
+        app.buttons["correspondenceLanguages"].tap()
+        let choice = app.buttons["check-示例語言點"]
+        XCTAssertTrue(choice.waitForExistence(timeout: 5)); choice.tap()
+        app.buttons["finishLanguages"].tap()
+        app.buttons["runAdditionalAnalysis"].tap()
+        XCTAssertFalse(app.descendants(matching: .any)["correspondenceDiagram"].exists)
+        XCTAssertTrue(app.descendants(matching: .any)["additionalAnalysisError"].exists)
+        app.buttons["correspondenceLanguages"].tap()
+        for name in ["示例語言點乙", "示例語言點丙"] {
+            let point = app.buttons["check-" + name]
+            XCTAssertTrue(point.waitForExistence(timeout: 5)); point.tap()
         }
+        app.buttons["finishLanguages"].tap()
         app.buttons["runAdditionalAnalysis"].tap()
         let chart = app.descendants(matching: .any)["correspondenceDiagram"]
         for _ in 0..<4 {

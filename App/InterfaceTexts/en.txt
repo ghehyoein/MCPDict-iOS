@@ -1345,8 +1345,8 @@ Cache cleared
 [方言→中古]
 Dialect → Middle Chinese
 
-[兩地對應]
-Correspondences between two languages
+[多地對應]
+Correspondences between languages
 
 [單字音類]
 Sound classes by character
@@ -1374,3 +1374,6 @@ Enter a character.
 
 [匯出桑基圖圖片]
 Export Sankey diagram image
+
+[請至少選擇兩個語言點。]
+Select at least two language points.

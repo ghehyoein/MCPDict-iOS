@@ -1445,20 +1445,26 @@
         }
         return [...groups].sort((a,b)=>a[0].localeCompare(b[0])).map(([value,names])=>({value,names:[...names].sort()}));
       }
-      const left=byLanguage.get(input.left) || new Map(), right=byLanguage.get(input.right) || new Map(), links=new Map();
-      for (const [char,values] of left) for (const a of values) for (const b of right.get(char) || []) {
-        const key=JSON.stringify([a,b]);
-        if (!links.has(key)) links.set(key,{left:a,right:b,chars:new Set()});
-        links.get(key).chars.add(char);
+      // Parse each language once, then compare adjacent columns. Do not form
+      // a Cartesian product across every language's alternative readings.
+      const languages=[...new Set(input.languages || [input.left,input.right])].filter(Boolean), result=[];
+      for (let stage=0; stage+1<languages.length; stage++) {
+        const left=byLanguage.get(languages[stage]) || new Map(), right=byLanguage.get(languages[stage+1]) || new Map(), links=new Map();
+        for (const [char,values] of left) for (const a of values) for (const b of right.get(char) || []) {
+          const key=JSON.stringify([a,b]);
+          if (!links.has(key)) links.set(key,{stage,left:a,right:b,chars:new Set()});
+          links.get(key).chars.add(char);
+        }
+        const nodes=[new Map(),new Map()];
+        for (const link of links.values()) for (const [i,key] of [link.left,link.right].entries()) {
+          if (!nodes[i].has(key)) nodes[i].set(key,new Set());
+          for (const char of link.chars) nodes[i].get(key).add(char);
+        }
+        const retained=[...links.values()].filter(g=>g.chars.size >= (input.minimumLink || 1) && nodes[0].get(g.left).size >= (input.minimumNode || 1) && nodes[1].get(g.right).size >= (input.minimumNode || 1))
+          .sort((a,b)=>b.chars.size-a.chars.size||a.left.localeCompare(b.left)||a.right.localeCompare(b.right));
+        for (const g of retained) result.push({...g,chars:[...g.chars].sort()});
       }
-      const nodes=[new Map(),new Map()];
-      for (const link of links.values()) for (const [i,key] of [link.left,link.right].entries()) {
-        if (!nodes[i].has(key)) nodes[i].set(key,new Set());
-        for (const char of link.chars) nodes[i].get(key).add(char);
-      }
-      return [...links.values()].filter(g=>g.chars.size >= (input.minimumLink || 1) && nodes[0].get(g.left).size >= (input.minimumNode || 1) && nodes[1].get(g.right).size >= (input.minimumNode || 1))
-        .sort((a,b)=>b.chars.size-a.chars.size||a.left.localeCompare(b.left)||a.right.localeCompare(b.right))
-        .map(g=>({...g,chars:[...g.chars].sort()}));
+      return result;
     }
     if (input.kind === 'compare') {
       const units = input.units || input.chars.map(char => [char]);

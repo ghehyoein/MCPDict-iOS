@@ -34,6 +34,25 @@ final class AdditionalAnalysisTests: XCTestCase {
         XCTAssertEqual(links.count, 1)
         XCTAssertEqual(links.first?.left, "1 · 2")
     }
+    func testMultiLanguageStagesMissingReadingsAndNoSelectionCap() async throws {
+        let rows = [["language":"a","characters":"中忠","reading":"a1\ta2"],
+                    ["language":"b","characters":"中忠","reading":"b3"],
+                    ["language":"c","characters":"中","reading":"c4"]]
+        let data = try await run(["languages":["a","b","c"]], rows: rows)
+        let links = try JSONDecoder().decode([CorrespondenceLink].self, from: data)
+        XCTAssertEqual(links.filter { $0.stage == 0 }.count, 2)
+        XCTAssertEqual(links.filter { $0.stage == 1 }.count, 1)
+        XCTAssertEqual(links.first { $0.stage == 1 }?.chars, ["中"])
+        let filtered = try await run(["languages":["a","b","c"], "minimumLink":2], rows: rows)
+        XCTAssertTrue(try JSONDecoder().decode([CorrespondenceLink].self, from: filtered).allSatisfy { $0.stage == 0 })
+        let one = try await run(["languages":["a","a"]], rows: rows)
+        XCTAssertTrue(try JSONDecoder().decode([CorrespondenceLink].self, from: one).isEmpty)
+        let names = (0..<50).map { "language\($0)" }
+        let many = try await run(["languages":names], rows: names.map { ["language":$0,"characters":"中","reading":"a1"] })
+        let chain = try JSONDecoder().decode([CorrespondenceLink].self, from: many)
+        XCTAssertEqual(chain.count, 49)
+        XCTAssertEqual(Set(chain.map(\.stage)), Set(0..<49))
+    }
     func testSingleCharacterGroupsUseDistinctLanguages() async throws {
         let rows = [["language":"a","characters":"中 忠","reading":"a1\ta1"], ["language":"b","characters":"中","reading":"b1"], ["language":"b","characters":"忠","reading":"b2"]]
         let data = try await run(["kind":"soundClasses","character":"中"], rows: rows)

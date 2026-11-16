@@ -16,12 +16,24 @@ enum UITestFixtures {
         if ProcessInfo.processInfo.arguments.contains("--map-search-fixture") {
             _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", ["输 輸", "示例語言點", "su1", "運送貨物的完整註釋"])
         }
+        if ProcessInfo.processInfo.arguments.contains("--multi-correspondence-fixture") {
+            for (name, reading) in [("示例語言點乙", "siŋ1"), ("示例語言點丙", "tsuŋ1")] {
+                _ = try db.rows("INSERT INTO langs VALUES (?,?,?,?)", ["中", name, reading, ""])
+            }
+        }
         return url
     }
     static var catalog: TableCatalog {
         let commit = String(repeating: "a", count: 40)
         let table = TablePackage(id: String(repeating: "a", count: 24), name: "示例語言點", fullName: "示例語言點", atlas: ["漢語", "官話", "北京"], dictionary: ["漢語"], administrative: ["北京", "", "東城", "示例街道"], source: "UI test", sourceCommit: commit, recordCount: 1, size: 100, sha256: String(repeating: "b", count: 64), url: URL(string: "https://github.com/example/data/releases/download/test/test.db")!, metadata: ["省":"北京", "市":"", "縣":"東城", "鎮":"示例街道", "維護人":"測試維護人", "簡稱":"示例語言點"], location: TableLocation(longitude: 116.4, latitude: 39.9), atlasColor: "#008080", dictionaryColor: "#008080")
         var tables = [table]
+        if ProcessInfo.processInfo.arguments.contains("--multi-correspondence-fixture") {
+            for (index, name) in ["示例語言點乙", "示例語言點丙"].enumerated() {
+                tables.append(TablePackage(id: String(repeating: String(index + 1), count: 24), name: name, fullName: name,
+                    atlas: ["漢語"], dictionary: ["漢語"], administrative: [], source: "UI test", sourceCommit: commit,
+                    recordCount: 1, size: 100, sha256: table.sha256, url: table.url))
+            }
+        }
         if ProcessInfo.processInfo.arguments.contains("--tree-fixture") {
             tables = ["吳語", "歷史音", "民族語", "粵語"].enumerated().map { index, root in
                 TablePackage(id: String(repeating: String(index + 1), count: 24), name: root + "測試點", fullName: root + "測試點", atlas: [root, root + "子區"], dictionary: [root, root + "子區"], administrative: [root], source: "UI test", sourceCommit: commit, recordCount: 1, size: 100, sha256: String(repeating: "b", count: 64), url: table.url)

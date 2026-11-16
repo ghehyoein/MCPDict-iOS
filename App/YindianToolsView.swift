@@ -9,7 +9,7 @@ struct ToolsHomeView: View {
                 NavigationLink(ui("長文注音")) { LongTextView() }
                 NavigationLink(ui("古今演化")) { YindianToolsView(tool: .evolution) }
                 NavigationLink(ui("方言→中古")) { YindianToolsView(reverse: true) }
-                NavigationLink(ui("兩地對應")) { AdditionalAnalysisView(kind: .correspondence) }
+                NavigationLink(ui("多地對應")) { AdditionalAnalysisView(kind: .correspondence) }
                 NavigationLink(ui("單字音類")) { AdditionalAnalysisView(kind: .soundClasses) }
                 NavigationLink(ui("字音比較")) { YindianToolsView(tool: .compare) }
             }.navigationTitle(ui("工具"))
