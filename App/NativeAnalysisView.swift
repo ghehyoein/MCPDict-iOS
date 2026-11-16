@@ -97,7 +97,7 @@ struct YindianToolsView: View {
             }.disabled(busy)
             if tool == .evolution { evolutionFilters.disabled(busy); evolutionResults }
             else { comparisonResults }
-        }.navigationTitle(ui(reverse ? "方言→中古" : tool.title)).navigationBarTitleDisplayMode(.inline)
+        }.appPageStyle().navigationTitle(ui(reverse ? "方言→中古" : tool.title)).navigationBarTitleDisplayMode(.inline)
             .accessibilityIdentifier("nativeAnalysisView")
             .task { if tool == .evolution { mode = "initial"; await loadFilters() } }
             .task(id: input) { if tool == .compare { await resolveCharacters() } }
@@ -111,7 +111,7 @@ struct YindianToolsView: View {
                         Section(ui("音韻地位")) { ForEach(group.subtypes.sorted(), id: \.self) { SystemText($0) } }
                         Section(ui("發音")) { ForEach(group.readings.sorted(), id: \.self) { SystemText($0) } }
                         Section(ui("例字")) { SystemText(group.chars.joined(separator: " ")) }
-                    }.navigationTitle(reverse ? group.modernValue + " → " + group.oldValue : group.oldValue + " → " + group.modernValue)
+                    }.appPageStyle().navigationTitle(reverse ? group.modernValue + " → " + group.oldValue : group.oldValue + " → " + group.modernValue)
                         .navigationBarTitleDisplayMode(.inline).toolbar { Button(ui("完成")) { detail = nil } }
                 }
             }
@@ -134,7 +134,7 @@ struct YindianToolsView: View {
                                     Label(contentUI(value), systemImage: draftFilter.contains(value) ? "checkmark.square.fill" : "square")
                                 }.accessibilityIdentifier("filterValue-" + value)
                             }
-                        }.navigationTitle(ui(filterKeys.first { $0.0 == key }?.1 ?? "中古條件篩選"))
+                        }.appPageStyle().navigationTitle(ui(filterKeys.first { $0.0 == key }?.1 ?? "中古條件篩選"))
                             .toolbar {
                                 ToolbarItem(placement: .cancellationAction) { Button(ui("取消")) { activeFilter = nil } }
                                 ToolbarItem(placement: .confirmationAction) { Button(ui("完成")) { filters[key] = draftFilter; activeFilter = nil } }

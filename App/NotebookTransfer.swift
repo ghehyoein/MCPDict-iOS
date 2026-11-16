@@ -70,7 +70,7 @@ struct DefaultFavoriteBooksView: View {
                     }.contentShape(Rectangle())
                 }.buttonStyle(.plain).accessibilityLabel(ui("預設生字本") + " · " + book.title)
             }
-        }.onAppear { defaults = FavoritePreferences.targets(in: model.notebook) }
+        }.appPageStyle().onAppear { defaults = FavoritePreferences.targets(in: model.notebook) }
             .navigationTitle(ui("設定預設生字本")).navigationBarTitleDisplayMode(.inline)
             .toolbar(.hidden, for: .tabBar)
     }

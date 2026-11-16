@@ -6,7 +6,7 @@ enum MapReadingAppearance {
     static let background = UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(white: 0.30, alpha: 0.92)
-            : UIColor.secondarySystemBackground.resolvedColor(with: traits).withAlphaComponent(0.85)
+            : AppTheme.surface.resolvedColor(with: traits).withAlphaComponent(0.94)
     }
 }
 
@@ -335,7 +335,7 @@ final class LabelAnnotationView: MKAnnotationView {
         text.textContainer.lineFragmentPadding = 0
         text.textContainer.maximumNumberOfLines = 0
         text.textContainer.lineBreakMode = .byCharWrapping
-        text.textColor = .label; text.backgroundColor = MapReadingAppearance.background
+        text.textColor = AppTheme.text; text.backgroundColor = MapReadingAppearance.background
         text.layer.cornerRadius = 4
         text.attributedText = renderedReading
         text.frame = readingFrame; text.isScrollEnabled = readingNeedsScroll
@@ -456,10 +456,10 @@ final class LabelAnnotationView: MKAnnotationView {
         let font = GlyphStandard.font(UIFont.systemFont(ofSize: fontSize))
         let parts = point.toneParts ?? [.init(id: 0, base: point.reading, pitch: "", tone: "", stacked: false)]
         for part in parts {
-            text.append(NSAttributedString(string: part.base, attributes: [.font: font, .foregroundColor: UIColor.label]))
+            text.append(NSAttributedString(string: part.base, attributes: [.font: font, .foregroundColor: AppTheme.text]))
             if part.stacked {
                 let tiny = GlyphStandard.font(UIFont.systemFont(ofSize: fontSize * 0.55))
-                let attrs: [NSAttributedString.Key: Any] = [.font: tiny, .foregroundColor: UIColor.label]
+                let attrs: [NSAttributedString.Key: Any] = [.font: tiny, .foregroundColor: AppTheme.text]
                 let width = max((part.pitch as NSString).size(withAttributes: attrs).width, (part.tone as NSString).size(withAttributes: attrs).width) + 2
                 let attachment = NSTextAttachment()
                 attachment.image = UIGraphicsImageRenderer(size: CGSize(width: width, height: fontSize * 1.35)).image { _ in
@@ -468,7 +468,7 @@ final class LabelAnnotationView: MKAnnotationView {
                 }
                 attachment.bounds = CGRect(x: 0, y: -fontSize * 0.25, width: width, height: fontSize * 1.35)
                 text.append(NSAttributedString(attachment: attachment))
-            } else { text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: UIColor.label])) }
+            } else { text.append(NSAttributedString(string: part.pitch + part.tone, attributes: [.font: font, .foregroundColor: AppTheme.text])) }
         }
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineBreakMode = .byCharWrapping

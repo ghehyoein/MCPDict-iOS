@@ -43,6 +43,6 @@ struct CacheSettingsView: View {
             Toggle(ui("每週自動清理快取"), isOn: $automatic)
             Button(ui("清理快取")) { CacheMaintenance.clear(); cleared = true }
             if cleared { Text(ui("快取已清理")) }
-        }.navigationTitle(ui("清理快取"))
+        }.appPageStyle().navigationTitle(ui("清理快取"))
     }
 }

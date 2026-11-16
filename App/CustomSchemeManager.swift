@@ -103,7 +103,7 @@ struct CustomSchemeManager: View {
                 state.custom.schemes.move(fromOffsets: source, toOffset: destination)
             }
 
-        }.environment(\.editMode, .constant(selecting ? .active : .inactive))
+        }.appPageStyle().environment(\.editMode, .constant(selecting ? .active : .inactive))
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -127,7 +127,7 @@ struct CustomSchemeManager: View {
                         Button(ui("刪除"), role: .destructive) { remove(selection) }
                             .disabled(selection.isEmpty || state.custom.branchNames(selection).count == state.custom.schemes.count)
                     }.buttonStyle(.borderless).padding(12)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+                        .appPanelBackground(radius: 14)
                         .padding(.horizontal).padding(.bottom, 6)
                 }
             }
@@ -282,7 +282,7 @@ struct CustomSchemeEditor: View {
                     }
                 }), state: model.customEditorSelection, inspect: { model.tableDetail = $0 }, showsDone: false, preservesHiddenSelection: true) {}
             }
-        }.environment(\.editMode, .constant(selecting ? .active : .inactive))
+        }.appPageStyle().environment(\.editMode, .constant(selecting ? .active : .inactive))
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
@@ -301,7 +301,7 @@ struct CustomSchemeEditor: View {
                         Button(ui("複製")) { state.custom.duplicateBranches(selection, suffix: ui("副本")) }.disabled(selection.isEmpty)
                         Button(ui("刪除"), role: .destructive) { removeChildren(selection) }.disabled(selection.isEmpty)
                     }.buttonStyle(.borderless).padding(12)
-                        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+                        .appPanelBackground(radius: 14)
                         .padding(.horizontal).padding(.bottom, 6)
                         .accessibilityIdentifier("childSchemeSelectionActions")
                 }

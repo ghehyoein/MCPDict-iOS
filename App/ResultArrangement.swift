@@ -13,7 +13,7 @@ struct ResultArrangementSettings: View {
                             .contentShape(Rectangle())
                     }.accessibilityIdentifier("arrangement-" + value)
                 }
-            }.navigationTitle(ui("排列")).toolbar { Button(ui("完成")) { dismiss() } }
+            }.appPageStyle().navigationTitle(ui("排列")).toolbar { Button(ui("完成")) { dismiss() } }
         }
     }
 }
@@ -49,7 +49,7 @@ struct DictionaryResultTable: View {
             .sheet(isPresented: Binding(get: { inspected != nil }, set: { if !$0 { inspected = nil } })) {
                 if let char = inspected {
                     NavigationStack {
-                        List { AnalysisCharacterRow(character: char) }
+                        List { AnalysisCharacterRow(character: char) }.appPageStyle()
                             .toolbar { Button(ui("完成")) { inspected = nil } }
                     }
                 }
@@ -75,7 +75,7 @@ struct DictionaryResultTable: View {
                 HStack(alignment: .top, spacing: 0) {
                     Text("").frame(width: 150)
                     ForEach(columns, id: \.self) { column in header(column, language: !languagesAsRows).frame(width: 180).padding(8) }
-                }.background(Color(uiColor: .secondarySystemBackground))
+                }.background(Color(uiColor: AppTheme.inset))
                 ForEach(rows, id: \.self) { row in
                     HStack(alignment: .top, spacing: 0) {
                         header(row, language: languagesAsRows).frame(width: 134).padding(8)

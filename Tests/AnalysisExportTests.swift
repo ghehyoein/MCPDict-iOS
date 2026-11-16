@@ -58,6 +58,6 @@ final class AnalysisExportTests: XCTestCase {
         XCTAssertTrue(dark.getRed(&r, green: &g, blue: &b, alpha: &a))
         XCTAssertEqual(r, 0.30, accuracy: 0.01); XCTAssertEqual(r, g); XCTAssertEqual(g, b)
         let lightTraits = UITraitCollection(userInterfaceStyle: .light)
-        XCTAssertEqual(MapReadingAppearance.background.resolvedColor(with: lightTraits), UIColor.secondarySystemBackground.resolvedColor(with: lightTraits).withAlphaComponent(0.85))
+        XCTAssertEqual(MapReadingAppearance.background.resolvedColor(with: lightTraits), AppTheme.surface.resolvedColor(with: lightTraits).withAlphaComponent(0.94))
     }
 }

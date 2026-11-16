@@ -96,7 +96,7 @@ struct DialectMapView: View {
     }
     var body: some View {
         NavigationStack {
-            observedContent
+            observedContent.appPageStyle()
                 .navigationTitle(ui("語言地圖")).navigationBarTitleDisplayMode(.inline)
                 .toolbar { mapToolbar }
                 .task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }

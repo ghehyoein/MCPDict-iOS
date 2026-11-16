@@ -152,7 +152,7 @@ struct GuessGameView: View {
             Section {
                 ForEach(Array(log.enumerated()), id: \.offset) { _, line in SystemText(line) }
             }
-        }.navigationTitle(ui(kind == .character ? "猜字" : "猜方言"))
+        }.appPageStyle().navigationTitle(ui(kind == .character ? "猜字" : "猜方言"))
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
                     NavigationLink {
@@ -163,7 +163,7 @@ struct GuessGameView: View {
                                     Text(ui("隨機")).tag(0); Text(ui("簡單")).tag(1); Text(ui("普通")).tag(2); Text(ui("困難")).tag(3)
                                 }
                             }
-                        }.navigationTitle(ui("設定")).navigationBarTitleDisplayMode(.inline)
+                        }.appPageStyle().navigationTitle(ui("設定")).navigationBarTitleDisplayMode(.inline)
                     } label: { Image(systemName: "gearshape") }.accessibilityIdentifier("gameSettings")
                 }
             }
@@ -288,6 +288,6 @@ struct GuessLanguagePicker: View {
             ForEach(tables.filter { query.isEmpty || ($0.fullName + $0.name).localizedCaseInsensitiveContains(query) }) { table in
                 Button { selection = table.name; dismiss() } label: { LanguageBadge(name: table.fullName, table: table) }
             }
-        }.searchable(text: $query).navigationTitle(ui("選擇語言"))
+        }.appPageStyle().searchable(text: $query).navigationTitle(ui("選擇語言"))
     }
 }

@@ -5,7 +5,7 @@ import UIKit
 /// No copy-only context menu or filtering of system/third-party edit actions is installed.
 struct SystemText: UIViewRepresentable {
     let text: String
-    var color: UIColor = .label
+    var color: UIColor = AppTheme.text
     var pointSize: CGFloat? = nil
     var weight: UIFont.Weight = .regular
     var serif = false
@@ -16,8 +16,8 @@ struct SystemText: UIViewRepresentable {
     @AppStorage("glyphStandard") private var glyphStandard = ""
     @Environment(\.font) private var font
     @Environment(\.dynamicTypeSize) private var dynamicType
-    init(_ text: String, color: UIColor = .label, pointSize: CGFloat? = nil, weight: UIFont.Weight = .regular, serif: Bool = false, parts: [ToneDisplay.Part]? = nil, boldPrefix: String? = nil, smallerPitch: Bool = false, onTap: (() -> Void)? = nil) {
-        self.text = text; self.color = color; self.pointSize = pointSize; self.weight = weight; self.serif = serif; self.parts = parts; self.boldPrefix = boldPrefix; self.smallerPitch = smallerPitch; self.onTap = onTap
+    init(_ text: String, color: UIColor = AppTheme.text, pointSize: CGFloat? = nil, weight: UIFont.Weight = .regular, serif: Bool = false, parts: [ToneDisplay.Part]? = nil, boldPrefix: String? = nil, smallerPitch: Bool = false, onTap: (() -> Void)? = nil) {
+        self.text = text; self.color = color.isEqual(UIColor.secondaryLabel) ? AppTheme.secondaryText : color; self.pointSize = pointSize; self.weight = weight; self.serif = serif; self.parts = parts; self.boldPrefix = boldPrefix; self.smallerPitch = smallerPitch; self.onTap = onTap
     }
     private var category: UIContentSizeCategory {
         switch dynamicType {
@@ -99,7 +99,7 @@ struct SystemText: UIViewRepresentable {
 }
 
 enum ToneAttributedText {
-    static func make(_ parts: [ToneDisplay.Part], font: UIFont, color: UIColor = .label, pitchFont: UIFont? = nil) -> NSAttributedString {
+    static func make(_ parts: [ToneDisplay.Part], font: UIFont, color: UIColor = AppTheme.text, pitchFont: UIFont? = nil) -> NSAttributedString {
         let text = NSMutableAttributedString(string: "")
         for part in parts {
             let baseFont = part.italic ? UIFont(descriptor: font.fontDescriptor.withSymbolicTraits(.traitItalic) ?? font.fontDescriptor, size: font.pointSize) : font

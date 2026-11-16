@@ -141,7 +141,7 @@ struct AdditionalAnalysisView: View {
                     }
                 }
             }
-        }.navigationTitle(ui(title)).navigationBarTitleDisplayMode(.inline)
+        }.appPageStyle().navigationTitle(ui(title)).navigationBarTitleDisplayMode(.inline)
             .task(id: input) {
                 guard kind == .soundClasses else { return }
                 choices = CharacterResults.characters(input).filter { $0.first.map(GuessLogic.isCharacter) ?? false }.prefix(1).flatMap(CharacterVariants.expand)
@@ -154,7 +154,7 @@ struct AdditionalAnalysisView: View {
                         SystemText(languagePair(link))
                         SystemText(link.left + " → " + link.right)
                         ForEach(link.chars, id: \.self) { char in AnalysisCharacterRow(character: char) }
-                    }.navigationTitle(ui("例字")).toolbar { Button(ui("完成")) { detail = nil } }
+                    }.appPageStyle().navigationTitle(ui("例字")).toolbar { Button(ui("完成")) { detail = nil } }
                 }
             }
             .navigationDestination(item: $editingColor) { key in

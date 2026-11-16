@@ -116,7 +116,7 @@ struct CharacterReferenceDetail: View {
                         SystemText(page.data.code)
                     }
                 }.frame(maxWidth: .infinity, alignment: .leading).padding().textSelection(.enabled)
-            }.navigationTitle(contentUI(page.book ?? "統一碼")).navigationBarTitleDisplayMode(.inline)
+            }.appPageStyle().navigationTitle(contentUI(page.book ?? "統一碼")).navigationBarTitleDisplayMode(.inline)
             .toolbar { Button(ui("完成")) { dismiss() } }
         }
     }

@@ -42,7 +42,7 @@ struct DataView: View {
                 LanguageSelectionPanel(tables: available, names: $names, state: selector, entryID: "downloadLanguageSelection",
                                        inspect: { model.tableDetail = $0 }, alwaysExpanded: true)
                     .environment(\.tableDownloadStates, model.downloadStates)
-            }
+            }.appPageStyle()
             .navigationTitle(ui("字表下載")).navigationBarTitleDisplayMode(.large)
             .toolbar(.hidden, for: .tabBar)
             .toolbar {
@@ -101,6 +101,6 @@ struct LanguageGroupList: View {
             ForEach(tables.filter { grouping.path($0).count <= depth }.sorted { $0.name < $1.name }) { table in
                 Button { model.tableDetail = table } label: { LanguageBadge(name: table.name, table: table) }
             }
-        }
+        }.appPageStyle()
     }
 }

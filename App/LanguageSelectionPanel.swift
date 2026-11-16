@@ -65,7 +65,7 @@ struct LanguageSelectionPanel: View {
                 if state.kind == .region && state.grouping == .dictionary { TransitionToggle(state: state) }
                 Spacer(minLength: 0)
                 PaletteControls()
-                Button { paletteInfo = true } label: { Image(systemName: "info.circle").foregroundStyle(.blue) }
+                Button { paletteInfo = true } label: { Image(systemName: "info.circle").foregroundStyle(Color(uiColor: AppTheme.info)) }
                     .buttonStyle(.plain).accessibilityLabel(ui("顏色切換說明"))
             }
             .alert(ui("顯示顏色"), isPresented: $paletteInfo) {
@@ -75,7 +75,7 @@ struct LanguageSelectionPanel: View {
             LanguageDropdown(tables: tables, names: chosen, state: state, inspect: inspect, palette: palette == "dictionary" ? .dictionary : .atlas, showsDone: !alwaysExpanded, singleSelection: singleSelection, submitted: submitted) {
                 state.expanded = false; finished()
             }.id(state.key)
-        }.padding(10).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+        }.padding(10).appPanelBackground(radius: 8)
     }
     private func visibilityPicker(_ title: String, _ value: Binding<LanguageVisibility>) -> some View {
         Menu {

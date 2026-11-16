@@ -38,7 +38,7 @@ struct BookPicker: View {
                     Button(ui("新建生字本"), systemImage: "plus") { editID = nil; name = ""; editing = true }
                 } footer: { if reading != nil { SystemText(ui("點「完成」儲存勾選的生字本；不勾選任何表會取消收藏。")) } }
 
-            }.navigationTitle(ui("生字本")).navigationBarTitleDisplayMode(.inline)
+            }.appPageStyle().navigationTitle(ui("生字本")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(ui("刪除"), role: .destructive) { requestDelete(selected) }.foregroundStyle(.red).disabled(selected.isEmpty)

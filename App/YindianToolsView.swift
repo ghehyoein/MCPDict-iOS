@@ -12,7 +12,7 @@ struct ToolsHomeView: View {
                 NavigationLink(ui("多地對應")) { AdditionalAnalysisView(kind: .correspondence) }
                 NavigationLink(ui("單字音類")) { AdditionalAnalysisView(kind: .soundClasses) }
                 NavigationLink(ui("字音比較")) { YindianToolsView(tool: .compare) }
-            }.navigationTitle(ui("工具"))
+            }.appPageStyle().navigationTitle(ui("工具"))
         }
     }
 }

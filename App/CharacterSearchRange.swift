@@ -62,7 +62,7 @@ struct CharacterRangeSettings: View {
                         .contentShape(Rectangle())
                 }.accessibilityAddTraits(selection == range.rawValue ? .isSelected : [])
                     .accessibilityIdentifier("character-range-" + (range == .all ? "all" : range.rawValue))
-            }.navigationTitle(ui("漢字檢索範圍"))
+            }.appPageStyle().navigationTitle(ui("漢字檢索範圍"))
                 .toolbar { Button(ui("完成")) { dismiss() } }
         }
     }

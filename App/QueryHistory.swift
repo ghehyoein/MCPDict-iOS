@@ -34,7 +34,7 @@ struct QueryHistoryDropdown: View {
                 }.buttonStyle(.plain).accessibilityIdentifier("history-" + namespace + "-" + entry.query)
             }.onDelete { indices in entries.remove(atOffsets: indices); QueryHistory.save(entries, namespace: namespace) }
             Button(ui("刪除"), role: .destructive) { confirm = true }.foregroundStyle(.red)
-        }.listStyle(.plain).frame(height: min(maximumHeight, CGFloat(entries.count + 1) * 44))
+        }.appPageStyle(background: AppTheme.surface).listStyle(.plain).frame(height: min(maximumHeight, CGFloat(entries.count + 1) * 44))
             .onAppear { entries = QueryHistory.entries(namespace) }
             .alert(ui("是否確定刪除所有歷史記錄"), isPresented: $confirm) {
                 Button(ui("取消"), role: .cancel) {}

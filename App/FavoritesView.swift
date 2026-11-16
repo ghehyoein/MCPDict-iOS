@@ -124,7 +124,7 @@ struct FavoritesView: View {
                         }.onDelete { indices in remove(Set(indices.map { group.entries[$0].id })) }
                     } header: { if !group.title.isEmpty { Text(verbatim: group.title).textCase(nil) } }
                 }
-            }
+            }.appPageStyle()
             .safeAreaInset(edge: .bottom) {
                 if selecting {
                         HStack {
@@ -136,7 +136,7 @@ struct FavoritesView: View {
                             }.disabled(selection.isEmpty)
                             Button(ui("刪除"), role: .destructive) { remove(selection) }.disabled(selection.isEmpty)
                         }.buttonStyle(.borderless)
-                        .padding(12).background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+                        .padding(12).appPanelBackground(radius: 14)
                         .padding(.horizontal).padding(.bottom, 6).accessibilityIdentifier("notebookSelectionActions")
                 }
             }

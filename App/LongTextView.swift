@@ -104,7 +104,7 @@ struct LongTextView: View {
                     }
                 }
             }.padding()
-        }.navigationTitle(ui("長文注音")).navigationBarTitleDisplayMode(.inline)
+        }.appPageStyle().navigationTitle(ui("長文注音")).navigationBarTitleDisplayMode(.inline)
         .onChange(of: language) { _, _ in generation += 1; characters = []; selectedCharacter = nil }
         .sheet(isPresented: Binding(get: { selectedCharacter != nil }, set: { if !$0 { selectedCharacter = nil } })) {
             if let index = selectedCharacter, characters.indices.contains(index) {
@@ -113,7 +113,7 @@ struct LongTextView: View {
                         Button { characters[index].selected = offset; selectedCharacter = nil } label: {
                             HStack { Text(AttributedString(GlyphStandard.attributed(choice.character, font: .systemFont(ofSize: glyphSize)))); PronunciationView(raw: choice.pronunciation, table: submittedTable); Spacer(); if offset == characters[index].selected { Image(systemName: "checkmark") } }
                         }
-                    }.navigationTitle(characters[index].original)
+                    }.appPageStyle().navigationTitle(characters[index].original)
                         .toolbar { Button(ui("完成")) { selectedCharacter = nil } }
                 }
             }

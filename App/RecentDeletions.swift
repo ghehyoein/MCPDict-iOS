@@ -59,7 +59,7 @@ struct RecentDeletionsView: View {
                     if let book = item.notebook {
                         Text(book.books.map(\.title).joined(separator: "、"))
                         NavigationLink(ui("查看詳情")) {
-                            List(book.entries) { entry in ReadingView(reading: entry.reading) }
+                            List(book.entries) { entry in ReadingView(reading: entry.reading) }.appPageStyle()
                                 .navigationTitle(ui("最近刪除"))
                         }
                     }
@@ -71,7 +71,7 @@ struct RecentDeletionsView: View {
                     }.buttonStyle(.borderless)
                 }
             }
-        }.navigationTitle(ui("最近刪除"))
+        }.appPageStyle().navigationTitle(ui("最近刪除"))
             .onAppear { do { try store.prune() } catch { self.error = error.localizedDescription } }
             .alert(ui("最近刪除"), isPresented: Binding(get: { error != nil }, set: { if !$0 { error = nil } })) { Button(ui("好")) {} } message: { Text(error ?? "") }
     }

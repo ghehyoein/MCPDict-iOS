@@ -33,6 +33,7 @@ struct TableInfoView: View {
                     SystemText(value("解析日志"))
                 }.frame(maxWidth: .infinity, alignment: .leading).padding()
             }
+            .appPageStyle()
             .navigationTitle(table.name).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if let location = current.location { ExternalMapMenu(location: location, name: current.name) }

@@ -539,6 +539,7 @@ struct ReadingView: View {
 }
 
 struct SearchView: View {
+    @Environment(\.colorScheme) private var appearanceScheme
     @AppStorage(CharacterSearchRange.preferenceKey) private var characterRange = ""
     @AppStorage("resultArrangement") private var arrangement = "list"
     @AppStorage("colorScheme") private var palette = "atlas"
@@ -580,14 +581,14 @@ struct SearchView: View {
                 }
                 resultsSection(viewport: viewport.frame(in: .global))
                 if model.hasMore { Button(ui("載入更多（每次 100 筆）")) { Task { await model.search(more: true) } }.disabled(model.searching) }
-            }
+            }.appPageStyle()
             .listStyle(.plain)
             .queryHistoryOverlay("dictionary", presented: Binding(get: { searchFocused }, set: { searchFocused = $0 })) { entry in
                 model.query = entry.query; model.mode = SearchMode(rawValue: entry.mode) ?? .character; submitQuery()
             }
-            .toolbarBackground(resultHeaderPinned ? Color.black : Color(uiColor: .systemBackground), for: .navigationBar)
+            .toolbarBackground(Color(uiColor: resultHeaderPinned ? AppTheme.pinnedHeader : AppTheme.navigation), for: .navigationBar)
             .toolbarBackground(resultHeaderPinned ? .visible : .automatic, for: .navigationBar)
-            .toolbarColorScheme(resultHeaderPinned ? .dark : nil, for: .navigationBar)
+            .toolbarColorScheme(resultHeaderPinned ? appearanceScheme : nil, for: .navigationBar)
             .onChange(of: characterRange) { _, _ in
                 if !model.resultQuery.isEmpty { Task { await model.search(queryOverride: model.resultQuery, modeOverride: model.resultMode) } }
             }
@@ -640,11 +641,11 @@ struct SearchView: View {
                                 }
                             }
                         }.textCase(nil).frame(maxWidth: .infinity, alignment: .leading)
-                         .padding(.vertical, 4).background(Color(uiColor: .systemBackground))
+                         .padding(.vertical, 4).background(Color(uiColor: AppTheme.navigation))
                          .background {
                              GeometryReader { geometry in
                                  let top = max(0, geometry.frame(in: .global).minY - viewport.minY)
-                                 if top <= 16 { Color.black.frame(width: viewport.width, height: top).offset(x: viewport.minX - geometry.frame(in: .global).minX, y: -top) }
+                                 if top <= 16 { Color(uiColor: AppTheme.pinnedHeader).frame(width: viewport.width, height: top).offset(x: viewport.minX - geometry.frame(in: .global).minX, y: -top) }
                              }.allowsHitTesting(false)
                          }
                          // List hosts its pinned headers separately; use screen coordinates across those hosts.

@@ -110,7 +110,7 @@ struct ReadingFormatSettingsView: View {
 
                 }
             }
-        }.navigationTitle(ui("讀音格式")).navigationBarTitleDisplayMode(.inline)
+        }.appPageStyle().navigationTitle(ui("讀音格式")).navigationBarTitleDisplayMode(.inline)
         .sheet(item: $selectedSpec) { spec in
             NavigationStack {
                 List(spec.options) { option in
@@ -119,7 +119,7 @@ struct ReadingFormatSettingsView: View {
                         if enabled { values.insert(option.id) } else { values.remove(option.id) }
                         settings.values[spec.id] = spec.options.map(\.id).filter(values.contains)
                     })).accessibilityIdentifier("readingFormat-" + spec.id + "-" + option.id)
-                }.navigationTitle(ui(spec.title)).navigationBarTitleDisplayMode(.inline)
+                }.appPageStyle().navigationTitle(ui(spec.title)).navigationBarTitleDisplayMode(.inline)
                     .toolbar { Button(ui("完成")) { selectedSpec = nil } }
             }
         }

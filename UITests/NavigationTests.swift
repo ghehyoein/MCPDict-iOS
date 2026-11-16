@@ -374,7 +374,7 @@ final class NavigationTests: XCTestCase {
     }
     @MainActor func testPinnedHeaderPreservesInputAndLanguageMenu() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--ui-fixture", "--reset-selection", "--long-results-fixture"]; app.launch()
+        app.launchArguments = ["--ui-fixture", "--reset-selection", "--long-results-fixture", "-appearance", "dark"]; app.launch()
         app.textFields.firstMatch.tap(); app.textFields.firstMatch.typeText("中")
         app.buttons["查詢"].tap()
         XCTAssertTrue(app.textViews["dictionaryHeadword"].waitForExistence(timeout: 8))

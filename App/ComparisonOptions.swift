@@ -58,7 +58,7 @@ struct ComparisonColorEditor: View {
             Button(ui("保存"), action: save).fixedSize().buttonStyle(.borderless)
                 .accessibilityIdentifier("saveComparisonColor-" + status)
         }
-        }
+        }.appPageStyle()
         .navigationTitle(ui("方案顏色")).navigationBarTitleDisplayMode(.inline)
         .onAppear { hex = ComparisonPalette(storage).color(status) }
         .onChange(of: storage) { _, value in hex = ComparisonPalette(value).color(status) }

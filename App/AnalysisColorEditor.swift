@@ -36,7 +36,7 @@ struct AnalysisColorEditor: View {
                     save(value); dismiss()
                 }.fixedSize().buttonStyle(.borderless).accessibilityIdentifier("saveAnalysisColor")
             }
-        }.navigationTitle(ui("方案顏色")).navigationBarTitleDisplayMode(.inline)
+        }.appPageStyle().navigationTitle(ui("方案顏色")).navigationBarTitleDisplayMode(.inline)
             .onAppear { hex = initial }
             .alert(ui("請輸入六位十六進制顏色碼。"), isPresented: $invalid) { Button(ui("好"), role: .cancel) {} }
     }
