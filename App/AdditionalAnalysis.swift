@@ -37,10 +37,10 @@ struct AdditionalAnalysisView: View {
     @State private var map: ToolMapResult?
     @State private var detail: CorrespondenceLink?
     @State private var editingColor: String?
-    @State private var exportingCSV = false
-    @State private var exportingImage = false
-    @State private var exportCSV = ""
-    @State private var exportImage = Data()
+    @State private var exporting = false
+    @State private var exportData = Data()
+    @State private var exportType: UTType = .commaSeparatedText
+    @State private var exportName = "MCPDict-analysis"
     @State private var resultLeft = ""
     @State private var resultRight = ""
     @State private var resultMode = ""
@@ -89,8 +89,8 @@ struct AdditionalAnalysisView: View {
                         .accessibilityIdentifier("exportAdditionalCSV")
                     if !links.isEmpty {
                         Button(ui("匯出桑基圖圖片"), systemImage: "photo") {
-                            exportImage = SankeyImageExport.png(links: links, left: resultLeft, right: resultRight, mode: resultMode)
-                            exportingImage = true
+                            exportData = SankeyImageExport.png(links: links, left: resultLeft, right: resultRight, mode: resultMode)
+                            exportType = .png; exportName = "MCPDict-Sankey"; exporting = true
                         }.accessibilityIdentifier("exportSankeyImage")
                     }
                 }.disabled(busy)
@@ -154,20 +154,19 @@ struct AdditionalAnalysisView: View {
             .navigationDestination(item: $editingColor) { key in
                 AnalysisColorEditor(initial: colors[key] ?? palette[0]) { colors[key] = $0 }
             }
-            .fileExporter(isPresented: $exportingCSV, document: EvolutionExportDocument(text: exportCSV), contentType: .commaSeparatedText, defaultFilename: "MCPDict-" + kind.rawValue) { result in
-                if case .failure(let failure) = result { error = failure.localizedDescription }
-            }
-            .fileExporter(isPresented: $exportingImage, document: AnalysisImageDocument(data: exportImage), contentType: .png, defaultFilename: "MCPDict-Sankey") { result in
+            .fileExporter(isPresented: $exporting, document: AnalysisResultDocument(data: exportData), contentType: exportType, defaultFilename: exportName) { result in
                 if case .failure(let failure) = result { error = failure.localizedDescription }
             }
     }
     private func prepareCSV() {
+        let csv: String
         if kind == .correspondence {
-            exportCSV = AnalysisCSV.correspondences(links, left: resultLeft, right: resultRight, mode: resultMode)
+            csv = AnalysisCSV.correspondences(links, left: resultLeft, right: resultRight, mode: resultMode)
         } else {
-            exportCSV = AnalysisCSV.soundClasses(groups.filter { selected.contains($0.value) }, characters: resultCharacters, mode: resultMode, colors: colors)
+            csv = AnalysisCSV.soundClasses(groups.filter { selected.contains($0.value) }, characters: resultCharacters, mode: resultMode, colors: colors)
         }
-        exportingCSV = true
+        exportData = Data(csv.utf8); exportType = .commaSeparatedText
+        exportName = "MCPDict-" + kind.rawValue; exporting = true
     }
     private func run() async {
         guard !busy else { return }

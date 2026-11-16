@@ -16,8 +16,8 @@ enum AnalysisCSV {
     }
 }
 
-struct AnalysisImageDocument: FileDocument {
-    static var readableContentTypes: [UTType] { [.png] }
+struct AnalysisResultDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.png, .commaSeparatedText] }
     var data: Data
     init(data: Data) { self.data = data }
     init(configuration: ReadConfiguration) throws { data = configuration.file.regularFileContents ?? Data() }
