@@ -29,8 +29,12 @@ final class NewAnalysisUITests: XCTestCase {
             let export = app.buttons[id]
             for _ in 0..<4 where !export.isHittable { app.swipeDown() }
             XCTAssertTrue(export.exists); export.tap()
-            let cancel = app.descendants(matching: .any).matching(NSPredicate(format: "label IN %@", ["Cancel", "取消"])).firstMatch
-            XCTAssertTrue(cancel.waitForExistence(timeout: 10)); cancel.tap()
+            // The iOS 26 document picker exposes a hidden SwiftUI "Cancel"
+            // element over its options menu. Exercise the actual Save action.
+            let save = app.buttons.matching(NSPredicate(format: "label IN %@", ["Save", "儲存", "存储"])).firstMatch
+            XCTAssertTrue(save.waitForExistence(timeout: 30)); save.tap()
+            let dismissed = XCTNSPredicateExpectation(predicate: NSPredicate(format: "exists == false"), object: save)
+            XCTAssertEqual(XCTWaiter.wait(for: [dismissed], timeout: 15), .completed)
         }
         app.navigationBars.buttons.element(boundBy: 0).tap()
         app.buttons["單字音類"].tap()
