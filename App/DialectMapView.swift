@@ -75,7 +75,7 @@ struct DialectMapView: View {
             guard let table = tableByName[name], result == nil || !lines.isEmpty else { return nil }
             let separator = result?.mode == .note ? "\n" : " / "
             var shown = Set<String>()
-            let text = lines.map(\.fullText).filter { shown.insert($0).inserted }.joined(separator: separator)
+            let text = lines.map { result?.mode == .character ? $0.text : $0.fullText }.filter { shown.insert($0).inserted }.joined(separator: separator)
             guard var point = DialectPoint.make(table, grouping: colorGrouping, reading: text) else { return nil }
             if let customColor = customPalette.colors[table.name] { point.color = customColor }
             var raw = Set<String>()
