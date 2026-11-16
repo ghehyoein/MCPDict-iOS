@@ -331,6 +331,7 @@ final class AppModel: ObservableObject {
     }
     func cancelDownload() { updateTask?.cancel(); status = "正在取消並保存已完成的字表…" }
     private(set) var availableTables = [TablePackage]()
+    private(set) var withdrawnTables = [TablePackage]()
     private(set) var downloadStates = [String: TableDownloadState]()
     private var tableLookup = [String: TablePackage]()
     private(set) var tableRevision = 0
@@ -351,6 +352,10 @@ final class AppModel: ObservableObject {
             states[table.id] = byID[table.id].map { $0.sha256 == table.sha256 ? .downloaded : .update } ?? .missing
             byID[table.id] = table
         }
+        // A missing catalog is not evidence that locally installed tables were withdrawn.
+        let onlineIDs = online.map { Set($0.map(\.id)) }
+        withdrawnTables = (local ?? []).filter { table in onlineIDs.map { !$0.contains(table.id) } ?? false }
+            .sorted { $0.name < $1.name }
         downloadStates = states
         availableTables = byID.values.sorted { $0.name < $1.name }
     }

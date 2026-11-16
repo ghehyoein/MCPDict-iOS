@@ -1404,3 +1404,12 @@ Email
 
 [友情連結]
 Related links
+
+[已撤字表]
+Withdrawn tables
+
+[沒有已撤字表]
+No withdrawn tables
+
+[以下字表不在目前目錄中，可能已撤下或改名。已下載資料仍保留；向左滑動可手動移除。]
+These tables are absent from the current catalog and may have been withdrawn or renamed. Downloaded data is retained; swipe left to remove a table manually.

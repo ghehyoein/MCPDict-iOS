@@ -25,7 +25,7 @@ final class CatalogRefreshTests: XCTestCase {
     private func fixture(_ name: String, malformed: Bool = false) throws -> [String: Data] {
         let names = [name, "未下載的語言點"]
         let entries: [[String: Any]] = names.map { ["path": "tools/tables/output/" + $0 + ".tsv", "type": "blob", "sha": String(repeating: "d", count: 40), "size": 200] }
-        let details = Dictionary(uniqueKeysWithValues: names.map { ($0, ["語言": $0, "歷史音": "#4D4D4D", "地圖集二分區": "吳語－太湖片", "音典分區": "兩浙－浙北－松江", "文件名": $0 + ".xlsx", "經緯度": "121.5,31.2"]) })
+        let details = Dictionary(uniqueKeysWithValues: names.map { ($0, ["語言": $0, "歷史音": "#4D4D4D", "地圖集二分區": "吳語－太湖片", "音典分區": "兩浙－浙北－松江", "文件名": $0 + ".xlsx", "經緯度": "121.5,31.2", "省": "新省", "市": "新市", "縣": "新縣", "方言島": "1", "地圖集二顏色": "#123456", "音典顏色": "#654321", "音典分區過渡色": "#112233", "字表來源": "updated source"]) })
         return ["head": try JSONEncoder().encode(["sha": commit]),
                 "tree": try JSONSerialization.data(withJSONObject: ["sha": commit, "truncated": false, "tree": entries]),
                 "details": malformed ? Data("[]".utf8) : try JSONEncoder().encode(details)]
@@ -57,6 +57,14 @@ final class CatalogRefreshTests: XCTestCase {
         XCTAssertTrue(LanguageFlags(history: true).matches(updated))
         XCTAssertEqual(updated.location, TableLocation(longitude: 121.5, latitude: 31.2))
         XCTAssertEqual(updated.dictionary, ["兩浙", "浙北", "松江"])
+        XCTAssertEqual(updated.atlas, ["吳語", "太湖片"])
+        XCTAssertEqual(updated.administrative, ["新省", "新市", "新縣"])
+        XCTAssertTrue(LanguageFlags(island: true).matches(updated))
+        XCTAssertEqual(updated.atlasColor, "#123456")
+        XCTAssertEqual(updated.dictionaryColor, "#654321")
+        XCTAssertEqual(updated.metadata?["音典分區過渡色"], "#112233")
+        XCTAssertEqual(updated.source, "updated source")
+        XCTAssertEqual(updated.metadata, refreshed.catalog.tables.first { $0.id == old.id }?.metadata)
         XCTAssertEqual(updated.sha256, old.sha256)
         XCTAssertEqual(updated.gitBlob, old.gitBlob)
         XCTAssertEqual(updated.size, old.size)
@@ -73,8 +81,18 @@ final class CatalogRefreshTests: XCTestCase {
         XCTAssertEqual(urls.count, 3)
         let model = await MainActor.run { AppModel() }
         await MainActor.run {
-            model.installed = state; model.catalog = refreshed.catalog
+            model.installed = state
+            XCTAssertTrue(model.withdrawnTables.isEmpty, "No catalog must not classify every local table as withdrawn")
+            model.catalog = refreshed.catalog
             XCTAssertEqual(model.downloadStates[old.id], .update)
+            XCTAssertEqual(model.withdrawnTables, [retained])
+            XCTAssertEqual(model.installed?.tables.count, 2, "Refreshing must keep withdrawn readings")
+            XCTAssertTrue(model.availableTables.contains(retained))
+            XCTAssertFalse(model.downloadableIDs([retained.id]).contains(retained.id))
+            model.catalog = initial
+            XCTAssertTrue(model.withdrawnTables.isEmpty, "A restored upstream entry must leave the withdrawn list")
+            model.catalog = refreshed.catalog
+            XCTAssertEqual(model.withdrawnTables, [retained])
         }
         // A cached latest catalog still repairs a stale installed archive without refetching TSVs.
         try JSONEncoder().encode(installed).write(to: root.appendingPathComponent("index.json"), options: .atomic)

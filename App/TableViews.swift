@@ -42,6 +42,13 @@ struct DataView: View {
                 LanguageSelectionPanel(tables: available, names: $names, state: selector, entryID: "downloadLanguageSelection",
                                        inspect: { model.tableDetail = $0 }, alwaysExpanded: true)
                     .environment(\.tableDownloadStates, model.downloadStates)
+                NavigationLink { WithdrawnTablesView() } label: {
+                    HStack {
+                        Text(ui("已撤字表"))
+                        Spacer()
+                        Text("\(model.withdrawnTables.count)").foregroundStyle(.secondary)
+                    }
+                }.accessibilityIdentifier("withdrawnTables")
             }.appPageStyle()
             .navigationTitle(ui("字表下載")).navigationBarTitleDisplayMode(.large)
             .toolbar(.hidden, for: .tabBar)
@@ -49,6 +56,40 @@ struct DataView: View {
                 Button(ui("更新目錄")) { Task { await model.loadCatalog() } }.disabled(model.updating) }
             .safeAreaInset(edge: .bottom, spacing: 0) { TableActions(selection: selection) }
         }.task { await model.start(); if model.catalog == nil { await model.loadCatalog() } }
+    }
+}
+
+struct WithdrawnTablesView: View {
+    @EnvironmentObject var model: AppModel
+    @State private var pendingRemoval: TablePackage?
+    var body: some View {
+        List {
+            Section {
+                if model.withdrawnTables.isEmpty {
+                    SystemText(ui("沒有已撤字表")).foregroundStyle(.secondary)
+                }
+                ForEach(model.withdrawnTables) { table in
+                    Button { model.tableDetail = table } label: {
+                        LanguageBadge(name: table.name, table: table)
+                            .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
+                    }.buttonStyle(.plain)
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button(role: .destructive) { pendingRemoval = table } label: {
+                                Text(ui("字表移除"))
+                            }.tint(.red).disabled(model.updating)
+                        }
+                }
+            } footer: {
+                Text(ui("以下字表不在目前目錄中，可能已撤下或改名。已下載資料仍保留；向左滑動可手動移除。"))
+            }
+        }
+        .appPageStyle()
+        .navigationTitle(ui("已撤字表")).navigationBarTitleDisplayMode(.inline)
+        .confirmationDialog(ui("字表移除"), isPresented: Binding(get: { pendingRemoval != nil }, set: { if !$0 { pendingRemoval = nil } }), titleVisibility: .visible, presenting: pendingRemoval) { table in
+            Button(ui("字表移除"), role: .destructive) { model.removeTables([table.id]); pendingRemoval = nil }
+                .disabled(model.updating)
+            Button(ui("取消"), role: .cancel) { pendingRemoval = nil }
+        } message: { table in Text(table.name) }
     }
 }
 
