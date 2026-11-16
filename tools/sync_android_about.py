@@ -8,6 +8,8 @@ import re
 import subprocess
 import sys
 from urllib.parse import quote
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 HTML = ROOT / "App/AndroidAbout.html"
@@ -23,6 +25,22 @@ def api(path, *, rendered=False):
     if result.returncode:
         # Do not print authentication configuration or response bodies.
         status = re.search(rb"HTTP (\d{3})", result.stderr)
+        if status and status[1] == b"401":
+            # An inherited CLI token may expire while the managed proxy's
+            # identity remains valid. Retry this public README endpoint without
+            # the stale header, preserving the environment's proxy and CA trust.
+            request = Request("https://api.github.com/" + command[2], headers={
+                "Accept": "application/vnd.github.html+json" if rendered else "application/vnd.github+json",
+                "User-Agent": "MCPDict-iOS-about-sync",
+            })
+            try:
+                with urlopen(request, timeout=30) as response:
+                    body = response.read()
+                return body if rendered else json.loads(body)
+            except HTTPError as error:
+                raise RuntimeError(f"Cannot check Android README: HTTP {error.code}") from None
+            except URLError:
+                raise RuntimeError("Cannot check Android README: network connection failed") from None
         detail = f"HTTP {status[1].decode()}" if status else "network or GitHub authentication error"
         raise RuntimeError(f"Cannot check Android README: {detail}")
     return result.stdout if rendered else json.loads(result.stdout)

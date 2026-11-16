@@ -1,7 +1,9 @@
 import hashlib
 import json
+import io
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
 from unittest.mock import patch
 
@@ -9,6 +11,15 @@ import sync_android_about as sync
 
 
 class AndroidAboutSyncTests(unittest.TestCase):
+    def test_expired_cli_token_retries_without_stale_authorization_header(self):
+        failed = subprocess.CompletedProcess([], 1, b"", b"HTTP 401: Bad credentials")
+        with patch.object(sync.subprocess, "run", return_value=failed), \
+             patch.object(sync, "urlopen", return_value=io.BytesIO(b'{"default_branch":"master"}')) as opened:
+            self.assertEqual(sync.api("")["default_branch"], "master")
+        request = opened.call_args.args[0]
+        self.assertEqual(request.full_url, "https://api.github.com/repos/osfans/MCPDict")
+        self.assertFalse(request.has_header("Authorization"))
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)

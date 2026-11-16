@@ -49,6 +49,20 @@ enum AppTheme {
         }
         tabBar.tintColor = tabSelected
         tabBar.unselectedItemTintColor = tabUnselected
+        // SwiftUI may give each tab its own appearance and pre-tinted image;
+        // these take precedence over the bar's normal-state colors on iOS 26.
+        for item in tabBar.items ?? [] {
+            item.standardAppearance = styled(item.standardAppearance ?? tabBar.standardAppearance)
+            if let scrollEdge = item.scrollEdgeAppearance {
+                item.scrollEdgeAppearance = styled(scrollEdge)
+            }
+            if let image = item.image, image.renderingMode != .alwaysTemplate {
+                item.image = image.withRenderingMode(.alwaysTemplate)
+            }
+            if let image = item.selectedImage, image.renderingMode != .alwaysTemplate {
+                item.selectedImage = image.withRenderingMode(.alwaysTemplate)
+            }
+        }
     }
 }
 
