@@ -51,16 +51,21 @@ enum AppTheme {
         tabBar.unselectedItemTintColor = tabUnselected
         // SwiftUI may give each tab its own appearance and pre-tinted image;
         // these take precedence over the bar's normal-state colors on iOS 26.
+        let normalColor = tabUnselected.resolvedColor(with: tabBar.traitCollection)
+        let selectedColor = tabSelected.resolvedColor(with: tabBar.traitCollection)
         for item in tabBar.items ?? [] {
             item.standardAppearance = styled(item.standardAppearance ?? tabBar.standardAppearance)
             if let scrollEdge = item.scrollEdgeAppearance {
                 item.scrollEdgeAppearance = styled(scrollEdge)
             }
-            if let image = item.image, image.renderingMode != .alwaysTemplate {
-                item.image = image.withRenderingMode(.alwaysTemplate)
+            item.setTitleTextAttributes([.foregroundColor: normalColor], for: .normal)
+            item.setTitleTextAttributes([.foregroundColor: selectedColor], for: .selected)
+            let selectedImage = item.selectedImage ?? item.image
+            if let image = item.image {
+                item.image = image.withTintColor(normalColor, renderingMode: .alwaysOriginal)
             }
-            if let image = item.selectedImage, image.renderingMode != .alwaysTemplate {
-                item.selectedImage = image.withRenderingMode(.alwaysTemplate)
+            if let image = selectedImage {
+                item.selectedImage = image.withTintColor(selectedColor, renderingMode: .alwaysOriginal)
             }
         }
     }
@@ -85,6 +90,10 @@ struct NativeTabBarPalette: UIViewControllerRepresentable {
         override func didMove(toParent parent: UIViewController?) {
             super.didMove(toParent: parent)
             refresh()
+        }
+        override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+            super.traitCollectionDidChange(previousTraitCollection)
+            if traitCollection.hasDifferentColorAppearance(comparedTo: previousTraitCollection) { refresh() }
         }
         func refresh() {
             DispatchQueue.main.async { [weak self] in
