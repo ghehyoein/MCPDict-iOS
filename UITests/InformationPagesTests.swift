@@ -30,6 +30,23 @@ final class InformationPagesTests: XCTestCase {
         XCTAssertTrue(web.staticTexts["漢字音典介紹"].isHittable)
         XCTAssertTrue(web.links["osfans/MCPDict · README"].exists)
         capture(app, "about-android-original")
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        let related = app.buttons["relatedLinksSettings"]
+        for _ in 0..<3 where !related.isHittable { app.swipeUp() }
+        XCTAssertTrue(related.isHittable)
+        related.tap()
+        XCTAssertTrue(app.textViews["方言相似度"].waitForExistence(timeout: 5))
+        let webEdition = app.textViews["唯二網頁版"]
+        let miniApp = app.textViews["汉字音典小程序"]
+        XCTAssertTrue(webEdition.isHittable)
+        XCTAssertTrue(miniApp.isHittable)
+        XCTAssertGreaterThan(miniApp.frame.minY, webEdition.frame.minY)
+        capture(app, "related-links-top")
+        let lastLink = app.textViews["字海（叶典）"]
+        for _ in 0..<6 where !lastLink.isHittable { app.swipeUp() }
+        XCTAssertTrue(lastLink.isHittable)
+        XCTAssertTrue(app.textViews["漢語多功能字庫"].exists)
+        capture(app, "related-links-bottom")
     }
 
     @MainActor private func capture(_ app: XCUIApplication, _ name: String) {
