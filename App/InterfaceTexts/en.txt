@@ -1397,7 +1397,7 @@ About the iOS app
 Android project description (original text)
 
 [iOS版介紹正文]
-MCPDict for iOS is developed by 合玄音 for iPhone and iPad. It lets you explore character readings and related information across languages and dialects. Language point profiles and character tables come from osfans/MCPDict. In addition to searching by character, pronunciation, or annotation, the app offers a language map, vocabulary notebooks, custom classifications, text annotation, and character reading analysis tools. Downloaded tables can be searched offline, and tables can be downloaded and updated in the app. Our thanks go to the upstream project and everyone who compiles, maintains, and contributes to these resources.
+MCPDict for iOS is developed by 合玄音 for iPhone and iPad. It lets you explore character readings and related information across languages and dialects. Language point profiles and character tables come from osfans/MCPDict. In addition to searching by character, pronunciation, or annotation, the app offers a language map, word lists, custom classifications, text annotation, and character reading analysis tools. Downloaded tables can be searched offline, and tables can be downloaded and updated in the app. Our thanks go to the upstream project and everyone who compiles, maintains, and contributes to these resources.
 
 [電子郵箱]
 Email
