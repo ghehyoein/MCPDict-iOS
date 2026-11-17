@@ -41,4 +41,15 @@ final class TableGuidanceTests: XCTestCase {
         XCTAssertEqual(s.due(now: checked.addingTimeInterval(TableGuidanceSchedule.interval)), .update)
         XCTAssertNil(s.due(now: now.addingTimeInterval(-100)))
     }
+    func testRepeatedChecksKeepOnlyFixedSizeScheduleState() throws {
+        let s = try schedule(), now = Date(timeIntervalSince1970: 1_000_000)
+        s.prepare(existingInstallation: false, now: now)
+        s.presented(.welcome, now: now)
+        for offset in 0..<1000 {
+            XCTAssertNil(s.due(now: now.addingTimeInterval(Double(offset))))
+        }
+        let keys = s.defaults.dictionaryRepresentation().keys.filter { $0.hasPrefix("tableGuidance.") }
+        XCTAssertEqual(Set(keys), ["tableGuidance.initialized", "tableGuidance.welcomed", "tableGuidance.lastReminder"])
+    }
+
 }

@@ -174,6 +174,18 @@ final class AppModel: ObservableObject {
             }
             if ProcessInfo.processInfo.arguments.contains("--busy-fixture") { updating = true; downloading = true }
             status = ""
+            let arguments = ProcessInfo.processInfo.arguments
+            if arguments.contains("--table-guidance-welcome") || arguments.contains("--table-guidance-update") {
+                if arguments.contains("--reset-guidance") {
+                    for key in selectionCache.defaults.dictionaryRepresentation().keys where key.hasPrefix("tableGuidance.") {
+                        selectionCache.defaults.removeObject(forKey: key)
+                    }
+                }
+                guidance.prepare(existingInstallation: arguments.contains("--table-guidance-update"),
+                                 now: Date().addingTimeInterval(-31 * 24 * 60 * 60))
+                guidanceReady = true
+                checkTableGuidance()
+            }
             if ProcessInfo.processInfo.arguments.contains("--catalog-progress-fixture") {
                 updating = true; tableProgress = 0.5; status = "正在取得字表目錄…"
             }
