@@ -12,7 +12,7 @@ struct MCPDictApp: App {
                 CacheMaintenance.releaseMemory()
             }
             .onChange(of: scenePhase) { _, phase in
-                if phase == .active { CacheMaintenance.scheduled(); try? RecentDeletions.shared.prune() }
+                if phase == .active { CacheMaintenance.scheduled(); try? RecentDeletions.shared.prune(); model.checkTableGuidance() }
             }
         }
     }
@@ -36,6 +36,22 @@ final class AppModel: ObservableObject {
     let gameLanguageSelection: LanguageSelectionState
     let longTextLanguageSelection: LanguageSelectionState
     @Published var activeTab = 0
+    @Published var openTableDownloads = false
+    @Published var tableGuidancePrompt: TableGuidancePrompt?
+    private var guidanceReady = false
+    private var guidance: TableGuidanceSchedule { TableGuidanceSchedule(defaults: selectionCache.defaults) }
+    func checkTableGuidance() {
+        guard guidanceReady, !updating, !searching, error == nil, tableDetail == nil,
+              tableGuidancePrompt == nil, let prompt = guidance.due() else { return }
+        guidance.presented(prompt)
+        tableGuidancePrompt = prompt
+    }
+    func showTableDownloads() { activeTab = 4; openTableDownloads = true }
+    func downloadAllTables() async {
+        showTableDownloads()
+        guard await loadCatalog(), let catalog else { return }
+        downloadTables(Set(catalog.tables.map(\.id)))
+    }
     @Published var mapHandoff: MapHandoff?
     func openResultOnMap(_ character: String) {
         let mode: SearchMode = resultMode == .note ? .note : .character
@@ -165,7 +181,9 @@ final class AppModel: ObservableObject {
         }
         #endif
         updating = true; status = "正在準備內置字表…"
-        defer { updating = false }
+        defer { updating = false; checkTableGuidance() }
+        let existingInstallation = await tableStore.hasPreviousInstallation()
+        guidance.prepare(existingInstallation: existingInstallation)
         // Remove the retired optional map-provider setting on upgrade.
         UserDefaults.standard.removeObject(forKey: "mapTilerKey")
         do {
@@ -176,6 +194,7 @@ final class AppModel: ObservableObject {
             installed = try await tableStore.restore()
             catalog = await tableStore.cachedCatalog()
             languages = try await repository.languages()
+            guidanceReady = true
             restoreLanguageSelection()
             status = "已下載 \(installed?.tables.count ?? 0) 份字表"
             let originalFile = installed?.databaseFile
@@ -248,8 +267,10 @@ final class AppModel: ObservableObject {
         // than scanning every available table on each progress notification.
         selection.filter { downloadStates[$0] == .missing || downloadStates[$0] == .update }
     }
-    func loadCatalog() async {
-        guard !updating else { return }
+    @discardableResult
+    func loadCatalog() async -> Bool {
+        guard !updating else { return false }
+        var succeeded = false
         updating = true; tableProgress = 0
         status = "正在取得字表目錄…"
         let task = Task {
@@ -260,11 +281,14 @@ final class AppModel: ObservableObject {
                 })
                 installed = refreshed.installation
                 catalog = refreshed.catalog
+                guidance.catalogChecked()
+                succeeded = true
                 status = "目錄已更新 · 已下載 \(installed?.tables.count ?? 0) 份字表"
             } catch { status = "檢查失敗，現有資料仍可使用"; self.error = error.localizedDescription }
         }
         updateTask = task
         await task.value
+        return succeeded
     }
     func downloadTables(_ selection: Set<String>) {
         let selection = downloadableIDs(selection)
@@ -525,9 +549,22 @@ struct RootView: View {
         .dynamicTypeSize(AppTypography.size(fontSize))
         .tint(AppAccent.color)
         .preferredColorScheme(appearance == "light" ? .light : appearance == "dark" ? .dark : nil)
-        .alert(ui("提示"), isPresented: Binding(get: { model.error != nil }, set: { if !$0 { model.error = nil } })) {
-            Button(ui("好")) { model.error = nil }
-        } message: { Text(ui(model.error ?? "")) }
+        .onChange(of: model.updating) { _, busy in if !busy { model.checkTableGuidance() } }
+        .onChange(of: model.error) { _, error in if error == nil { model.checkTableGuidance() } }
+        .alert(ui(model.error == nil ? (model.tableGuidancePrompt?.title ?? "提示") : "提示"), isPresented: Binding(
+            get: { model.error != nil || model.tableGuidancePrompt != nil },
+            set: { if !$0 { model.error = nil; model.tableGuidancePrompt = nil } }
+        )) {
+            if model.error != nil {
+                Button(ui("好")) { model.error = nil }
+            } else if model.tableGuidancePrompt == .welcome {
+                Button(ui("下載所有字表")) { Task { await model.downloadAllTables() } }
+                Button(ui("取消"), role: .cancel) {}
+            } else {
+                Button(ui("前往字表下載")) { model.showTableDownloads() }
+                Button(ui("取消"), role: .cancel) {}
+            }
+        } message: { Text(ui(model.error ?? model.tableGuidancePrompt?.message ?? "")) }
     }
 }
 

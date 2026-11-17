@@ -70,6 +70,10 @@ actor TableStore {
         self.repository = repository
         self.root = root ?? FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Tables", isDirectory: true)
     }
+    func hasPreviousInstallation() -> Bool {
+        FileManager.default.fileExists(atPath: index.path)
+            || FileManager.default.fileExists(atPath: root.appendingPathComponent("bundled-installed").path)
+    }
     private var index: URL { root.appendingPathComponent("index.json") }
     private func prepare() throws {
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)

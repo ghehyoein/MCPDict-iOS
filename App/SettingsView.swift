@@ -60,7 +60,8 @@ struct SettingsView: View {
                     Button(ui("還原默認設定"), role: .destructive) { confirmReset = true }
                         .foregroundStyle(.red).accessibilityIdentifier("resetSettings")
                 }
-            }.appPageStyle().navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
+            }.navigationDestination(isPresented: $model.openTableDownloads) { DataView() }
+            .appPageStyle().navigationTitle(ui("設定")).onAppear { mapSize = min(25, max(5, mapSize)) }
         }
         .alert(ui("是否還原默認設定？"), isPresented: $confirmReset) {
             Button(ui("取消"), role: .cancel) {}
