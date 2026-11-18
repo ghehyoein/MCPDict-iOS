@@ -218,7 +218,7 @@ struct DialectMapView: View {
         do {
             let found = try await model.repository.mapSearch(text, mode: requestedMode, names: requestedNames, characterRange: CharacterSearchRange(rawValue: characterRange) ?? .all)
             guard token == generation else { return }
-            submittedNames = requestedNames; result = found; activeCharacter = found.choices.first ?? ""
+            submittedNames = requestedNames; result = found; activeCharacter = found.initialCharacter
             rebuildPoints(); fit += 1
         } catch { if token == generation { model.error = error.localizedDescription } }
     }

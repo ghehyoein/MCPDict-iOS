@@ -231,7 +231,7 @@ final class AppModel: ObservableObject {
         let ranks = ResultOrdering.ranks(installed?.tables ?? [], namespace: "dictionary")
         do {
             let found: [Reading]
-            let variants = request.1 == .character ? try await CharacterRangeIndex.shared.filter(CharacterVariants.expand(request.0), range: characterRange) : []
+            let variants = request.1 == .character ? try await CharacterRangeIndex.shared.filter(CharacterVariants.pickerChoices(request.0), range: characterRange) : []
             if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
             else {
                 let rows = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3)

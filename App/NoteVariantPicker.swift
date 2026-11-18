@@ -23,7 +23,7 @@ struct NoteVariantPicker: View {
             }
         }.task(id: query) {
             let input = query
-            let expanded = await Task.detached { input.map { CharacterVariants.expand(String($0)) } }.value
+            let expanded = await Task.detached { input.map { CharacterVariants.pickerChoices(String($0)) } }.value
             if !Task.isCancelled { choices = expanded }
         }.accessibilityIdentifier("noteInputVariants")
     }

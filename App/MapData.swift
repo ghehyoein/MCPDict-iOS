@@ -48,6 +48,12 @@ struct MapSearchResult {
     }
     let mode: SearchMode
     let query: String
+    var initialCharacter: String {
+        if mode == .character, let match = choices.first(where: { groups[$0] != nil }) {
+            return match
+        }
+        return choices.first ?? ""
+    }
     var choices = [String]()
     var groups = [String: [String: [Line]]]()
 }
@@ -55,7 +61,7 @@ struct MapSearchResult {
 extension DictionaryRepository {
     func mapSearch(_ query: String, mode: SearchMode, names: Set<String>, characterRange: CharacterSearchRange = .all) async throws -> MapSearchResult {
         var result = MapSearchResult(mode: mode, query: query)
-        if mode == .character { result.choices = try await CharacterRangeIndex.shared.filter(CharacterVariants.expand(query), range: characterRange) }
+        if mode == .character { result.choices = try await CharacterRangeIndex.shared.filter(CharacterVariants.pickerChoices(query), range: characterRange) }
         guard !names.isEmpty else { return result }
         let found = try searchAll(mode == .character ? result.choices.joined() : query, mode: mode, language: "", languages: Array(names))
         let rows = mode == .pronunciation ? try await CharacterRangeIndex.shared.filter(found, range: characterRange) : found
