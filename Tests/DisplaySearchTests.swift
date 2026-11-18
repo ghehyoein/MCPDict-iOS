@@ -2,6 +2,19 @@ import XCTest
 @testable import MCPDictIOS
 
 final class DisplaySearchTests: XCTestCase {
+    func testTraditionalPickerOrderAndMapFallback() {
+        XCTAssertEqual(Array(CharacterVariants.pickerChoices("关").prefix(2)), ["关", "關"])
+        XCTAssertEqual(Array(CharacterVariants.pickerChoices("関").prefix(2)), ["関", "關"])
+        let choices = CharacterVariants.pickerChoices("发")
+        XCTAssertEqual(Array(choices.prefix(3)), ["发", "發", "髮"])
+        var result = MapSearchResult(mode: .character, query: "发", choices: choices)
+        XCTAssertEqual(result.initialCharacter, "发")
+        let rows = ["甲": [MapSearchResult.Line(text: "a", pronunciation: "a", note: "")]]
+        for candidate in ["髮", "發", "发"] {
+            result.groups[candidate] = rows
+            XCTAssertEqual(result.initialCharacter, candidate)
+        }
+    }
     func testBundledVariantsMatchUpstreamReverseLookup() {
         XCTAssertEqual(CharacterVariants.expand("输").prefix(2), ["输", "輸"])
         XCTAssertEqual(CharacterVariants.expand("輸"), ["輸"])
