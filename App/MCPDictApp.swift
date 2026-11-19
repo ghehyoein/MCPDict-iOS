@@ -81,6 +81,7 @@ final class AppModel: ObservableObject {
     @Published var resultMode: SearchMode = .character
     @Published var resultQuery = ""
     @Published var resultCharacters = [String]()
+    @Published var selectedResultCharacter = ""
     @Published var downloading = false
     @Published var downloadedCount = 0
     @Published var tableProgress = 0.0
@@ -231,8 +232,11 @@ final class AppModel: ObservableObject {
         let ranks = ResultOrdering.ranks(installed?.tables ?? [], namespace: "dictionary")
         do {
             let found: [Reading]
-            let variants = request.1 == .character ? try await CharacterRangeIndex.shared.filter(CharacterVariants.pickerChoices(request.0), range: characterRange) : []
-            if request.1 == .character { found = try await repository.searchAllCharacters(variants.joined(), language: request.2, languages: request.3) }
+            let variants = request.1 == .character ? CharacterVariants.pickerChoices(request.0) : []
+            if request.1 == .character {
+                let searchable = try await CharacterRangeIndex.shared.filter(variants, range: characterRange)
+                found = try await repository.searchAllCharacters(searchable.joined(), language: request.2, languages: request.3)
+            }
             else {
                 let rows = try await repository.searchAll(request.0, mode: request.1, language: request.2, languages: request.3)
                 found = request.1 == .pronunciation ? try await CharacterRangeIndex.shared.filter(rows, range: characterRange) : rows
@@ -254,6 +258,7 @@ final class AppModel: ObservableObject {
             lastSearch = request
             resultMode = request.1; resultQuery = request.0
             resultCharacters = request.1 == .note ? prepared.2 : variants
+            selectedResultCharacter = (request.1 == .character ? variants.first { prepared.1[$0] != nil } : nil) ?? resultCharacters.first ?? ""
             hasMore = false
         } catch { if token == generation { self.error = error.localizedDescription } }
     }
@@ -601,7 +606,6 @@ struct SearchView: View {
     @FocusState private var searchFocused: Bool
     @EnvironmentObject private var selector: LanguageSelectionState
     @State private var reference: ReferencePage?
-    @State private var selectedCharacter = ""
     @State private var resultHeaderPinned = false
     private func submitQuery() {
         searchFocused = false
@@ -647,7 +651,6 @@ struct SearchView: View {
             .onChange(of: characterRange) { _, _ in
                 if !model.resultQuery.isEmpty { Task { await model.search(queryOverride: model.resultQuery, modeOverride: model.resultMode) } }
             }
-            .onChange(of: model.resultQuery) { _, _ in selectedCharacter = "" }
             .navigationTitle(ui("漢字音典"))
             .toolbar { ToolbarItem(placement: .topBarTrailing) {
                 Menu {
@@ -667,7 +670,7 @@ struct SearchView: View {
                 if !model.resultQuery.isEmpty {
                     let hasCharacters = model.resultMode == .character || model.resultMode == .note
                     let chars = model.resultCharacters
-                    let current = chars.contains(selectedCharacter) ? selectedCharacter : chars.first ?? ""
+                    let current = model.selectedResultCharacter
                     Section {
                         if hasCharacters, !current.isEmpty {
                             CharacterReferenceHeader(character: current, show: { reference = $0 }, map: { model.openResultOnMap(current) })
@@ -688,7 +691,7 @@ struct SearchView: View {
                                 ScrollView(.horizontal) {
                                     HStack {
                                         ForEach(chars, id: \.self) { char in
-                                            Button { selectedCharacter = char } label: { GlyphChoiceText(char) }.buttonStyle(.bordered).tint(char == current ? AppAccent.color : .gray)
+                                            Button { model.selectedResultCharacter = char } label: { GlyphChoiceText(char) }.buttonStyle(.bordered).tint(char == current ? AppAccent.color : .gray)
                                         }
                                     }
                                 }

@@ -15,6 +15,30 @@ final class DisplaySearchTests: XCTestCase {
             XCTAssertEqual(result.initialCharacter, candidate)
         }
     }
+    func testMapKeepsEveryGuanChoiceAcrossRangeAndLanguageFilters() async throws {
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".db")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let db = try SQLiteConnection(url: file, readOnly: false)
+        _ = try db.rows("CREATE VIRTUAL TABLE langs USING fts5(字組, 語言, 讀音, 註釋)")
+        _ = try db.rows("INSERT INTO langs VALUES ('关','甲','a',''), ('關','乙','b','')")
+        let repo = DictionaryRepository()
+        try await repo.open(file)
+        let choices = CharacterVariants.pickerChoices("关")
+        for range in [CharacterSearchRange.all, .bigFive] {
+            let result = try await repo.mapSearch("关", mode: .character, names: ["乙"], characterRange: range)
+            XCTAssertEqual(result.choices, choices)
+            XCTAssertEqual(Array(result.choices.prefix(2)), ["关", "關"])
+            XCTAssertNil(result.groups["关"])
+            XCTAssertEqual(result.initialCharacter, "關")
+            XCTAssertEqual(result.groups["關"]?["乙"]?.first?.pronunciation, "b")
+        }
+        let original = try await repo.mapSearch("关", mode: .character, names: ["甲", "乙"])
+        XCTAssertEqual(original.initialCharacter, "关")
+        let absent = try await repo.mapSearch("关", mode: .character, names: ["丙"])
+        XCTAssertEqual(absent.choices, choices)
+        XCTAssertEqual(absent.initialCharacter, "关")
+    }
+
     func testBundledVariantsMatchUpstreamReverseLookup() {
         XCTAssertEqual(CharacterVariants.expand("输").prefix(2), ["输", "輸"])
         XCTAssertEqual(CharacterVariants.expand("輸"), ["輸"])
