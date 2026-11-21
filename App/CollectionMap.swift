@@ -11,7 +11,7 @@ enum CollectionMap {
         }
         var colors = [String: String]()
         for i in indices {
-            for language in custom.schemes[i].languages where colors[language] == nil { colors[language] = custom.color(at: i) }
+            for language in custom.schemes[i].languages where colors[language] == nil { colors[language] = custom.schemes[i].languageColors?[language] ?? custom.color(at: i) }
         }
         return tables.compactMap { table in
             guard let color = colors[table.name], var point = DialectPoint.make(table, grouping: .atlas) else { return nil }

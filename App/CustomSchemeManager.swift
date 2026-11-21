@@ -19,11 +19,18 @@ struct CustomSchemeArchive: Codable {
             guard !name.isEmpty, !name.components(separatedBy: "－").contains(""), let hex = scheme.colorHex.flatMap(CustomLanguageSchemes.validColor) else {
                 throw DictionaryFailure(message: ui("無效的自選分區檔案"))
             }
+            guard (scheme.languageColors ?? [:]).values.allSatisfy({ CustomLanguageSchemes.validColor($0) != nil }) else {
+                throw AndroidSchemeWorkbook.invalid
+            }
             if let index = indices[name] {
+                for (language, color) in scheme.languageColors ?? [:] where !result.schemes[index].languages.contains(language) {
+                    if result.schemes[index].languageColors == nil { result.schemes[index].languageColors = [:] }
+                    result.schemes[index].languageColors?[language] = color
+                }
                 result.schemes[index].languages.formUnion(scheme.languages)
             } else {
                 indices[name] = result.schemes.count
-                result.schemes.append(.init(name: name, languages: scheme.languages, colorHex: hex))
+                result.schemes.append(.init(name: name, languages: scheme.languages, colorHex: hex, languageColors: scheme.languageColors))
             }
         }
         return result
@@ -144,14 +151,20 @@ struct CustomSchemeManager: View {
             .exportShareSheet(isPresented: $exporting, filename: "MCPDict-custom-languages.txt", data: {
                 try ExportFiles.json(CustomSchemeArchive(exported))
             }, onError: { model.error = $0.localizedDescription })
-            .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText]) { result in
-                do {
-                    let url = try result.get(), access = url.startAccessingSecurityScopedResource()
-                    defer { if access { url.stopAccessingSecurityScopedResource() } }
-                    let archive = try JSONDecoder().decode(CustomSchemeArchive.self, from: Data(contentsOf: url))
-                    state.custom = try archive.merging(into: state.custom)
-                    message = ui("已合併匯入自選分區，原有內容及配色已保留。")
-                } catch { model.error = error.localizedDescription }
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText, UTType(filenameExtension: "xlsx") ?? .spreadsheet]) { result in
+                Task { @MainActor in
+                    do {
+                        let url = try result.get()
+                        let archive = try await Task.detached {
+                            let access = url.startAccessingSecurityScopedResource()
+                            defer { if access { url.stopAccessingSecurityScopedResource() } }
+                            if url.pathExtension.lowercased() == "xlsx" { return try AndroidSchemeWorkbook.read(url) }
+                            return try JSONDecoder().decode(CustomSchemeArchive.self, from: Data(contentsOf: url))
+                        }.value
+                        state.custom = try archive.merging(into: state.custom)
+                        message = ui("已合併匯入自選分區，原有內容及配色已保留。")
+                    } catch { model.error = error.localizedDescription }
+                }
             }
             .alert(ui("自選分區"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
                 Button(ui("好")) { message = nil }

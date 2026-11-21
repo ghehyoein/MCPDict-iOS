@@ -6,6 +6,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
         var name: String
         var languages: Set<String>
         var colorHex: String? = nil
+        var languageColors: [String: String]? = nil
         var id: String { name }
     }
     var schemes: [Scheme]
@@ -106,7 +107,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
                 number += 1
             } while schemes.contains { $0.name == destination || $0.name.hasPrefix(destination + "－") }
             schemes.append(contentsOf: branch.map {
-                Scheme(name: destination + String($0.name.dropFirst(root.count)), languages: $0.languages, colorHex: $0.colorHex)
+                Scheme(name: destination + String($0.name.dropFirst(root.count)), languages: $0.languages, colorHex: $0.colorHex, languageColors: $0.languageColors)
             })
             copies.insert(destination)
         }
@@ -127,7 +128,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
         var colors = [String: String]()
         for i in indices {
             let hex = color(at: i)
-            for language in schemes[i].languages where colors[language] == nil { colors[language] = hex }
+            for language in schemes[i].languages where colors[language] == nil { colors[language] = schemes[i].languageColors?[language] ?? hex }
         }
         return colors
     }
@@ -137,7 +138,7 @@ struct CustomLanguageSchemes: Codable, Equatable {
         else if scope != "ALL" { candidates = schemes.indices.filter { schemes[$0].name.hasPrefix(scope + "－") } }
         else { candidates = [] }
         guard let index = (candidates + Array(schemes.indices)).first(where: { schemes[$0].languages.contains(language) }) else { return "#808080" }
-        return color(at: index)
+        return schemes[index].languageColors?[language] ?? color(at: index)
     }
     func color(at index: Int) -> String {
         if let hex = schemes[index].colorHex.flatMap(Self.validColor) { return hex }
