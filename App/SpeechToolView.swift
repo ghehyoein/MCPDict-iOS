@@ -5,8 +5,10 @@ struct SpeechToolView: View {
     @StateObject private var audio = SpeechSession()
     @State private var picking = false
     @State private var layers: Set<String> = ["頻譜", "基頻"]
-    @State private var visible = 0.0...1.0, previous = [ClosedRange<Double>]()
-    @State private var selection: ClosedRange<Double>?, frequency: Double?
+    @State private var visible = 0.0...1.0
+    @State private var previous = [ClosedRange<Double>]()
+    @State private var selection: ClosedRange<Double>?
+    @State private var frequency: Double?
     @State private var channelSheet = false
     private let options = ["頻譜", "基頻", "強度", "共振峰", "聲門脈衝"]
     var body: some View {

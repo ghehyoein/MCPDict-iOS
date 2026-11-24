@@ -106,8 +106,11 @@ enum SpeechError: LocalizedError {
 
 @MainActor final class SpeechSession: NSObject, ObservableObject, AVAudioRecorderDelegate, AVAudioPlayerDelegate {
     @Published var clip: SpeechClip?
-    @Published var recording = false, busy = false, playing = false
-    @Published var channels = 0, error: String?
+    @Published var recording = false
+    @Published var busy = false
+    @Published var playing = false
+    @Published var channels = 0
+    @Published var error: String?
     @Published var permissionPending = false
     private var liveTask: Task<Void, Never>?
     private var channelURL: URL?, temporary: URL?, recorder: AVAudioRecorder?, player: AVAudioPlayer?
