@@ -7,6 +7,7 @@ struct ToolsHomeView: View {
                 NavigationLink(ui("猜方言")) { GuessGameView(kind: .language) }
                 NavigationLink(ui("猜字")) { GuessGameView(kind: .character) }
                 NavigationLink(ui("長文注音")) { LongTextView() }
+                NavigationLink(ui("廣韻總覽")) { GuangyunOverview() }
                 NavigationLink(ui("古今演化")) { YindianToolsView(tool: .evolution) }
                 NavigationLink(ui("方言→中古")) { YindianToolsView(reverse: true) }
                 NavigationLink(ui("多地對應")) { AdditionalAnalysisView(kind: .correspondence) }
