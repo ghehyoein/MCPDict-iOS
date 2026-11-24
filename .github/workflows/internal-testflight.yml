@@ -79,6 +79,19 @@ jobs:
           fi
           brew list xcodegen >/dev/null 2>&1 || brew install xcodegen
           python3 tools/prepare_assets.py
+          # Scope distribution signing to the app. Swift package resource bundles
+          # cannot accept an app provisioning profile from global build settings.
+          python3 - <<'PYSIGN'
+          from pathlib import Path
+          spec = Path('project.yml')
+          text = spec.read_text()
+          anchor = '        PRODUCT_BUNDLE_IDENTIFIER: io.github.ghehyoein.MCPDictIOS\n'
+          assert text.count(anchor) == 1
+          settings = ['DEVELOPMENT_TEAM: "$(MCPDICT_TEAM)"', 'CODE_SIGN_STYLE: Manual',
+                      'CODE_SIGN_IDENTITY: "Apple Distribution"',
+                      'PROVISIONING_PROFILE_SPECIFIER: "$(MCPDICT_PROFILE)"']
+          spec.write_text(text.replace(anchor, anchor + ''.join('        ' + line + '\n' for line in settings)))
+          PYSIGN
           xcodegen generate
           /usr/libexec/PlistBuddy -c 'Delete :UISupportedInterfaceOrientations~ipad' Generated/Info.plist 2>/dev/null || true
           /usr/libexec/PlistBuddy -c 'Add :UISupportedInterfaceOrientations~ipad array' Generated/Info.plist
@@ -119,7 +132,7 @@ jobs:
           set -euo pipefail
           build="$RELEASE_BUILD.$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
           archive="$RUNNER_TEMP/MCPDict.xcarchive"
-          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -configuration Release -destination 'generic/platform=iOS' -archivePath "$archive" DEVELOPMENT_TEAM="$TEAM" CODE_SIGN_STYLE=Manual 'CODE_SIGN_IDENTITY=Apple Distribution' PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" CURRENT_PROJECT_VERSION="$build" archive
+          xcodebuild -project MCPDictIOS.xcodeproj -scheme MCPDictIOS -configuration Release -destination 'generic/platform=iOS' -archivePath "$archive" MCPDICT_TEAM="$TEAM" MCPDICT_PROFILE="$PROFILE_UUID" CURRENT_PROJECT_VERSION="$build" archive
           app="$archive/Products/Applications/MCPDictIOS.app"
           test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' "$app/Info.plist")" = "$VERSION"
           test "$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' "$app/Info.plist")" = "$build"
