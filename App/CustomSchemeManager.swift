@@ -58,7 +58,8 @@ struct CustomSchemeManager: View {
     @State private var name = ""
     @State private var importing = false
     @State private var exporting = false
-    @State private var workbookRoot: String?
+    @State private var exportRoot: String?
+    @State private var isWorkbook = false
     @State private var message: String?
     @State private var map: ToolMapResult?
     @State private var selecting = false
@@ -115,15 +116,20 @@ struct CustomSchemeManager: View {
             .navigationTitle(ui("自選分區")).navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .topBarTrailing) {
+                    Button(ui("新建")) { renaming = nil; name = ""; naming = true }
                     Button { showMap(selecting ? selection : Set(state.custom.schemes.map(\.name))) } label: { Image(systemName: "map") }
                         .accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("customSchemesMap")
-                    Button(ui("新建")) { renaming = nil; name = ""; naming = true }
                     Menu {
                         Menu(ui("匯出自選分區")) {
-                            Button(ui("純文字") + " (.txt)") { workbookRoot = nil; exporting = true }
+                            Menu(ui("純文字") + " (.txt)") {
+                                Button(ui(selecting ? "已選" : "全部方案")) { beginExport(root: nil, workbook: false) }
+                                ForEach(exported.schemes) { scheme in
+                                    Button(scheme.name) { beginExport(root: scheme.name, workbook: false) }
+                                }
+                            }
                             Menu("Excel (.xlsx)") {
                                 ForEach(exported.schemes) { scheme in
-                                    Button(scheme.name) { workbookRoot = scheme.name; exporting = true }
+                                    Button(scheme.name) { beginExport(root: scheme.name, workbook: true) }
                                 }
                             }
                         }.disabled(selecting && selection.isEmpty)
@@ -156,9 +162,13 @@ struct CustomSchemeManager: View {
                     } else if !state.custom.create(name) { message = ui("方案名稱不能為空或重複") }
                 }
             }
-            .exportShareSheet(isPresented: $exporting, filename: workbookRoot.map { $0 + ".xlsx" } ?? "MCPDict-custom-languages.txt", data: {
-                if let workbookRoot { return try AndroidSchemeWorkbook.write(exported, root: workbookRoot) }
-                return try ExportFiles.json(CustomSchemeArchive(exported))
+            .exportShareSheet(isPresented: $exporting, filename: (exportRoot ?? "MCPDict-custom-languages") + (isWorkbook ? ".xlsx" : ".txt"), data: {
+                var source = exported
+                if let exportRoot {
+                    if isWorkbook { return try AndroidSchemeWorkbook.write(source, root: exportRoot) }
+                    source.schemes.removeAll { !CustomLanguageSchemes.belongs($0.name, to: [exportRoot]) }
+                }
+                return try ExportFiles.json(CustomSchemeArchive(source))
             }, onError: { model.error = $0.localizedDescription })
             .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText, UTType(filenameExtension: "xlsx") ?? .spreadsheet]) { result in
                 Task { @MainActor in
@@ -178,6 +188,11 @@ struct CustomSchemeManager: View {
             .alert(ui("自選分區"), isPresented: Binding(get: { message != nil }, set: { if !$0 { message = nil } })) {
                 Button(ui("好")) { message = nil }
             } message: { Text(message ?? "") }
+    }
+    private func beginExport(root: String?, workbook: Bool) {
+        exportRoot = root
+        isWorkbook = workbook
+        exporting = true
     }
     private func showMap(_ roots: Set<String>) {
         let points = CollectionMap.schemes(state.custom, roots: roots, tables: model.availableTables)

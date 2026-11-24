@@ -1444,8 +1444,8 @@ Some word tables are included in the app. You can download all word tables in Se
 [字表與語言點資料可能已有更新。建議前往「設定 → 字表下載」，點擊「更新目錄」檢查。]
 Updates to word tables and language point information may be available. Go to Settings → Download tables and tap Refresh catalog to check.
 
-[語音分析小工具]
-Speech Analysis Tool
+[語音分析]
+Speech Analysis
 
 [語言點顏色]
 Language point colors

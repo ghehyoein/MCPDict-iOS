@@ -13,7 +13,7 @@ struct SpeechToolView: View {
     private let options = ["頻譜", "基頻", "強度", "共振峰", "聲門脈衝"]
     var body: some View {
         content
-            .navigationTitle(ui("語音分析小工具")).navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(ui("語音分析")).navigationBarTitleDisplayMode(.inline)
             .toolbar { layerMenu }
         .fileImporter(isPresented: $picking, allowedContentTypes: [.audio]) { result in
             if case .success(let url) = result { audio.choose(url) }
