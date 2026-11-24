@@ -12,8 +12,35 @@ struct SpeechToolView: View {
     @State private var channelSheet = false
     private let options = ["頻譜", "基頻", "強度", "共振峰", "聲門脈衝"]
     var body: some View {
+        content
+            .navigationTitle(ui("語音分析小工具")).navigationBarTitleDisplayMode(.inline)
+            .toolbar { layerMenu }
+        .fileImporter(isPresented: $picking, allowedContentTypes: [.audio]) { result in
+            if case .success(let url) = result { audio.choose(url) }
+        }
+        .onChange(of: audio.channels) { _, count in channelSheet = count > 1 }
+        .confirmationDialog(ui("選擇聲道"), isPresented: $channelSheet) {
+            ForEach(0..<audio.channels, id: \.self) { index in
+                Button(index == 0 ? ui("左聲道") : index == 1 ? ui("右聲道") : String(index+1)) { audio.chooseChannel(index) }
+            }
+            Button(ui("取消"), role: .cancel) { audio.channels = 0 }
+        }
+        .onReceive(audio.$clip) { clip in
+            if let clip { visible = 0...clip.duration; previous = []; selection = nil; frequency = nil }
+        }
+        .onDisappear { audio.close() }
+        .alert(ui("提示"), isPresented: Binding(get: { audio.error != nil }, set: { if !$0 { audio.error = nil } })) { Button(ui("好")) {} } message: { Text(audio.error ?? "") }
+    }
+
+    private var content: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                inputControls
+                if let clip = audio.clip { clipControls(clip) }
+            }.padding().frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+    @ViewBuilder private var inputControls: some View {
                 HStack {
                     Button(ui(audio.recording ? "停止錄音" : "開始錄音")) {
                         if audio.recording { audio.stopRecording() } else { Task { await audio.record() } }
@@ -28,7 +55,17 @@ struct SpeechToolView: View {
                         Text(ui("錄音中") + String(format: " %.1f s", audio.elapsed)).monospacedDigit()
                     }
                 }
-                if let clip = audio.clip {
+    }
+    private var layerMenu: some View {
+        Menu {
+            ForEach(options, id: \.self) { key in
+                Toggle(ui(key), isOn: Binding<Bool>(get: { layers.contains(key) }, set: { enabled in
+                    if enabled { layers.insert(key) } else { layers.remove(key) }
+                }))
+            }
+        } label: { Image(systemName: "slider.horizontal.3") }
+    }
+    @ViewBuilder private func clipControls(_ clip: SpeechClip) -> some View {
                     HStack {
                         Button(ui(audio.playing ? "停止播放" : "播放")) {
                             if audio.playing { audio.stopPlayback() } else { audio.play(nil) }
@@ -59,29 +96,6 @@ struct SpeechToolView: View {
                     }
                     Text(String(format: "%.3f–%.3f / %.2f s", visible.lowerBound, visible.upperBound, clip.duration)).font(.caption)
                     if clip.limited { Text(ui("僅分析前120秒")).font(.caption) }
-                }
-            }.padding().frame(maxWidth: .infinity, alignment: .leading)
-        }.navigationTitle(ui("語音分析小工具")).navigationBarTitleDisplayMode(.inline)
-        .toolbar { Menu {
-            ForEach(options, id: \.self) { key in
-                Toggle(ui(key), isOn: Binding(get: { layers.contains(key) }, set: { if $0 { layers.insert(key) } else { layers.remove(key) } }))
-            }
-        } label: { Image(systemName: "slider.horizontal.3") } }
-        .fileImporter(isPresented: $picking, allowedContentTypes: [.audio]) { result in
-            if case .success(let url) = result { audio.choose(url) }
-        }
-        .onChange(of: audio.channels) { _, count in channelSheet = count > 1 }
-        .confirmationDialog(ui("選擇聲道"), isPresented: $channelSheet) {
-            ForEach(0..<audio.channels, id: \.self) { index in
-                Button(index == 0 ? ui("左聲道") : index == 1 ? ui("右聲道") : String(index+1)) { audio.chooseChannel(index) }
-            }
-            Button(ui("取消"), role: .cancel) { audio.channels = 0 }
-        }
-        .onReceive(audio.$clip) { clip in
-            if let clip { visible = 0...clip.duration; previous = []; selection = nil; frequency = nil }
-        }
-        .onDisappear { audio.close() }
-        .alert(ui("提示"), isPresented: Binding(get: { audio.error != nil }, set: { if !$0 { audio.error = nil } })) { Button(ui("好")) {} } message: { Text(audio.error ?? "") }
     }
     private func zoom(_ target: ClosedRange<Double>, _ clip: SpeechClip) {
         let width = min(clip.duration, max(0.008, target.span))
@@ -96,7 +110,7 @@ struct SpeechToolView: View {
     private func plot(_ clip: SpeechClip) -> some View {
         GeometryReader { geometry in
             Canvas { ctx, size in
-                let w = size.width, h = size.height, split = h*0.30, lower = h-split
+                let w = Double(size.width), h = Double(size.height), split = h*0.30, lower = h-split
                 guard visible.span > 0, w > 0 else { return }
                 func x(_ t: Double) -> Double { (t-visible.lowerBound)/visible.span*w }
                 func stroke(_ path: Path, _ color: Color, _ width: CGFloat = 1) { ctx.stroke(path, with: .color(color), lineWidth: width) }
@@ -144,10 +158,10 @@ struct SpeechToolView: View {
                 }
             }.clipped().contentShape(Rectangle())
             .gesture(DragGesture(minimumDistance: 0).onChanged { event in
-                func time(_ px: CGFloat) -> Double { visible.lowerBound + max(0,min(1,px/max(1,geometry.size.width)))*visible.span }
+                func time(_ px: CGFloat) -> Double { visible.lowerBound + max(0,min(1,Double(px)/max(1,Double(geometry.size.width))))*visible.span }
                 let a = time(event.startLocation.x), b = time(event.location.x)
                 selection = min(a,b)...max(a,b)
-                let fraction = event.location.y/max(1,geometry.size.height)
+                let fraction = Double(event.location.y)/max(1,Double(geometry.size.height))
                 frequency = fraction >= 0.3 ? min(5000,max(0,(1-fraction)/0.7*5000)) : nil
             })
             .simultaneousGesture(MagnificationGesture().onEnded { magnify($0,clip) })
