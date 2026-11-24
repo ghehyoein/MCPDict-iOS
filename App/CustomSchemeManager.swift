@@ -58,6 +58,7 @@ struct CustomSchemeManager: View {
     @State private var name = ""
     @State private var importing = false
     @State private var exporting = false
+    @State private var workbookRoot: String?
     @State private var message: String?
     @State private var map: ToolMapResult?
     @State private var selecting = false
@@ -118,7 +119,14 @@ struct CustomSchemeManager: View {
                         .accessibilityLabel(ui("在地圖上顯示")).accessibilityIdentifier("customSchemesMap")
                     Button(ui("新建")) { renaming = nil; name = ""; naming = true }
                     Menu {
-                        Button(ui("匯出自選分區")) { exporting = true }.disabled(selecting && selection.isEmpty)
+                        Menu(ui("匯出自選分區")) {
+                            Button(ui("純文字") + " (.txt)") { workbookRoot = nil; exporting = true }
+                            Menu("Excel (.xlsx)") {
+                                ForEach(exported.schemes) { scheme in
+                                    Button(scheme.name) { workbookRoot = scheme.name; exporting = true }
+                                }
+                            }
+                        }.disabled(selecting && selection.isEmpty)
                         Button(ui("匯入自選分區")) { importing = true }
                     } label: { Image(systemName: "square.and.arrow.up.on.square") }.accessibilityLabel(ui("匯入及匯出"))
                     Button(ui(selecting ? "完成" : "編輯")) { selecting.toggle(); selection = [] }
@@ -148,8 +156,9 @@ struct CustomSchemeManager: View {
                     } else if !state.custom.create(name) { message = ui("方案名稱不能為空或重複") }
                 }
             }
-            .exportShareSheet(isPresented: $exporting, filename: "MCPDict-custom-languages.txt", data: {
-                try ExportFiles.json(CustomSchemeArchive(exported))
+            .exportShareSheet(isPresented: $exporting, filename: workbookRoot.map { $0 + ".xlsx" } ?? "MCPDict-custom-languages.txt", data: {
+                if let workbookRoot { return try AndroidSchemeWorkbook.write(exported, root: workbookRoot) }
+                return try ExportFiles.json(CustomSchemeArchive(exported))
             }, onError: { model.error = $0.localizedDescription })
             .fileImporter(isPresented: $importing, allowedContentTypes: [.plainText, UTType(filenameExtension: "xlsx") ?? .spreadsheet]) { result in
                 Task { @MainActor in
@@ -248,6 +257,27 @@ struct CustomSchemeEditor: View {
                     }.fixedSize().buttonStyle(.borderless).accessibilityIdentifier("saveCustomSchemeColor")
                 }
             }
+            if let i = index, !state.custom.schemes[i].languages.isEmpty {
+                NavigationLink(ui("語言點顏色")) {
+                    List(index.map { state.custom.schemes[$0].languages.sorted() } ?? [], id: \.self) { language in
+                        if let current = index {
+                            let hex = state.custom.schemes[current].languageColors?[language] ?? state.custom.color(at: current)
+                            NavigationLink {
+                                AnalysisColorEditor(initial: hex) { value in
+                                    guard let j = index else { return }
+                                    var colors = state.custom.schemes[j].languageColors ?? [:]
+                                    colors[language] = value
+                                    state.custom.schemes[j].languageColors = colors
+                                }
+                            } label: {
+                                HStack { Text(language); Spacer(); AnalysisColorSwatch(hex: hex) }
+                            }.swipeActions {
+                                Button(ui("恢復默認")) { state.custom.schemes[current].languageColors?.removeValue(forKey: language) }
+                            }
+                        }
+                    }.navigationTitle(ui("語言點顏色"))
+                }
+            }
             Section(ui("自選子分區")) {
                 ForEach(children) { child in
                     HStack {
@@ -291,6 +321,7 @@ struct CustomSchemeEditor: View {
                             do { try RecentDeletions.shared.add(DeletedCollection(title: "自選分區", schemes: [removed])) }
                             catch { model.error = error.localizedDescription; return }
                         }
+                        state.custom.schemes[i].languageColors = state.custom.schemes[i].languageColors?.filter { value.contains($0.key) }
                         state.custom.schemes[i].languages = value
                     }
                 }), state: model.customEditorSelection, inspect: { model.tableDetail = $0 }, showsDone: false, preservesHiddenSelection: true) {}

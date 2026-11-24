@@ -26,10 +26,21 @@ enum AndroidSchemeWorkbook {
         if let entry = zip["xl/sharedStrings.xml"] { shared = try parse(entry, strings: []).strings }
         var table: [[Int: String]]?
         var columns = [Int]()
+        var groupColors: [(String, String)] = []
+        var rootColor: String?
         for entry in zip where entry.path.hasPrefix("xl/worksheets/") && entry.path.hasSuffix(".xml") {
             let rows = try parse(entry, strings: shared).rows
             for (index, row) in rows.enumerated() {
                 let headings = row.mapValues { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                if let color = headings.first(where: { $0.value == "方案顏色" })?.key {
+                    rootColor = rows.dropFirst(index + 1).first?[color] ?? ""
+                    break
+                }
+                if let color = headings.first(where: { $0.value == "分區顏色" })?.key,
+                   let group = headings.first(where: { $0.value == "自選分區" })?.key {
+                    groupColors += rows.dropFirst(index + 1).compactMap { row in row[group].map { ($0, row[color] ?? "") } }
+                    break
+                }
                 let keys = [["語言", "语言"], ["自選分區", "自选分区"], ["自選顏色", "自选颜色"]].compactMap { aliases in
                     headings.first { aliases.contains($0.value) }?.key
                 }
@@ -45,18 +56,32 @@ enum AndroidSchemeWorkbook {
         var store = CustomLanguageSchemes()
         store.schemes = [.init(name: root, languages: [])]
         var indices = [root: 0]
-        for row in table {
-            let language = (row[columns[0]] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-            guard !language.isEmpty else { continue }
+        func ensurePath(_ relative: String) -> Int {
             var path = root
-            for group in (row[columns[1]] ?? "").split(whereSeparator: { "-－／/".contains($0) }) {
+            for group in relative.split(whereSeparator: { "-－／/".contains($0) }) {
                 path += "－" + CustomLanguageSchemes.normalize(String(group))
                 if indices[path] == nil {
                     indices[path] = store.schemes.count
                     store.schemes.append(.init(name: path, languages: []))
                 }
             }
-            let index = indices[path]!
+            return indices[path]!
+        }
+        if let rootColor, !rootColor.isEmpty {
+            guard let hex = CustomLanguageSchemes.validColor(rootColor) else { throw invalid }
+            store.schemes[0].colorHex = hex
+        }
+        for (path, color) in groupColors {
+            let i = ensurePath(path)
+            if !color.isEmpty {
+                guard let hex = CustomLanguageSchemes.validColor(color) else { throw invalid }
+                store.schemes[i].colorHex = hex
+            }
+        }
+        for row in table {
+            let language = (row[columns[0]] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !language.isEmpty else { continue }
+            let index = ensurePath(row[columns[1]] ?? "")
             store.schemes[index].languages.insert(language)
             let color = (row[columns[2]] ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             if !color.isEmpty {
@@ -65,8 +90,8 @@ enum AndroidSchemeWorkbook {
                 store.schemes[index].languageColors?[language] = hex
             }
         }
-        guard store.schemes.contains(where: { !$0.languages.isEmpty }) else { throw invalid }
-        for i in store.schemes.indices {
+        guard rootColor != nil || !groupColors.isEmpty || store.schemes.contains(where: { !$0.languages.isEmpty }) else { throw invalid }
+        for i in store.schemes.indices where rootColor == nil && groupColors.isEmpty {
             guard let colors = store.schemes[i].languageColors, colors.count == store.schemes[i].languages.count,
                   let first = colors.values.first, colors.values.allSatisfy({ $0 == first }) else { continue }
             store.schemes[i].colorHex = first

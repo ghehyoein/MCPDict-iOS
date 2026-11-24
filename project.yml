@@ -32,17 +32,19 @@ targets:
       properties:
         # Reassess if adding a non-system encryption implementation.
         ITSAppUsesNonExemptEncryption: false
+        NSMicrophoneUsageDescription: Record audio for local speech analysis.
         NSPhotoLibraryAddUsageDescription: Save exported Sankey diagram images to your photo library.
         UIAppFonts: [charis.ttf, plangothicp1.otf, plangothicp2.otf]
         LSApplicationQueriesSchemes: [maps, iosamap, baidumap, comgooglemaps]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.github.ghehyoein.MCPDictIOS
+        SWIFT_OBJC_BRIDGING_HEADER: App/Acoustics/Acoustics.h
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: 汉字音典
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
-        MARKETING_VERSION: "1.0.4"
+        MARKETING_VERSION: "1.0.5"
         CURRENT_PROJECT_VERSION: 1
     dependencies:
       - package: ZIPFoundation

@@ -1443,3 +1443,84 @@ Some word tables are included in the app. You can download all word tables in Se
 
 [字表與語言點資料可能已有更新。建議前往「設定 → 字表下載」，點擊「更新目錄」檢查。]
 Updates to word tables and language point information may be available. Go to Settings → Download tables and tap Refresh catalog to check.
+
+[語音分析小工具]
+Speech Analysis Tool
+
+[語言點顏色]
+Language point colors
+
+[恢復默認]
+Restore default
+
+[純文字]
+Plain text
+
+[錄音中]
+Recording
+
+[開始錄音]
+Record
+
+[停止錄音]
+Stop recording
+
+[播放]
+Play
+
+[停止播放]
+Stop playback
+
+[播放選區]
+Play selection
+
+[導入音頻]
+Import audio
+
+[取消導入]
+Cancel import
+
+[波形]
+Waveform
+
+[頻譜]
+Spectrogram
+
+[基頻]
+Pitch
+
+[強度]
+Intensity
+
+[共振峰]
+Formants
+
+[聲門脈衝]
+Glottal pulses
+
+[全段]
+Show all
+
+[選區]
+Zoom to selection
+
+[時間位置]
+Time position
+
+[僅分析前120秒]
+Only the first 120 seconds are analyzed.
+
+[選擇聲道]
+Choose a channel
+
+[左聲道]
+Left channel
+
+[右聲道]
+Right channel
+
+[沒有可分析的音訊]
+No audio available for analysis.
+
+[請允許麥克風權限後再錄音]
+Allow microphone access to record audio.
